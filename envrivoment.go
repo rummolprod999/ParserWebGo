@@ -1,19 +1,17 @@
 package main
 
 import (
-	"path/filepath"
-	"os"
 	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 )
 
 type Filelog string
-type FileTemp string
 
 var DirLog string
 var DirTemp string
 var FileLog Filelog
-var FileTmp FileTemp
 
 func Logging(args ...interface{}) {
 	file, err := os.OpenFile(string(FileLog), os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
@@ -34,7 +32,6 @@ func Logging(args ...interface{}) {
 
 func CreateLogFile() {
 	dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
-	fmt.Println()
 	dirlog := fmt.Sprintf("%s/%s", dir, DirLog)
 	if _, err := os.Stat(dirlog); os.IsNotExist(err) {
 		err := os.MkdirAll(dirlog, 0711)
@@ -46,7 +43,39 @@ func CreateLogFile() {
 	}
 	t := time.Now()
 	ft := t.Format("2006-01-02")
-	FileLog = Filelog(fmt.Sprintf("%s/log_fabrikant_%v.log", dirlog, ft))
+	FileLog = Filelog(fmt.Sprintf("%s/log_%v_%v.log", dirlog, A, ft))
 
 }
 
+func CreateTempDir() {
+	dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
+	dirtemp := fmt.Sprintf("%s/%s", dir, DirTemp)
+	if _, err := os.Stat(dirtemp); os.IsNotExist(err) {
+		err := os.MkdirAll(dirtemp, 0711)
+
+		if err != nil {
+			fmt.Println("Не могу создать папку для временных файлов")
+			os.Exit(1)
+		}
+	} else {
+		err = os.RemoveAll(dirtemp)
+		if err != nil {
+			fmt.Println("Не могу удалить папку для временных файлов")
+		}
+		err := os.MkdirAll(dirtemp, 0711)
+		if err != nil {
+			fmt.Println("Не могу создать папку для временных файлов")
+			os.Exit(1)
+		}
+	}
+}
+
+func CreateEnv() {
+	switch A {
+	case Transneft:
+		DirLog = LogTransneft
+		DirTemp = TempTransneft
+	}
+	CreateLogFile()
+	CreateTempDir()
+}
