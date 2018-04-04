@@ -28,14 +28,14 @@ const (
 )
 
 type Settings struct {
-	Prefix        string `xml:"prefix"`
-	Db            string `xml:"db"`
-	UserDb        string `xml:"userdb"`
-	PassDb        string `xml:"passdb"`
-	Server        string `xml:"server"`
-	Port          int    `xml:"port"`
-	TempTransneft string `xml:"tempdir_transneft"`
-	LogTransneft  string `xml:"logdir_transneft"`
+	Prefix      string `xml:"prefix"`
+	Db          string `xml:"db"`
+	UserDb      string `xml:"userdb"`
+	PassDb      string `xml:"passdb"`
+	Server      string `xml:"server"`
+	Port        int    `xml:"port"`
+	TempX5Group string `xml:"tempdir_x5group"`
+	LogX5Group  string `xml:"logdir_x5group"`
 }
 
 func GetSetting() {
@@ -58,8 +58,8 @@ func GetSetting() {
 	PassDb = settings.PassDb
 	Server = settings.Server
 	Port = settings.Port
-	TempTransneft = settings.TempTransneft
-	LogTransneft = settings.LogTransneft
+	TempTransneft = settings.TempX5Group
+	LogTransneft = settings.LogX5Group
 	Dsn = fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=true&readTimeout=60m&maxAllowedPacket=0&timeout=60m&writeTimeout=60m&autocommit=true&loc=Local", UserDb, PassDb, DbName)
 }
 

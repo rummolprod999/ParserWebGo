@@ -43,7 +43,10 @@ func CreateLogFile() {
 	}
 	t := time.Now()
 	ft := t.Format("2006-01-02")
-	FileLog = Filelog(fmt.Sprintf("%s/log_%v_%v.log", dirlog, A, ft))
+	switch A {
+	case X5Group:
+		FileLog = Filelog(fmt.Sprintf("%s/log_X5Group_%v.log", dirlog, A, ft))
+	}
 
 }
 
