@@ -15,8 +15,8 @@ var UserDb string
 var PassDb string
 var Server string
 var Port int
-var TempTransneft string
-var LogTransneft string
+var TempX5Group string
+var LogX5Group string
 var ArgS string
 var A Arg
 var Dsn string
@@ -58,8 +58,8 @@ func GetSetting() {
 	PassDb = settings.PassDb
 	Server = settings.Server
 	Port = settings.Port
-	TempTransneft = settings.TempX5Group
-	LogTransneft = settings.LogX5Group
+	TempX5Group = settings.TempX5Group
+	LogX5Group = settings.LogX5Group
 	Dsn = fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=true&readTimeout=60m&maxAllowedPacket=0&timeout=60m&writeTimeout=60m&autocommit=true&loc=Local", UserDb, PassDb, DbName)
 }
 

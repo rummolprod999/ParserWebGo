@@ -45,7 +45,7 @@ func CreateLogFile() {
 	ft := t.Format("2006-01-02")
 	switch A {
 	case X5Group:
-		FileLog = Filelog(fmt.Sprintf("%s/log_X5Group_%v.log", dirlog, A, ft))
+		FileLog = Filelog(fmt.Sprintf("%s/log_X5Group_%v.log", dirlog, ft))
 	}
 
 }
@@ -76,8 +76,8 @@ func CreateTempDir() {
 func CreateEnv() {
 	switch A {
 	case X5Group:
-		DirLog = LogTransneft
-		DirTemp = TempTransneft
+		DirLog = LogX5Group
+		DirTemp = TempX5Group
 	}
 	CreateLogFile()
 	CreateTempDir()
