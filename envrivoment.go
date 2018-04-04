@@ -72,7 +72,7 @@ func CreateTempDir() {
 
 func CreateEnv() {
 	switch A {
-	case Transneft:
+	case X5Group:
 		DirLog = LogTransneft
 		DirTemp = TempTransneft
 	}

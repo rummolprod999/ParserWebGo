@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 )
 
-var arguments = "transneft"
+var arguments = "x5"
 var Prefix string
 var DbName string
 var UserDb string
@@ -24,7 +24,7 @@ var Dsn string
 type Arg int
 
 const (
-	Transneft Arg = iota
+	X5Group Arg = iota
 )
 
 type Settings struct {
@@ -65,8 +65,8 @@ func GetSetting() {
 
 func GetArgument() {
 	switch ArgS {
-	case "transneft":
-		A = Transneft
+	case "x5":
+		A = X5Group
 	default:
 		fmt.Printf("Bad argument, please use %s", arguments)
 		os.Exit(1)

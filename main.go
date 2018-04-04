@@ -14,7 +14,7 @@ func MainParser(p Parser) {
 func main() {
 	defer SaveStack()
 	switch A {
-	case Transneft:
+	case X5Group:
 		p := ParserX5Group{TypeFz: 26, Urls: []string{"https://tender.x5.ru/auction/guiding/list_auction/2-start", "https://tender.x5.ru/auction/guiding/list_auction/3-start", "https://tender.x5.ru/auction/guiding/list_auction/1-start", "https://tender.x5.ru/auction/guiding/list_auction/4-start"}}
 		MainParser(&p)
 
