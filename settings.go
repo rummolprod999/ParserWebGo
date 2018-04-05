@@ -61,6 +61,7 @@ func GetSetting() {
 	TempX5Group = settings.TempX5Group
 	LogX5Group = settings.LogX5Group
 	Dsn = fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=true&readTimeout=60m&maxAllowedPacket=0&timeout=60m&writeTimeout=60m&autocommit=true&loc=Local", UserDb, PassDb, DbName)
+	checkEmptySettings()
 }
 
 func GetArgument() {
@@ -69,6 +70,12 @@ func GetArgument() {
 		A = X5Group
 	default:
 		fmt.Printf("Bad argument, please use %s", arguments)
+		os.Exit(1)
+	}
+}
+func checkEmptySettings() {
+	if DbName == "" || UserDb == "" || PassDb == "" || Server == "" || TempX5Group == "" || LogX5Group == "" {
+		fmt.Println("bad settings xml")
 		os.Exit(1)
 	}
 }
