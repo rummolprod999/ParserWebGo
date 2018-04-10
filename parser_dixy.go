@@ -83,16 +83,6 @@ func (t *ParserDixy) parsingTenderFromList(p *goquery.Selection) {
 
 func (t *ParserDixy) Tender(purNum string, page string, pubDate time.Time, purName string) {
 	defer SaveStack()
-	r := DownloadPage(page)
-	if r == "" {
-		Logging("Получили пустую строку", page)
-		return
-	}
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(r))
-	if err != nil {
-		Logging(err)
-		return
-	}
 	db, err := sql.Open("mysql", Dsn)
 	if err != nil {
 		Logging("Ошибка подключения к БД", err)
@@ -116,6 +106,16 @@ func (t *ParserDixy) Tender(purNum string, page string, pubDate time.Time, purNa
 		return
 	}
 	res.Close()
+	r := DownloadPage(page)
+	if r == "" {
+		Logging("Получили пустую строку", page)
+		return
+	}
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(r))
+	if err != nil {
+		Logging(err)
+		return
+	}
 	var cancelStatus = 0
 	if purNum != "" {
 		stmt, err := db.Prepare(fmt.Sprintf("SELECT id_tender, date_version FROM %stender WHERE purchase_number = ? AND cancel=0 AND type_fz = ?", Prefix))
