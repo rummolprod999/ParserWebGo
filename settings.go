@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 )
 
-var arguments = "x5"
+var arguments = "x5, dixy"
 var Prefix string
 var DbName string
 var UserDb string
@@ -17,6 +17,8 @@ var Server string
 var Port int
 var TempX5Group string
 var LogX5Group string
+var TempDixy string
+var LogDixy string
 var ArgS string
 var A Arg
 var Dsn string
@@ -25,6 +27,7 @@ type Arg int
 
 const (
 	X5Group Arg = iota
+	Dixy
 )
 
 type Settings struct {
@@ -36,6 +39,8 @@ type Settings struct {
 	Port        int    `xml:"port"`
 	TempX5Group string `xml:"tempdir_x5group"`
 	LogX5Group  string `xml:"logdir_x5group"`
+	TempDixy    string `xml:"tempdir_dixy"`
+	LogDixy     string `xml:"logdir_dixy"`
 }
 
 func GetSetting() {
@@ -60,6 +65,8 @@ func GetSetting() {
 	Port = settings.Port
 	TempX5Group = settings.TempX5Group
 	LogX5Group = settings.LogX5Group
+	LogDixy = settings.LogDixy
+	TempDixy = settings.TempDixy
 	Dsn = fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=true&readTimeout=60m&maxAllowedPacket=0&timeout=60m&writeTimeout=60m&autocommit=true&loc=Local", UserDb, PassDb, DbName)
 	checkEmptySettings()
 }
@@ -68,13 +75,15 @@ func GetArgument() {
 	switch ArgS {
 	case "x5":
 		A = X5Group
+	case "dixy":
+		A = Dixy
 	default:
 		fmt.Printf("Bad argument, please use %s", arguments)
 		os.Exit(1)
 	}
 }
 func checkEmptySettings() {
-	if DbName == "" || UserDb == "" || PassDb == "" || Server == "" || TempX5Group == "" || LogX5Group == "" {
+	if DbName == "" || UserDb == "" || PassDb == "" || Server == "" || TempX5Group == "" || LogX5Group == "" || TempDixy == "" || LogDixy == "" {
 		fmt.Println("bad settings xml")
 		os.Exit(1)
 	}

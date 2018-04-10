@@ -9,6 +9,7 @@ import (
 	"os"
 	"regexp"
 	"runtime"
+	"strings"
 	"time"
 )
 
@@ -53,6 +54,28 @@ func DownloadPage1251(url string) string {
 	}
 }
 
+func DownloadPage(url string) string {
+	count := 0
+	var st string
+	for {
+		//fmt.Println("Start download file")
+		if count > 50 {
+			Logging(fmt.Sprintf("Не скачали файл за %d попыток %s", count, url))
+			return st
+		}
+		st = GetPage(url)
+		if st == "" {
+			count++
+			Logging("Получили пустую страницу", url)
+			time.Sleep(time.Second * 5)
+			continue
+		}
+		return st
+
+	}
+	return st
+}
+
 func GetPage(url string) string {
 	var st string
 	resp, err := http.Get(url)
@@ -79,7 +102,7 @@ func getTimeMoscow(st string) time.Time {
 	location, _ := time.LoadLocation("Europe/Moscow")
 	p, err := time.ParseInLocation("02.01.2006 15:04", st, location)
 	if err != nil {
-		println(err)
+		Logging(err)
 		return time.Time{}
 	}
 
@@ -250,4 +273,75 @@ func AddVerNumber(db *sql.DB, RegistryNumber string, typeFz int) error {
 	}
 
 	return nil
+}
+
+func getDateDixy(s string) time.Time {
+	var p = time.Time{}
+	if s != "" {
+		dt := ""
+		if strings.Contains(s, "янв") {
+			dt = strings.Replace(s, "янв", "01", -1)
+		} else if strings.Contains(s, "фев") {
+			dt = strings.Replace(s, "фев", "02", -1)
+		} else if strings.Contains(s, "мар") {
+			dt = strings.Replace(s, "мар", "03", -1)
+		} else if strings.Contains(s, "апр") {
+			dt = strings.Replace(s, "апр", "04", -1)
+		} else if strings.Contains(s, "май") {
+			dt = strings.Replace(s, "май", "05", -1)
+		} else if strings.Contains(s, "июн") {
+			dt = strings.Replace(s, "июн", "06", -1)
+		} else if strings.Contains(s, "июл") {
+			dt = strings.Replace(s, "июл", "07", -1)
+		} else if strings.Contains(s, "авг") {
+			dt = strings.Replace(s, "авг", "08", -1)
+		} else if strings.Contains(s, "сен") {
+			dt = strings.Replace(s, "сен", "09", -1)
+		} else if strings.Contains(s, "окт") {
+			dt = strings.Replace(s, "окт", "10", -1)
+		} else if strings.Contains(s, "ноя") {
+			dt = strings.Replace(s, "ноя", "11", -1)
+		} else if strings.Contains(s, "дек") {
+			dt = strings.Replace(s, "дек", "12", -1)
+		}
+		p = getTimeMoscowLayout(dt, "02 01 2006")
+	}
+	return p
+}
+
+func getTimeMoscowLayout(st string, l string) time.Time {
+	var p = time.Time{}
+	location, _ := time.LoadLocation("Europe/Moscow")
+	p, err := time.ParseInLocation(l, st, location)
+	if err != nil {
+		Logging(err)
+		return time.Time{}
+	}
+
+	return p
+}
+
+func findFromRegExp(s string, t string) string {
+	r := ""
+	re := regexp.MustCompile(t)
+	match := re.FindStringSubmatch(s)
+	if len(match) > 1 {
+		r = match[1]
+	}
+	return r
+}
+
+func cleanString(s string) string {
+	re := regexp.MustCompile(`\s+`)
+	return re.ReplaceAllString(s, " ")
+}
+
+func findFromRegExpDixy(s string, t string) string {
+	r := ""
+	re := regexp.MustCompile(t)
+	match := re.FindStringSubmatch(s)
+	if len(match) > 2 {
+		r = fmt.Sprintf("%s %s", match[1], match[2])
+	}
+	return r
 }
