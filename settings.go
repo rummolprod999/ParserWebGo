@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 )
 
-var arguments = "x5, dixy"
+var arguments = "x5, dixy, rusneft"
 var Prefix string
 var DbName string
 var UserDb string
@@ -19,6 +19,8 @@ var TempX5Group string
 var LogX5Group string
 var TempDixy string
 var LogDixy string
+var TempRusneft string
+var LogRusneft string
 var ArgS string
 var A Arg
 var Dsn string
@@ -28,6 +30,7 @@ type Arg int
 const (
 	X5Group Arg = iota
 	Dixy
+	Rusneft
 )
 
 type Settings struct {
@@ -41,6 +44,8 @@ type Settings struct {
 	LogX5Group  string `xml:"logdir_x5group"`
 	TempDixy    string `xml:"tempdir_dixy"`
 	LogDixy     string `xml:"logdir_dixy"`
+	TempRusneft string `xml:"tempdir_rusneft"`
+	LogRusneft  string `xml:"logdir_rusneft"`
 }
 
 func GetSetting() {
@@ -67,6 +72,8 @@ func GetSetting() {
 	LogX5Group = settings.LogX5Group
 	LogDixy = settings.LogDixy
 	TempDixy = settings.TempDixy
+	LogRusneft = settings.LogRusneft
+	TempRusneft = settings.TempRusneft
 	Dsn = fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=true&readTimeout=60m&maxAllowedPacket=0&timeout=60m&writeTimeout=60m&autocommit=true&loc=Local", UserDb, PassDb, DbName)
 	checkEmptySettings()
 }
@@ -77,13 +84,15 @@ func GetArgument() {
 		A = X5Group
 	case "dixy":
 		A = Dixy
+	case "rusneft":
+		A = Rusneft
 	default:
 		fmt.Printf("Bad argument, please use %s", arguments)
 		os.Exit(1)
 	}
 }
 func checkEmptySettings() {
-	if DbName == "" || UserDb == "" || PassDb == "" || Server == "" || TempX5Group == "" || LogX5Group == "" || TempDixy == "" || LogDixy == "" {
+	if DbName == "" || UserDb == "" || PassDb == "" || Server == "" || TempX5Group == "" || LogX5Group == "" || TempDixy == "" || LogDixy == "" || TempRusneft == "" || LogRusneft == ""{
 		fmt.Println("bad settings xml")
 		os.Exit(1)
 	}

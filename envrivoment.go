@@ -48,6 +48,8 @@ func CreateLogFile() {
 		FileLog = Filelog(fmt.Sprintf("%s/log_X5Group_%v.log", dirlog, ft))
 	case Dixy:
 		FileLog = Filelog(fmt.Sprintf("%s/log_Dixy_%v.log", dirlog, ft))
+	case Rusneft:
+		FileLog = Filelog(fmt.Sprintf("%s/log_Rusneft_%v.log", dirlog, ft))
 	}
 
 }
@@ -83,6 +85,9 @@ func CreateEnv() {
 	case Dixy:
 		DirLog = LogDixy
 		DirTemp = TempDixy
+	case Rusneft:
+		DirLog = LogRusneft
+		DirTemp = TempRusneft
 	}
 	CreateLogFile()
 	CreateTempDir()
