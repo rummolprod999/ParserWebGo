@@ -78,7 +78,7 @@ func (t *ParserPhosagro) parsingTenderFromList(p *goquery.Selection, url string)
 	endDateT := strings.TrimSpace(p.Find("td:nth-child(5)").First().Text())
 	endDate := getTimeMoscowLayout(endDateT, "02.01.2006 15:04:05")
 	if (endDate == time.Time{}) {
-		endDate = getTimeMoscowLayout(pubDateT, "02.01.2006")
+		endDate = getTimeMoscowLayout(endDateT, "02.01.2006")
 	}
 	if (pubDate == time.Time{} || endDate == time.Time{}) {
 		Logging("Can not find enddate or startdate in ", url, purNum)
