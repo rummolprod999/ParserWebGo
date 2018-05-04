@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 )
 
-var arguments = "x5, dixy, rusneft"
+var arguments = "x5, dixy, rusneft, pphosagro"
 var Prefix string
 var DbName string
 var UserDb string
@@ -21,6 +21,8 @@ var TempDixy string
 var LogDixy string
 var TempRusneft string
 var LogRusneft string
+var TempPhosagro string
+var LogPhosagro string
 var ArgS string
 var A Arg
 var Dsn string
@@ -31,21 +33,24 @@ const (
 	X5Group Arg = iota
 	Dixy
 	Rusneft
+	Phosagro
 )
 
 type Settings struct {
-	Prefix      string `xml:"prefix"`
-	Db          string `xml:"db"`
-	UserDb      string `xml:"userdb"`
-	PassDb      string `xml:"passdb"`
-	Server      string `xml:"server"`
-	Port        int    `xml:"port"`
-	TempX5Group string `xml:"tempdir_x5group"`
-	LogX5Group  string `xml:"logdir_x5group"`
-	TempDixy    string `xml:"tempdir_dixy"`
-	LogDixy     string `xml:"logdir_dixy"`
-	TempRusneft string `xml:"tempdir_rusneft"`
-	LogRusneft  string `xml:"logdir_rusneft"`
+	Prefix       string `xml:"prefix"`
+	Db           string `xml:"db"`
+	UserDb       string `xml:"userdb"`
+	PassDb       string `xml:"passdb"`
+	Server       string `xml:"server"`
+	Port         int    `xml:"port"`
+	TempX5Group  string `xml:"tempdir_x5group"`
+	LogX5Group   string `xml:"logdir_x5group"`
+	TempDixy     string `xml:"tempdir_dixy"`
+	LogDixy      string `xml:"logdir_dixy"`
+	TempRusneft  string `xml:"tempdir_rusneft"`
+	LogRusneft   string `xml:"logdir_rusneft"`
+	TempPhosagro string `xml:"tempdir_phosagro"`
+	LogPhosagro  string `xml:"logdir_phosagro"`
 }
 
 func GetSetting() {
@@ -74,6 +79,8 @@ func GetSetting() {
 	TempDixy = settings.TempDixy
 	LogRusneft = settings.LogRusneft
 	TempRusneft = settings.TempRusneft
+	LogPhosagro = settings.LogPhosagro
+	TempPhosagro = settings.TempPhosagro
 	Dsn = fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=true&readTimeout=60m&maxAllowedPacket=0&timeout=60m&writeTimeout=60m&autocommit=true&loc=Local", UserDb, PassDb, DbName)
 	checkEmptySettings()
 }
@@ -86,13 +93,15 @@ func GetArgument() {
 		A = Dixy
 	case "rusneft":
 		A = Rusneft
+	case "phosagro":
+		A = Phosagro
 	default:
 		fmt.Printf("Bad argument, please use %s", arguments)
 		os.Exit(1)
 	}
 }
 func checkEmptySettings() {
-	if DbName == "" || UserDb == "" || PassDb == "" || Server == "" || TempX5Group == "" || LogX5Group == "" || TempDixy == "" || LogDixy == "" || TempRusneft == "" || LogRusneft == ""{
+	if DbName == "" || UserDb == "" || PassDb == "" || Server == "" || TempX5Group == "" || LogX5Group == "" || TempDixy == "" || LogDixy == "" || TempRusneft == "" || LogRusneft == "" || TempPhosagro == "" || LogPhosagro == "" {
 		fmt.Println("bad settings xml")
 		os.Exit(1)
 	}
