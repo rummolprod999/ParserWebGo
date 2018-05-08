@@ -15,6 +15,7 @@ var UserDb string
 var PassDb string
 var Server string
 var Port int
+var PagesIcetrade int
 var TempX5Group string
 var LogX5Group string
 var TempDixy string
@@ -23,6 +24,8 @@ var TempRusneft string
 var LogRusneft string
 var TempPhosagro string
 var LogPhosagro string
+var TempIcetrade string
+var LogIcetrade string
 var ArgS string
 var A Arg
 var Dsn string
@@ -34,23 +37,27 @@ const (
 	Dixy
 	Rusneft
 	Phosagro
+	Icetrade
 )
 
 type Settings struct {
-	Prefix       string `xml:"prefix"`
-	Db           string `xml:"db"`
-	UserDb       string `xml:"userdb"`
-	PassDb       string `xml:"passdb"`
-	Server       string `xml:"server"`
-	Port         int    `xml:"port"`
-	TempX5Group  string `xml:"tempdir_x5group"`
-	LogX5Group   string `xml:"logdir_x5group"`
-	TempDixy     string `xml:"tempdir_dixy"`
-	LogDixy      string `xml:"logdir_dixy"`
-	TempRusneft  string `xml:"tempdir_rusneft"`
-	LogRusneft   string `xml:"logdir_rusneft"`
-	TempPhosagro string `xml:"tempdir_phosagro"`
-	LogPhosagro  string `xml:"logdir_phosagro"`
+	Prefix        string `xml:"prefix"`
+	Db            string `xml:"db"`
+	UserDb        string `xml:"userdb"`
+	PassDb        string `xml:"passdb"`
+	Server        string `xml:"server"`
+	Port          int    `xml:"port"`
+	PagesIcetrade int    `xml:"pages_icetrade"`
+	TempX5Group   string `xml:"tempdir_x5group"`
+	LogX5Group    string `xml:"logdir_x5group"`
+	TempDixy      string `xml:"tempdir_dixy"`
+	LogDixy       string `xml:"logdir_dixy"`
+	TempRusneft   string `xml:"tempdir_rusneft"`
+	LogRusneft    string `xml:"logdir_rusneft"`
+	TempPhosagro  string `xml:"tempdir_phosagro"`
+	LogPhosagro   string `xml:"logdir_phosagro"`
+	TempIcetrade  string `xml:"tempdir_icetrade"`
+	LogIcetrade   string `xml:"logdir_icetrade"`
 }
 
 func GetSetting() {
@@ -73,6 +80,7 @@ func GetSetting() {
 	PassDb = settings.PassDb
 	Server = settings.Server
 	Port = settings.Port
+	PagesIcetrade = settings.PagesIcetrade
 	TempX5Group = settings.TempX5Group
 	LogX5Group = settings.LogX5Group
 	LogDixy = settings.LogDixy
@@ -81,6 +89,8 @@ func GetSetting() {
 	TempRusneft = settings.TempRusneft
 	LogPhosagro = settings.LogPhosagro
 	TempPhosagro = settings.TempPhosagro
+	LogIcetrade = settings.LogIcetrade
+	TempIcetrade = settings.TempIcetrade
 	Dsn = fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=true&readTimeout=60m&maxAllowedPacket=0&timeout=60m&writeTimeout=60m&autocommit=true&loc=Local", UserDb, PassDb, DbName)
 	checkEmptySettings()
 }
@@ -95,13 +105,15 @@ func GetArgument() {
 		A = Rusneft
 	case "phosagro":
 		A = Phosagro
+	case "icetrade":
+		A = Icetrade
 	default:
 		fmt.Printf("Bad argument, please use %s", arguments)
 		os.Exit(1)
 	}
 }
 func checkEmptySettings() {
-	if DbName == "" || UserDb == "" || PassDb == "" || Server == "" || TempX5Group == "" || LogX5Group == "" || TempDixy == "" || LogDixy == "" || TempRusneft == "" || LogRusneft == "" || TempPhosagro == "" || LogPhosagro == "" {
+	if DbName == "" || UserDb == "" || PassDb == "" || Server == "" || TempX5Group == "" || LogX5Group == "" || TempDixy == "" || LogDixy == "" || TempRusneft == "" || LogRusneft == "" || TempPhosagro == "" || LogPhosagro == "" || TempIcetrade == "" || LogIcetrade == "" {
 		fmt.Println("bad settings xml")
 		os.Exit(1)
 	}
