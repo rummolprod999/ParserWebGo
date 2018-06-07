@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 )
 
-var arguments = "x5, dixy, rusneft, pphosagro"
+var arguments = "x5, dixy, rusneft, pphosagro, komtech"
 var Prefix string
 var DbName string
 var UserDb string
@@ -26,6 +26,8 @@ var TempPhosagro string
 var LogPhosagro string
 var TempIcetrade string
 var LogIcetrade string
+var TempKomtech string
+var LogKomtech string
 var ArgS string
 var A Arg
 var Dsn string
@@ -38,6 +40,7 @@ const (
 	Rusneft
 	Phosagro
 	Icetrade
+	Komtech
 )
 
 type Settings struct {
@@ -58,6 +61,8 @@ type Settings struct {
 	LogPhosagro   string `xml:"logdir_phosagro"`
 	TempIcetrade  string `xml:"tempdir_icetrade"`
 	LogIcetrade   string `xml:"logdir_icetrade"`
+	TempKomtech   string `xml:"tempdir_komtech"`
+	LogKomtech    string `xml:"logdir_komtech"`
 }
 
 func GetSetting() {
@@ -91,6 +96,8 @@ func GetSetting() {
 	TempPhosagro = settings.TempPhosagro
 	LogIcetrade = settings.LogIcetrade
 	TempIcetrade = settings.TempIcetrade
+	LogKomtech = settings.LogKomtech
+	TempKomtech = settings.TempKomtech
 	Dsn = fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=true&readTimeout=60m&maxAllowedPacket=0&timeout=60m&writeTimeout=60m&autocommit=true&loc=Local", UserDb, PassDb, DbName)
 	checkEmptySettings()
 }
@@ -107,13 +114,15 @@ func GetArgument() {
 		A = Phosagro
 	case "icetrade":
 		A = Icetrade
+	case "komtech":
+		A = Komtech
 	default:
 		fmt.Printf("Bad argument, please use %s", arguments)
 		os.Exit(1)
 	}
 }
 func checkEmptySettings() {
-	if DbName == "" || UserDb == "" || PassDb == "" || Server == "" || TempX5Group == "" || LogX5Group == "" || TempDixy == "" || LogDixy == "" || TempRusneft == "" || LogRusneft == "" || TempPhosagro == "" || LogPhosagro == "" || TempIcetrade == "" || LogIcetrade == "" {
+	if DbName == "" || UserDb == "" || PassDb == "" || Server == "" || TempX5Group == "" || LogX5Group == "" || TempDixy == "" || LogDixy == "" || TempRusneft == "" || LogRusneft == "" || TempPhosagro == "" || LogPhosagro == "" || TempIcetrade == "" || LogIcetrade == "" || TempKomtech == "" || LogKomtech == "" {
 		fmt.Println("bad settings xml")
 		os.Exit(1)
 	}

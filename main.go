@@ -29,6 +29,9 @@ func main() {
 	case Icetrade:
 		p := ParserIcetrade{TypeFz: 36, Urls: []string{"http://www.icetrade.by/search/auctions?search_text=&search=%D0%9D%D0%B0%D0%B9%D1%82%D0%B8&zakup_type[1]=1&zakup_type[2]=1&auc_num=&okrb=&company_title=&establishment=0&period=&created_from=&created_to=&request_end_from=&request_end_to=&t[Trade]=1&t[eTrade]=1&t[Request]=1&t[singleSource]=1&t[Auction]=1&t[Other]=1&t[contractingTrades]=1&t[socialOrder]=1&t[negotiations]=1&r[1]=1&r[2]=2&r[7]=7&r[3]=3&r[4]=4&r[6]=6&r[5]=5&sort=num%3Adesc&p="}}
 		MainParser(&p)
+	case Komtech:
+		p := ParserKomtech{TypeFz: 40, Url: "http://zakupki.kom-tech.ru/main.asp?id="}
+		MainParser(&p)
 
 	}
 }

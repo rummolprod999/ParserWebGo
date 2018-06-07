@@ -325,7 +325,7 @@ func findFromRegExp(s string, t string) string {
 	r := ""
 	re := regexp.MustCompile(t)
 	match := re.FindStringSubmatch(s)
-	if len(match) > 1 {
+	if match != nil && len(match) > 1 {
 		r = match[1]
 	}
 	return r
