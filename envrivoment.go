@@ -56,6 +56,8 @@ func CreateLogFile() {
 		FileLog = Filelog(fmt.Sprintf("%s/log_Icetrade_%v.log", dirlog, ft))
 	case Komtech:
 		FileLog = Filelog(fmt.Sprintf("%s/log_Komtech_%v.log", dirlog, ft))
+	case Ocontract:
+		FileLog = Filelog(fmt.Sprintf("%s/log_Ocontract_%v.log", dirlog, ft))
 	}
 
 }
@@ -103,6 +105,9 @@ func CreateEnv() {
 	case Komtech:
 		DirLog = LogKomtech
 		DirTemp = TempKomtech
+	case Ocontract:
+		DirLog = LogOcontract
+		DirTemp = TempOcontract
 	}
 	CreateLogFile()
 	CreateTempDir()

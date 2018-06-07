@@ -32,6 +32,9 @@ func main() {
 	case Komtech:
 		p := ParserKomtech{TypeFz: 40, Url: "http://zakupki.kom-tech.ru/main.asp?id="}
 		MainParser(&p)
+	case Ocontract:
+		p := ParserOcontract{TypeFz: 41}
+		MainParser(&p)
 
 	}
 }

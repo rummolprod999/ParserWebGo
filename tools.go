@@ -345,3 +345,87 @@ func findFromRegExpDixy(s string, t string) string {
 	}
 	return r
 }
+
+func GetConformity(conf string) int {
+	s := strings.ToLower(conf)
+	switch {
+	case strings.Index(s, "открыт") != -1:
+		return 5
+	case strings.Index(s, "аукцион") != -1:
+		return 1
+	case strings.Index(s, "котиров") != -1:
+		return 2
+	case strings.Index(s, "предложен") != -1:
+		return 3
+	case strings.Index(s, "единств") != -1:
+		return 4
+	default:
+		return 6
+	}
+
+}
+
+func getPlacingWayId(pwName string, db *sql.DB) int {
+	idPlacingWay := 0
+	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_placing_way FROM %splacing_way WHERE name = ? LIMIT 1", Prefix))
+	rows, err := stmt.Query(pwName)
+	stmt.Close()
+	if err != nil {
+		Logging("Ошибка выполения запроса", err)
+		return 0
+	}
+	if rows.Next() {
+		err = rows.Scan(&idPlacingWay)
+		if err != nil {
+			Logging("Ошибка чтения результата запроса", err)
+			return 0
+		}
+		rows.Close()
+	} else {
+		rows.Close()
+		conf := GetConformity(pwName)
+		stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %splacing_way SET name = ?, conformity = ?", Prefix))
+		res, err := stmt.Exec(pwName, conf)
+		stmt.Close()
+		if err != nil {
+			Logging("Ошибка вставки placing way", err)
+			return 0
+		}
+		id, err := res.LastInsertId()
+		idPlacingWay = int(id)
+		return idPlacingWay
+	}
+	return idPlacingWay
+}
+
+func getEtpId(etpName string, etpUrl string, db *sql.DB) int {
+	IdEtp := 0
+	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_etp FROM %setp WHERE name = ? AND url = ? LIMIT 1", Prefix))
+	rows, err := stmt.Query(etpName, etpUrl)
+	stmt.Close()
+	if err != nil {
+		Logging("Ошибка выполения запроса", err)
+		return 0
+	}
+	if rows.Next() {
+		err = rows.Scan(&IdEtp)
+		if err != nil {
+			Logging("Ошибка чтения результата запроса", err)
+			return 0
+		}
+		rows.Close()
+	} else {
+		rows.Close()
+		stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %setp SET name = ?, url = ?, conf=0", Prefix))
+		res, err := stmt.Exec(etpName, etpUrl)
+		stmt.Close()
+		if err != nil {
+			Logging("Ошибка вставки etp", err)
+			return 0
+		}
+		id, err := res.LastInsertId()
+		IdEtp = int(id)
+		return IdEtp
+	}
+	return IdEtp
+}
