@@ -94,6 +94,19 @@ func (t *ParserOcontract) Tender(tn TenderOcontract) {
 	}
 	defer db.Close()
 	db.SetConnMaxLifetime(time.Second * 3600)
+	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_tender FROM %stender WHERE purchase_number = ? AND type_fz = ? AND end_date = ?", Prefix))
+	res, err := stmt.Query(tn.purNum, t.TypeFz, tn.dateEnd)
+	stmt.Close()
+	if err != nil {
+		Logging("Ошибка выполения запроса", err)
+		return
+	}
+	if res.Next() {
+		//Logging("Такой тендер уже есть", TradeId)
+		res.Close()
+		return
+	}
+	res.Close()
 	r := DownloadPage(tn.url)
 	if r == "" {
 		Logging("Получили пустую строку", tn.url)
@@ -108,19 +121,7 @@ func (t *ParserOcontract) Tender(tn TenderOcontract) {
 	upDate := time.Now()
 	idXml := tn.purNum
 	version := 1
-	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_tender FROM %stender WHERE purchase_number = ? AND type_fz = ? AND end_date = ? AND notice_version = ?", Prefix))
-	res, err := stmt.Query(tn.purNum, t.TypeFz, tn.dateEnd, status)
-	stmt.Close()
-	if err != nil {
-		Logging("Ошибка выполения запроса", err)
-		return
-	}
-	if res.Next() {
-		//Logging("Такой тендер уже есть", TradeId)
-		res.Close()
-		return
-	}
-	res.Close()
+
 	var cancelStatus = 0
 	if tn.purNum != "" {
 		stmt, err := db.Prepare(fmt.Sprintf("SELECT id_tender, date_version FROM %stender WHERE purchase_number = ? AND cancel=0 AND type_fz = ?", Prefix))
