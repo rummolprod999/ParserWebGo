@@ -35,6 +35,9 @@ func main() {
 	case Ocontract:
 		p := ParserOcontract{TypeFz: 41}
 		MainParser(&p)
+	case Cpc:
+		p := ParserCpc{TypeFz: 52, Url: "http://www.cpc.ru/ru/tenders/Pages/default.aspx"}
+		MainParser(&p)
 
 	}
 }

@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 )
 
-var arguments = "x5, dixy, rusneft, pphosagro, komtech, ocontract"
+var arguments = "x5, dixy, rusneft, pphosagro, komtech, ocontract, cpc"
 var Prefix string
 var DbName string
 var UserDb string
@@ -30,6 +30,8 @@ var TempKomtech string
 var LogKomtech string
 var TempOcontract string
 var LogOcontract string
+var TempCpc string
+var LogCpc string
 var ArgS string
 var A Arg
 var Dsn string
@@ -44,6 +46,7 @@ const (
 	Icetrade
 	Komtech
 	Ocontract
+	Cpc
 )
 
 type Settings struct {
@@ -66,8 +69,10 @@ type Settings struct {
 	LogIcetrade   string `xml:"logdir_icetrade"`
 	TempKomtech   string `xml:"tempdir_komtech"`
 	LogKomtech    string `xml:"logdir_komtech"`
-	TempOcontract   string `xml:"tempdir_onlinecontract"`
-	LogOcontract    string `xml:"logdir_onlinecontract"`
+	TempOcontract string `xml:"tempdir_onlinecontract"`
+	LogOcontract  string `xml:"logdir_onlinecontract"`
+	TempCpc       string `xml:"tempdir_cpc"`
+	LogCpc        string `xml:"logdir_cpc"`
 }
 
 func GetSetting() {
@@ -105,6 +110,8 @@ func GetSetting() {
 	TempKomtech = settings.TempKomtech
 	LogOcontract = settings.LogOcontract
 	TempOcontract = settings.TempOcontract
+	LogCpc = settings.LogCpc
+	TempCpc = settings.TempCpc
 	Dsn = fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=true&readTimeout=60m&maxAllowedPacket=0&timeout=60m&writeTimeout=60m&autocommit=true&loc=Local", UserDb, PassDb, DbName)
 	checkEmptySettings()
 }
@@ -125,13 +132,15 @@ func GetArgument() {
 		A = Komtech
 	case "ocontract":
 		A = Ocontract
+	case "cpc":
+		A = Cpc
 	default:
 		fmt.Printf("Bad argument, please use %s", arguments)
 		os.Exit(1)
 	}
 }
 func checkEmptySettings() {
-	if DbName == "" || UserDb == "" || PassDb == "" || Server == "" || TempX5Group == "" || LogX5Group == "" || TempDixy == "" || LogDixy == "" || TempRusneft == "" || LogRusneft == "" || TempPhosagro == "" || LogPhosagro == "" || TempIcetrade == "" || LogIcetrade == "" || TempKomtech == "" || LogKomtech == "" || TempOcontract == "" || LogOcontract == "" {
+	if DbName == "" || UserDb == "" || PassDb == "" || Server == "" || TempX5Group == "" || LogX5Group == "" || TempDixy == "" || LogDixy == "" || TempRusneft == "" || LogRusneft == "" || TempPhosagro == "" || LogPhosagro == "" || TempIcetrade == "" || LogIcetrade == "" || TempKomtech == "" || LogKomtech == "" || TempOcontract == "" || LogOcontract == "" || TempCpc == "" || LogCpc == "" {
 		fmt.Println("bad settings xml")
 		os.Exit(1)
 	}
