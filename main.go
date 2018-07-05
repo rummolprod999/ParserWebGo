@@ -41,6 +41,9 @@ func main() {
 	case Novatek:
 		p := ParserNovatek{TypeFz: 60, Urls: []string{"http://www.novatek.ru/ru/about/tenders/supply/", "http://www.novatek.ru/ru/about/tenders/service/"}}
 		MainParser(&p)
+	case Azot:
+		p := ParserAzot{TypeFz: 61, Url: "http://zakupki.sbu-azot.ru/?PAGEN_1="}
+		MainParser(&p)
 
 	}
 }
