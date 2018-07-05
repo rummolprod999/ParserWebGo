@@ -38,6 +38,9 @@ func main() {
 	case Cpc:
 		p := ParserCpc{TypeFz: 52, Url: "http://www.cpc.ru/ru/tenders/Pages/default.aspx"}
 		MainParser(&p)
+	case Novatek:
+		p := ParserNovatek{TypeFz: 60, Urls: []string{"http://www.novatek.ru/ru/about/tenders/supply/", "http://www.novatek.ru/ru/about/tenders/service/"}}
+		MainParser(&p)
 
 	}
 }
