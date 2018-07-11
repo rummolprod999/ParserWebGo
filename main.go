@@ -44,6 +44,9 @@ func main() {
 	case Azot:
 		p := ParserAzot{TypeFz: 61, Url: "http://zakupki.sbu-azot.ru/?PAGEN_1="}
 		MainParser(&p)
+	case Uva:
+		p := ParserUva{TypeFz: 64}
+		MainParser(&p)
 
 	}
 }

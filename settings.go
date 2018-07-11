@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 )
 
-var arguments = "x5, dixy, rusneft, pphosagro, komtech, ocontract, cpc, novatek, azot"
+var arguments = "x5, dixy, rusneft, pphosagro, komtech, ocontract, cpc, novatek, azot, uva"
 var Prefix string
 var DbName string
 var UserDb string
@@ -36,6 +36,8 @@ var TempNovatek string
 var LogNovatek string
 var TempAzot string
 var LogAzot string
+var TempUva string
+var LogUva string
 var ArgS string
 var A Arg
 var Dsn string
@@ -53,6 +55,7 @@ const (
 	Cpc
 	Novatek
 	Azot
+	Uva
 )
 
 type Settings struct {
@@ -83,6 +86,8 @@ type Settings struct {
 	LogNovatek    string `xml:"logdir_novatek"`
 	TempAzot      string `xml:"tempdir_azot"`
 	LogAzot       string `xml:"logdir_azot"`
+	TempUva       string `xml:"tempdir_uva"`
+	LogUva        string `xml:"logdir_uva"`
 }
 
 func GetSetting() {
@@ -126,6 +131,8 @@ func GetSetting() {
 	TempNovatek = settings.TempNovatek
 	LogAzot = settings.LogAzot
 	TempAzot = settings.TempAzot
+	LogUva = settings.LogUva
+	TempUva = settings.TempUva
 	Dsn = fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=true&readTimeout=60m&maxAllowedPacket=0&timeout=60m&writeTimeout=60m&autocommit=true&loc=Local", UserDb, PassDb, DbName)
 	checkEmptySettings()
 }
@@ -152,13 +159,15 @@ func GetArgument() {
 		A = Novatek
 	case "azot":
 		A = Azot
+	case "uva":
+		A = Uva
 	default:
 		fmt.Printf("Bad argument, please use %s", arguments)
 		os.Exit(1)
 	}
 }
 func checkEmptySettings() {
-	if DbName == "" || UserDb == "" || PassDb == "" || Server == "" || TempX5Group == "" || LogX5Group == "" || TempDixy == "" || LogDixy == "" || TempRusneft == "" || LogRusneft == "" || TempPhosagro == "" || LogPhosagro == "" || TempIcetrade == "" || LogIcetrade == "" || TempKomtech == "" || LogKomtech == "" || TempOcontract == "" || LogOcontract == "" || TempCpc == "" || LogCpc == "" || TempNovatek == "" || LogNovatek == "" || TempAzot == "" || LogAzot == "" {
+	if DbName == "" || UserDb == "" || PassDb == "" || Server == "" || TempX5Group == "" || LogX5Group == "" || TempDixy == "" || LogDixy == "" || TempRusneft == "" || LogRusneft == "" || TempPhosagro == "" || LogPhosagro == "" || TempIcetrade == "" || LogIcetrade == "" || TempKomtech == "" || LogKomtech == "" || TempOcontract == "" || LogOcontract == "" || TempCpc == "" || LogCpc == "" || TempNovatek == "" || LogNovatek == "" || TempAzot == "" || LogAzot == "" || TempUva == "" || LogUva == "" {
 		fmt.Println("bad settings xml")
 		os.Exit(1)
 	}
