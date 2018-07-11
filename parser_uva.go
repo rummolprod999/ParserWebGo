@@ -213,7 +213,7 @@ func (t *ParserUva) Tender(tn TenderUva) {
 	noticeV := strings.TrimSpace(strings.Replace(doc.Find("p:contains('Описание лота:')").First().Text(), "Описание лота:", "", -1))
 	idTender := 0
 	stmtt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %stender SET id_xml = ?, purchase_number = ?, doc_publish_date = ?, href = ?, purchase_object_info = ?, type_fz = ?, id_organizer = ?, id_placing_way = ?, id_etp = ?, end_date = ?, cancel = ?, date_version = ?, num_version = ?, xml = ?, print_form = ?, id_region = ?, notice_version = ?, bidding_date = ?, scoring_date = ?", Prefix))
-	rest, err := stmtt.Exec(idXml, tn.purNum, tn.pubDate, "", tn.purName, t.TypeFz, idOrganizer, idPlacingWay, IdEtp, tn.endDate, cancelStatus, upDate, version, "", printForm, 0, noticeV, time.Time{}, time.Time{})
+	rest, err := stmtt.Exec(idXml, tn.purNum, tn.pubDate, tn.url, tn.purName, t.TypeFz, idOrganizer, idPlacingWay, IdEtp, tn.endDate, cancelStatus, upDate, version, "", printForm, 0, noticeV, time.Time{}, time.Time{})
 	stmtt.Close()
 	if err != nil {
 		Logging("Ошибка вставки tender", err)
