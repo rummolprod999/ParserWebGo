@@ -12,6 +12,7 @@ import (
 )
 
 var AddtenderUva int
+var UpdatetenderUva int
 
 type ParserUva struct {
 	TypeFz int
@@ -31,6 +32,7 @@ func (t *ParserUva) parsing() {
 	t.parsingPageAll()
 	Logging("End parsing")
 	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderUva))
+	Logging(fmt.Sprintf("Обновили тендеров %d", UpdatetenderUva))
 }
 
 func (t *ParserUva) parsingPageAll() {
@@ -138,6 +140,7 @@ func (t *ParserUva) Tender(tn TenderUva) {
 		return
 	}
 	var cancelStatus = 0
+	var updated = false
 	if tn.purNum != "" {
 		stmt, err := db.Prepare(fmt.Sprintf("SELECT id_tender, date_version FROM %stender WHERE purchase_number = ? AND cancel=0 AND type_fz = ?", Prefix))
 		rows, err := stmt.Query(tn.purNum, t.TypeFz)
@@ -147,6 +150,7 @@ func (t *ParserUva) Tender(tn TenderUva) {
 			return
 		}
 		for rows.Next() {
+			updated = true
 			var idTender int
 			var dateVersion time.Time
 			err = rows.Scan(&idTender, &dateVersion)
@@ -221,7 +225,11 @@ func (t *ParserUva) Tender(tn TenderUva) {
 	}
 	idt, err := rest.LastInsertId()
 	idTender = int(idt)
-	AddtenderUva++
+	if updated {
+		UpdatetenderUva++
+	} else {
+		AddtenderUva++
+	}
 	currency := strings.TrimSpace(strings.Replace(doc.Find("p:contains('Валюта:')").First().Text(), "Валюта:", "", -1))
 	delivTerm1 := strings.TrimSpace(strings.Replace(doc.Find("p:contains('Условия поставки:')").First().Text(), "Условия поставки:", "", -1))
 	delivTerm2 := strings.TrimSpace(strings.Replace(doc.Find("p:contains('Условия оплаты:')").First().Text(), "Условия оплаты:", "", -1))

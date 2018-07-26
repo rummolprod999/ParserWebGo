@@ -11,6 +11,7 @@ import (
 )
 
 var AddtenderCpc int
+var UpdatetenderCpc int
 
 type ParserCpc struct {
 	TypeFz int
@@ -33,6 +34,7 @@ func (t *ParserCpc) parsing() {
 	}
 	Logging("End parsing")
 	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderCpc))
+	Logging(fmt.Sprintf("Обновили тендеров %d", UpdatetenderCpc))
 }
 
 func (t *ParserCpc) parsingTenderList(p string, url string) {
@@ -131,6 +133,7 @@ func (t *ParserCpc) Tender(tn TenderCpc) {
 	res.Close()
 	upDate := time.Now()
 	var cancelStatus = 0
+	var updated = false
 	if tn.purNum != "" {
 		stmt, err := db.Prepare(fmt.Sprintf("SELECT id_tender, date_version FROM %stender WHERE purchase_number = ? AND cancel=0 AND type_fz = ?", Prefix))
 		rows, err := stmt.Query(tn.purNum, t.TypeFz)
@@ -140,6 +143,7 @@ func (t *ParserCpc) Tender(tn TenderCpc) {
 			return
 		}
 		for rows.Next() {
+			updated = true
 			var idTender int
 			var dateVersion time.Time
 			err = rows.Scan(&idTender, &dateVersion)
@@ -217,7 +221,11 @@ func (t *ParserCpc) Tender(tn TenderCpc) {
 	}
 	idt, err := rest.LastInsertId()
 	idTender = int(idt)
-	AddtenderCpc++
+	if updated {
+		UpdatetenderCpc++
+	} else {
+		AddtenderCpc++
+	}
 	doc.Find("div:contains('Приложения:') + div a").Each(func(i int, s *goquery.Selection) {
 		t.documents(idTender, s, db)
 	})

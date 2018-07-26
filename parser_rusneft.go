@@ -11,6 +11,7 @@ import (
 )
 
 var AddtenderRusneft int
+var UpdatetenderRusneft int
 
 type ParserRusneft struct {
 	TypeFz int
@@ -23,6 +24,7 @@ func (t *ParserRusneft) parsing() {
 	t.parsingPageAll()
 	Logging("End parsing")
 	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderRusneft))
+	Logging(fmt.Sprintf("Обновили тендеров %d", UpdatetenderRusneft))
 }
 
 func (t *ParserRusneft) parsingPageAll() {
@@ -125,6 +127,7 @@ func (t *ParserRusneft) Tender(purNum string, page string, pubDate time.Time, en
 	}
 	res.Close()
 	var cancelStatus = 0
+	var updated = false
 	if purNum != "" {
 		stmt, err := db.Prepare(fmt.Sprintf("SELECT id_tender, date_version FROM %stender WHERE purchase_number = ? AND cancel=0 AND type_fz = ?", Prefix))
 		rows, err := stmt.Query(purNum, t.TypeFz)
@@ -134,6 +137,7 @@ func (t *ParserRusneft) Tender(purNum string, page string, pubDate time.Time, en
 			return
 		}
 		for rows.Next() {
+			updated = true
 			var idTender int
 			var dateVersion time.Time
 			err = rows.Scan(&idTender, &dateVersion)
@@ -240,7 +244,11 @@ func (t *ParserRusneft) Tender(purNum string, page string, pubDate time.Time, en
 	}
 	idt, err := rest.LastInsertId()
 	idTender = int(idt)
-	AddtenderRusneft++
+	if updated {
+		UpdatetenderRusneft++
+	} else {
+		AddtenderRusneft++
+	}
 	p.Find("td.tender-table__download-block > a").Each(func(i int, s *goquery.Selection) {
 		t.documents(idTender, s, db)
 	})

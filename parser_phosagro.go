@@ -11,6 +11,7 @@ import (
 )
 
 var AddtenderPhosagro int
+var UpdatetenderPhosagro int
 
 type ParserPhosagro struct {
 	TypeFz int
@@ -39,6 +40,7 @@ func (t *ParserPhosagro) parsing() {
 
 	Logging("End parsing")
 	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderPhosagro))
+	Logging(fmt.Sprintf("Обновили тендеров %d", UpdatetenderPhosagro))
 }
 
 func (t *ParserPhosagro) parsingPage(p string) {
@@ -134,6 +136,7 @@ func (t *ParserPhosagro) Tender(tn TenderPhosagro) {
 		return
 	}
 	var cancelStatus = 0
+	var updated = false
 	if tn.purNum != "" {
 		stmt, err := db.Prepare(fmt.Sprintf("SELECT id_tender, date_version FROM %stender WHERE purchase_number = ? AND cancel=0 AND type_fz = ?", Prefix))
 		rows, err := stmt.Query(tn.purNum, t.TypeFz)
@@ -143,6 +146,7 @@ func (t *ParserPhosagro) Tender(tn TenderPhosagro) {
 			return
 		}
 		for rows.Next() {
+			updated = true
 			var idTender int
 			var dateVersion time.Time
 			err = rows.Scan(&idTender, &dateVersion)
@@ -237,7 +241,11 @@ func (t *ParserPhosagro) Tender(tn TenderPhosagro) {
 	}
 	idt, err := rest.LastInsertId()
 	idTender = int(idt)
-	AddtenderPhosagro++
+	if updated {
+		UpdatetenderPhosagro++
+	} else {
+		AddtenderPhosagro++
+	}
 	idCustomer := 0
 	if tn.orgName != "" {
 		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_customer FROM %scustomer WHERE full_name = ?", Prefix))

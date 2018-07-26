@@ -11,6 +11,7 @@ import (
 )
 
 var AddtenderKomtech int
+var UpdatetenderKomtech int
 
 type ParserKomtech struct {
 	TypeFz int
@@ -34,6 +35,7 @@ func (t *ParserKomtech) parsing() {
 	}
 	Logging("End parsing")
 	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderKomtech))
+	Logging(fmt.Sprintf("Обновили тендеров %d", UpdatetenderKomtech))
 }
 func (t *ParserKomtech) parsingPage(p string) {
 	defer SaveStack()
@@ -126,6 +128,7 @@ func (t *ParserKomtech) Tender(tn TenderKomtech) {
 	}
 	res.Close()
 	var cancelStatus = 0
+	var updated = false
 	if purNum != "" {
 		stmt, err := db.Prepare(fmt.Sprintf("SELECT id_tender, date_version FROM %stender WHERE purchase_number = ? AND cancel=0 AND type_fz = ?", Prefix))
 		rows, err := stmt.Query(purNum, t.TypeFz)
@@ -135,6 +138,7 @@ func (t *ParserKomtech) Tender(tn TenderKomtech) {
 			return
 		}
 		for rows.Next() {
+			updated = true
 			var idTender int
 			var dateVersion time.Time
 			err = rows.Scan(&idTender, &dateVersion)
@@ -234,7 +238,11 @@ func (t *ParserKomtech) Tender(tn TenderKomtech) {
 	}
 	idt, err := rest.LastInsertId()
 	idTender = int(idt)
-	AddtenderKomtech++
+	if updated {
+		UpdatetenderKomtech++
+	} else {
+		AddtenderKomtech++
+	}
 	doc.Find("b:contains('Основная информация') ~ b > a").Each(func(i int, s *goquery.Selection) {
 		t.documents(idTender, s, db)
 	})

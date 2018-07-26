@@ -12,6 +12,7 @@ import (
 )
 
 var AddtenderOcontract int
+var UpdatetenderOcontract int
 
 type ParserOcontract struct {
 	TypeFz int
@@ -33,6 +34,7 @@ func (t *ParserOcontract) parsing() {
 	}
 	Logging("End parsing")
 	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderOcontract))
+	Logging(fmt.Sprintf("Обновили тендеров %d", UpdatetenderOcontract))
 }
 
 func (t *ParserOcontract) parsingPage(p string) {
@@ -123,6 +125,7 @@ func (t *ParserOcontract) Tender(tn TenderOcontract) {
 	version := 1
 
 	var cancelStatus = 0
+	var updated = false
 	if tn.purNum != "" {
 		stmt, err := db.Prepare(fmt.Sprintf("SELECT id_tender, date_version FROM %stender WHERE purchase_number = ? AND cancel=0 AND type_fz = ?", Prefix))
 		rows, err := stmt.Query(tn.purNum, t.TypeFz)
@@ -132,6 +135,7 @@ func (t *ParserOcontract) Tender(tn TenderOcontract) {
 			return
 		}
 		for rows.Next() {
+			updated = true
 			var idTender int
 			var dateVersion time.Time
 			err = rows.Scan(&idTender, &dateVersion)
@@ -207,7 +211,11 @@ func (t *ParserOcontract) Tender(tn TenderOcontract) {
 	}
 	idt, err := rest.LastInsertId()
 	idTender = int(idt)
-	AddtenderOcontract++
+	if updated {
+		UpdatetenderOcontract++
+	} else {
+		AddtenderOcontract++
+	}
 	idCustomer := 0
 	if orgFullName != "" {
 		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_customer FROM %scustomer WHERE full_name = ?", Prefix))

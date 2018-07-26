@@ -12,6 +12,7 @@ import (
 )
 
 var AddtenderNovatek int
+var UpdatetenderNovatek int
 
 type ParserNovatek struct {
 	TypeFz int
@@ -33,6 +34,7 @@ func (t *ParserNovatek) parsing() {
 	t.parsingPageAll()
 	Logging("End parsing")
 	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderNovatek))
+	Logging(fmt.Sprintf("Обновили тендеров %d", UpdatetenderNovatek))
 }
 
 func (t *ParserNovatek) parsingPageAll() {
@@ -144,6 +146,7 @@ func (t *ParserNovatek) Tender(tn TenderNovatek) {
 	res.Close()
 	upDate := time.Now()
 	var cancelStatus = 0
+	var updated = false
 	if tn.purNum != "" {
 		stmt, err := db.Prepare(fmt.Sprintf("SELECT id_tender, date_version FROM %stender WHERE purchase_number = ? AND cancel=0 AND type_fz = ?", Prefix))
 		rows, err := stmt.Query(tn.purNum, t.TypeFz)
@@ -153,6 +156,7 @@ func (t *ParserNovatek) Tender(tn TenderNovatek) {
 			return
 		}
 		for rows.Next() {
+			updated = true
 			var idTender int
 			var dateVersion time.Time
 			err = rows.Scan(&idTender, &dateVersion)
@@ -226,7 +230,11 @@ func (t *ParserNovatek) Tender(tn TenderNovatek) {
 	}
 	idt, err := rest.LastInsertId()
 	idTender = int(idt)
-	AddtenderNovatek++
+	if updated {
+		UpdatetenderNovatek++
+	} else {
+		AddtenderNovatek++
+	}
 	dochrefT := doc.Find("div.download span a")
 	hrefD, exist := dochrefT.Attr("href")
 	if !exist {

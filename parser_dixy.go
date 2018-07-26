@@ -11,6 +11,7 @@ import (
 )
 
 var AddtenderDixy int
+var UpdatetenderDixy int
 
 type ParserDixy struct {
 	TypeFz int
@@ -23,6 +24,7 @@ func (t *ParserDixy) parsing() {
 	t.parsingPageAll()
 	Logging("End parsing")
 	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderDixy))
+	Logging(fmt.Sprintf("Обновили тендеров %d", UpdatetenderDixy))
 }
 
 func (t *ParserDixy) parsingPageAll() {
@@ -117,6 +119,7 @@ func (t *ParserDixy) Tender(purNum string, page string, pubDate time.Time, purNa
 		return
 	}
 	var cancelStatus = 0
+	var updated = false
 	if purNum != "" {
 		stmt, err := db.Prepare(fmt.Sprintf("SELECT id_tender, date_version FROM %stender WHERE purchase_number = ? AND cancel=0 AND type_fz = ?", Prefix))
 		rows, err := stmt.Query(purNum, t.TypeFz)
@@ -126,6 +129,7 @@ func (t *ParserDixy) Tender(purNum string, page string, pubDate time.Time, purNa
 			return
 		}
 		for rows.Next() {
+			updated = true
 			var idTender int
 			var dateVersion time.Time
 			err = rows.Scan(&idTender, &dateVersion)
@@ -232,7 +236,11 @@ func (t *ParserDixy) Tender(purNum string, page string, pubDate time.Time, purNa
 	}
 	idt, err := rest.LastInsertId()
 	idTender = int(idt)
-	AddtenderDixy++
+	if updated {
+		UpdatetenderDixy++
+	} else {
+		AddtenderDixy++
+	}
 	idCustomer := 0
 	if orgFullName != "" {
 		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_customer FROM %scustomer WHERE full_name = ?", Prefix))

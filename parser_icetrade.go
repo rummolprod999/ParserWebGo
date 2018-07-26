@@ -9,6 +9,7 @@ import (
 )
 
 var AddtenderIcetrade int
+var UpdatetenderIcetrade int
 
 type ParserIcetrade struct {
 	TypeFz int
@@ -35,6 +36,7 @@ func (t *ParserIcetrade) parsing() {
 
 	Logging("End parsing")
 	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderPhosagro))
+	Logging(fmt.Sprintf("Обновили тендеров %d", UpdatetenderPhosagro))
 }
 
 func (t *ParserIcetrade) parsingPage(p string) {

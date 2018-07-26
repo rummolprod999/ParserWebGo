@@ -12,6 +12,7 @@ import (
 )
 
 var AddtenderX5Group int
+var UpdatetenderX5Group int
 
 type ParserX5Group struct {
 	TypeFz int
@@ -24,6 +25,7 @@ func (t *ParserX5Group) parsing() {
 	t.parsingPageAll()
 	Logging("End parsing")
 	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderX5Group))
+	Logging(fmt.Sprintf("Обновили тендеров %d", UpdatetenderX5Group))
 }
 
 func (t *ParserX5Group) parsingPageAll() {
@@ -133,6 +135,7 @@ func (t *ParserX5Group) Tender(purNum string, page string, pubDate time.Time, en
 	}
 	res.Close()
 	var cancelStatus = 0
+	var updated = false
 	if purNum != "" {
 		stmt, err := db.Prepare(fmt.Sprintf("SELECT id_tender, date_version FROM %stender WHERE purchase_number = ? AND cancel=0 AND type_fz = ?", Prefix))
 		rows, err := stmt.Query(purNum, t.TypeFz)
@@ -142,6 +145,7 @@ func (t *ParserX5Group) Tender(purNum string, page string, pubDate time.Time, en
 			return
 		}
 		for rows.Next() {
+			updated = true
 			var idTender int
 			var dateVersion time.Time
 			err = rows.Scan(&idTender, &dateVersion)
@@ -243,7 +247,11 @@ func (t *ParserX5Group) Tender(purNum string, page string, pubDate time.Time, en
 	}
 	idt, err := rest.LastInsertId()
 	idTender = int(idt)
-	AddtenderX5Group++
+	if updated {
+		UpdatetenderX5Group++
+	} else {
+		AddtenderX5Group++
+	}
 	/*doc.Find("h2:contains('Конкурсная документация') ~ table:contains('Название файла') tbody tr").Each(func(i int, s *goquery.Selection) {
 		txt := s.Text()
 		if !strings.Contains(txt, "Название файла") {
