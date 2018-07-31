@@ -76,6 +76,28 @@ func DownloadPage(url string) string {
 	return st
 }
 
+func DownloadPageWithUA(url string) string {
+	count := 0
+	var st string
+	for {
+		//fmt.Println("Start download file")
+		if count > 50 {
+			Logging(fmt.Sprintf("Не скачали файл за %d попыток %s", count, url))
+			return st
+		}
+		st = GetPageUA(url)
+		if st == "" {
+			count++
+			Logging("Получили пустую страницу", url)
+			time.Sleep(time.Second * 5)
+			continue
+		}
+		return st
+
+	}
+	return st
+}
+
 func GetPage(url string) string {
 	var st string
 	resp, err := http.Get(url)
@@ -83,6 +105,30 @@ func GetPage(url string) string {
 		Logging("Ошибка response", url, err)
 		return st
 	}
+	defer resp.Body.Close()
+	if err != nil {
+		Logging("Ошибка скачивания", url, err)
+		return st
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		Logging("Ошибка чтения", url, err)
+		return st
+	}
+
+	return string(body)
+}
+
+func GetPageUA(url string) string {
+	var st string
+	client := &http.Client{}
+	request, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		Logging("Ошибка request", url, err)
+		return st
+	}
+	request.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)")
+	resp, err := client.Do(request)
 	defer resp.Body.Close()
 	if err != nil {
 		Logging("Ошибка скачивания", url, err)

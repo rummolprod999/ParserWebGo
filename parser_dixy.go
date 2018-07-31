@@ -35,7 +35,7 @@ func (t *ParserDixy) parsingPageAll() {
 
 func (t *ParserDixy) parsingPage(p string) {
 	defer SaveStack()
-	r := DownloadPage(p)
+	r := DownloadPageWithUA(p)
 	if r != "" {
 		t.parsingTenderList(r)
 	} else {
