@@ -98,6 +98,34 @@ func DownloadPageWithUA(url string) string {
 	return st
 }
 
+func DownloadPageWithUAIceTrade(url string) string {
+	count := 0
+	var st string
+	for {
+		//fmt.Println("Start download file")
+		if count > 50 {
+			Logging(fmt.Sprintf("Не скачали файл за %d попыток %s", count, url))
+			return st
+		}
+		st = GetPageUA(url)
+		if st == "" {
+			count++
+			Logging("Получили пустую страницу", url)
+			time.Sleep(time.Second * 5)
+			continue
+		}
+		if strings.Contains(st, "Ваш IP-адрес попал в список заблокированных") {
+			count++
+			Logging("IP was banned, i am sleep", url)
+			time.Sleep(time.Second * 310)
+			continue
+		}
+		return st
+
+	}
+	return st
+}
+
 func GetPage(url string) string {
 	var st string
 	resp, err := http.Get(url)
@@ -401,6 +429,17 @@ func getTimeMoscowLayout(st string, l string) time.Time {
 	return p
 }
 
+func getTimeMoscowLayoutIceTrade(st string, l string) time.Time {
+	var p = time.Time{}
+	location, _ := time.LoadLocation("Europe/Moscow")
+	p, err := time.ParseInLocation(l, st, location)
+	if err != nil {
+		//Logging(err)
+		return time.Time{}
+	}
+
+	return p
+}
 func findFromRegExp(s string, t string) string {
 	r := ""
 	re := regexp.MustCompile(t)
@@ -415,7 +454,10 @@ func cleanString(s string) string {
 	re := regexp.MustCompile(`\s+`)
 	return re.ReplaceAllString(s, " ")
 }
-
+func delallwhitespace(s string) string {
+	re := regexp.MustCompile(`\s+`)
+	return re.ReplaceAllString(s, "")
+}
 func findFromRegExpDixy(s string, t string) string {
 	r := ""
 	re := regexp.MustCompile(t)
