@@ -35,8 +35,8 @@ func (t *ParserIcetrade) parsing() {
 	t.parsingLastday()
 	t.parsingToday()
 	Logging("End parsing")
-	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderPhosagro))
-	Logging(fmt.Sprintf("Обновили тендеров %d", UpdatetenderPhosagro))
+	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderIcetrade))
+	Logging(fmt.Sprintf("Обновили тендеров %d", UpdatetenderIcetrade))
 }
 
 func (t *ParserIcetrade) parsingLastday() {
