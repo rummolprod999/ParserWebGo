@@ -450,6 +450,17 @@ func findFromRegExp(s string, t string) string {
 	return r
 }
 
+func findTwoFromRegExp(s string, t string) (string, string) {
+	r := ""
+	p := ""
+	re := regexp.MustCompile(t)
+	match := re.FindStringSubmatch(s)
+	if match != nil && len(match) > 1 {
+		r = match[1]
+	}
+	return r, p
+}
+
 func cleanString(s string) string {
 	re := regexp.MustCompile(`\s+`)
 	return re.ReplaceAllString(s, " ")
@@ -550,4 +561,212 @@ func getEtpId(etpName string, etpUrl string, db *sql.DB) int {
 		return IdEtp
 	}
 	return IdEtp
+}
+
+func getRegionId(addrName string, db *sql.DB) int {
+	idReg := 0
+	if addrName != "" {
+		regT := getRegion(addrName)
+		stmt, _ := db.Prepare("SELECT id FROM region WHERE name LIKE ?")
+		rows, err := stmt.Query("%" + regT + "%")
+		stmt.Close()
+		if err != nil {
+			Logging("Ошибка выполения запроса", err)
+			return 0
+		}
+		if rows.Next() {
+			err = rows.Scan(&idReg)
+			if err != nil {
+				Logging("Ошибка чтения результата запроса", err)
+				return 0
+			}
+			rows.Close()
+		} else {
+			rows.Close()
+		}
+	}
+	return idReg
+}
+func getRegion(sp string) string {
+	sp = strings.ToLower(sp)
+	s := ""
+	switch {
+	case strings.Contains(sp, "белгор"):
+		s = "белгор"
+	case strings.Contains(sp, "брянск"):
+		s = "брянск"
+	case strings.Contains(sp, "владимир"):
+		s = "владимир"
+	case strings.Contains(sp, "воронеж"):
+		s = "воронеж"
+	case strings.Contains(sp, "иванов"):
+		s = "иванов"
+	case strings.Contains(sp, "калужск"):
+		s = "калужск"
+	case strings.Contains(sp, "костром"):
+		s = "костром"
+	case strings.Contains(sp, "курск"):
+		s = "курск"
+	case strings.Contains(sp, "липецк"):
+		s = "липецк"
+	case strings.Contains(sp, "москва"):
+		s = "москва"
+	case strings.Contains(sp, "московск"):
+		s = "московск"
+	case strings.Contains(sp, "орлов"):
+		s = "орлов"
+	case strings.Contains(sp, "рязан"):
+		s = "рязан"
+	case strings.Contains(sp, "смолен"):
+		s = "смолен"
+	case strings.Contains(sp, "тамбов"):
+		s = "тамбов"
+	case strings.Contains(sp, "твер"):
+		s = "твер"
+	case strings.Contains(sp, "тульс"):
+		s = "тульс"
+	case strings.Contains(sp, "яросл"):
+		s = "яросл"
+	case strings.Contains(sp, "архан"):
+		s = "архан"
+	case strings.Contains(sp, "вологод"):
+		s = "вологод"
+	case strings.Contains(sp, "калинин"):
+		s = "калинин"
+	case strings.Contains(sp, "карел"):
+		s = "карел"
+	case strings.Contains(sp, "коми"):
+		s = "коми"
+	case strings.Contains(sp, "ленинг"):
+		s = "ленинг"
+	case strings.Contains(sp, "мурм"):
+		s = "мурм"
+	case strings.Contains(sp, "ненец"):
+		s = "ненец"
+	case strings.Contains(sp, "новгор"):
+		s = "новгор"
+	case strings.Contains(sp, "псков"):
+		s = "псков"
+	case strings.Contains(sp, "санкт"):
+		s = "санкт"
+	case strings.Contains(sp, "адыг"):
+		s = "адыг"
+	case strings.Contains(sp, "астрахан"):
+		s = "астрахан"
+	case strings.Contains(sp, "волгог"):
+		s = "волгог"
+	case strings.Contains(sp, "калмык"):
+		s = "калмык"
+	case strings.Contains(sp, "краснод"):
+		s = "краснод"
+	case strings.Contains(sp, "ростов"):
+		s = "ростов"
+	case strings.Contains(sp, "дагест"):
+		s = "дагест"
+	case strings.Contains(sp, "ингуш"):
+		s = "ингуш"
+	case strings.Contains(sp, "кабардин"):
+		s = "кабардин"
+	case strings.Contains(sp, "карача"):
+		s = "карача"
+	case strings.Contains(sp, "осети"):
+		s = "осети"
+	case strings.Contains(sp, "ставроп"):
+		s = "ставроп"
+	case strings.Contains(sp, "чечен"):
+		s = "чечен"
+	case strings.Contains(sp, "башкор"):
+		s = "башкор"
+	case strings.Contains(sp, "киров"):
+		s = "киров"
+	case strings.Contains(sp, "марий"):
+		s = "марий"
+	case strings.Contains(sp, "мордов"):
+		s = "мордов"
+	case strings.Contains(sp, "нижегор"):
+		s = "нижегор"
+	case strings.Contains(sp, "оренбур"):
+		s = "оренбур"
+	case strings.Contains(sp, "пензен"):
+		s = "пензен"
+	case strings.Contains(sp, "пермс"):
+		s = "пермс"
+	case strings.Contains(sp, "самар"):
+		s = "самар"
+	case strings.Contains(sp, "сарат"):
+		s = "сарат"
+	case strings.Contains(sp, "татарс"):
+		s = "татарс"
+	case strings.Contains(sp, "удмурт"):
+		s = "удмурт"
+	case strings.Contains(sp, "ульян"):
+		s = "ульян"
+	case strings.Contains(sp, "чуваш"):
+		s = "чуваш"
+	case strings.Contains(sp, "курган"):
+		s = "курган"
+	case strings.Contains(sp, "свердлов"):
+		s = "свердлов"
+	case strings.Contains(sp, "тюмен"):
+		s = "тюмен"
+	case strings.Contains(sp, "ханты"):
+		s = "ханты"
+	case strings.Contains(sp, "челяб"):
+		s = "челяб"
+	case strings.Contains(sp, "ямало"):
+		s = "ямало"
+	case strings.Contains(sp, "алтайск"):
+		s = "алтайск"
+	case strings.Contains(sp, "алтай"):
+		s = "алтай"
+	case strings.Contains(sp, "бурят"):
+		s = "бурят"
+	case strings.Contains(sp, "забайк"):
+		s = "забайк"
+	case strings.Contains(sp, "иркут"):
+		s = "иркут"
+	case strings.Contains(sp, "кемеров"):
+		s = "кемеров"
+	case strings.Contains(sp, "краснояр"):
+		s = "краснояр"
+	case strings.Contains(sp, "новосиб"):
+		s = "новосиб"
+	case strings.Contains(sp, "томск"):
+		s = "томск"
+	case strings.Contains(sp, "омск"):
+		s = "омск"
+	case strings.Contains(sp, "тыва"):
+		s = "тыва"
+	case strings.Contains(sp, "хакас"):
+		s = "хакас"
+	case strings.Contains(sp, "амурск"):
+		s = "амурск"
+	case strings.Contains(sp, "еврей"):
+		s = "еврей"
+	case strings.Contains(sp, "камчат"):
+		s = "камчат"
+	case strings.Contains(sp, "магад"):
+		s = "магад"
+	case strings.Contains(sp, "примор"):
+		s = "примор"
+	case strings.Contains(sp, "сахалин"):
+		s = "сахалин"
+	case strings.Contains(sp, "якут"):
+		s = "якут"
+	case strings.Contains(sp, "саха"):
+		s = "саха"
+	case strings.Contains(sp, "хабар"):
+		s = "хабар"
+	case strings.Contains(sp, "чукот"):
+		s = "чукот"
+	case strings.Contains(sp, "крым"):
+		s = "крым"
+	case strings.Contains(sp, "севастоп"):
+		s = "севастоп"
+	case strings.Contains(sp, "байкон"):
+		s = "байкон"
+	default:
+		s = ""
+	}
+	return s
 }

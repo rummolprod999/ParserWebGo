@@ -11,37 +11,33 @@ import (
 	"time"
 )
 
-var AddtenderUva int
-var UpdatetenderUva int
+var AddtenderSalym int
+var UpdatetenderSalym int
 
-type ParserUva struct {
+type ParserSalym struct {
 	TypeFz int
 }
-
-type TenderUva struct {
+type TenderSalym struct {
 	purName string
 	purNum  string
 	url     string
-	pubDate time.Time
-	endDate time.Time
 }
 
-func (t *ParserUva) parsing() {
+func (t *ParserSalym) parsing() {
 	defer SaveStack()
 	Logging("Start parsing")
 	t.parsingPageAll()
 	Logging("End parsing")
-	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderUva))
-	Logging(fmt.Sprintf("Обновили тендеров %d", UpdatetenderUva))
+	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderSalym))
+	Logging(fmt.Sprintf("Обновили тендеров %d", UpdatetenderSalym))
 }
 
-func (t *ParserUva) parsingPageAll() {
-	t.parsingPage("http://tender.uva-moloko.ru/")
-	for i := 20; i <= 100; i += 20 {
-		t.parsingPage(fmt.Sprintf("http://tender.uva-moloko.ru/?view=list&layout=list&listtype=0&start=%d", i))
-	}
+func (t *ParserSalym) parsingPageAll() {
+	t.parsingPage("https://salympetroleum.ru/cp/tenders/")
+
 }
-func (t *ParserUva) parsingPage(p string) {
+
+func (t *ParserSalym) parsingPage(p string) {
 	defer SaveStack()
 	r := DownloadPage(p)
 	if r != "" {
@@ -51,63 +47,90 @@ func (t *ParserUva) parsingPage(p string) {
 	}
 }
 
-func (t *ParserUva) parsingTenderList(p string) {
+func (t *ParserSalym) parsingTenderList(p string) {
 	defer SaveStack()
 	doc, err := goquery.NewDocumentFromReader(bytes.NewBufferString(p))
 	if err != nil {
 		Logging(err)
 		return
 	}
-	doc.Find("table.tenders_table tbody tr").Each(func(i int, s *goquery.Selection) {
+	doc.Find("div.title-block > h2 > a").Each(func(i int, s *goquery.Selection) {
 		t.parsingTenderFromList(s)
 	})
 }
 
-func (t *ParserUva) parsingTenderFromList(p *goquery.Selection) {
+func (t *ParserSalym) parsingTenderFromList(p *goquery.Selection) {
 	defer SaveStack()
-	purName := strings.TrimSpace(p.Find("td:nth-child(3) a").First().Text())
+	purName := strings.TrimSpace(p.Text())
 	if purName == "" {
 		Logging("The element can not have purName", p.Text())
 		return
 	}
-	pubDateT := strings.TrimSpace(p.Find("td:nth-child(5)").First().Text())
-	if pubDateT == "" {
-		Logging("Can not find pubDateT", purName)
-		return
-	}
-	pubDate := getTimeMoscowLayout(pubDateT, "02.01.2006 15:04:05")
-	if (pubDate == time.Time{}) {
-		Logging("Can not parse pubDate in ", purName)
-		return
-	}
-	endDateT := strings.TrimSpace(p.Find("td:nth-child(6)").First().Text())
-	if endDateT == "" {
-		Logging("Can not find endDateT in ", purName)
-		return
-	}
-	endDate := getTimeMoscowLayout(endDateT, "02.01.2006 15:04:05")
-	if (endDate == time.Time{}) {
-		Logging("Can not parse endDate in ", purName)
-		return
-	}
-	hrefT := p.Find("td:nth-child(3) a")
-	href, exist := hrefT.Attr("href")
+	href, exist := p.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", hrefT.Text())
+		Logging("The element can not have href attribute", p.Text())
 		return
 	}
-	href = fmt.Sprintf("http://tender.uva-moloko.ru%s", href)
-	purNum := findFromRegExp(href, `id=(\d+)$`)
-	if purNum == "" {
-		Logging("The element can not have purNum", href)
-		return
-	}
-	tnd := TenderUva{purName: purName, purNum: purNum, url: href, pubDate: pubDate, endDate: endDate}
+	href = fmt.Sprintf("https://salympetroleum.ru%s", href)
+	purNum := findFromRegExp(href, `/tenders/(.+)/$`)
+	tnd := TenderSalym{purName: purName, purNum: purNum, url: href}
 	t.Tender(tnd)
-
 }
-func (t *ParserUva) Tender(tn TenderUva) {
+
+func (t *ParserSalym) Tender(tn TenderSalym) {
 	defer SaveStack()
+	r := DownloadPage(tn.url)
+	if r == "" {
+		Logging("Получили пустую строку", tn.url)
+		return
+	}
+	doc, err := goquery.NewDocumentFromReader(bytes.NewBufferString(r))
+	if err != nil {
+		Logging(err)
+		return
+	}
+	pubDateTT := strings.TrimSpace(doc.Find("span:contains('Дата и время начала приема заявок:') + p").First().Text())
+	if pubDateTT == "" {
+		Logging("Can not find pubDateTT", tn.url)
+		return
+	}
+	dateT := findFromRegExp(pubDateTT, `(\d{2}.\d{2}.\d{4})`)
+	timeT := findFromRegExp(pubDateTT, `(\d{2}:\d{2}:\d{2})`)
+	pubDate := time.Time{}
+	if dateT != "" && timeT != "" {
+		pubDateS := fmt.Sprintf("%s %s", dateT, timeT)
+		pubDate = getTimeMoscowLayout(pubDateS, "02.01.2006 15:04:05")
+	} else if dateT != "" {
+		pubDate = getTimeMoscowLayout(dateT, "02.01.2006")
+	} else {
+		pubDate = time.Time{}
+	}
+	if (pubDate == time.Time{}) {
+		Logging("Can not parse pubDate in ", tn.url)
+		return
+	}
+	endDateTT := strings.TrimSpace(doc.Find("span:contains('Дата и время окончания приема заявок:') + p").First().Text())
+	if endDateTT == "" {
+		Logging("Can not find endDateTT", tn.url)
+		return
+	}
+	dateTend := findFromRegExp(endDateTT, `(\d{2}.\d{2}.\d{4})`)
+	timeTend := findFromRegExp(endDateTT, `(\d{2}:\d{2}:\d{2})`)
+	endDate := time.Time{}
+	if dateTend != "" && timeTend != "" {
+		endDateS := fmt.Sprintf("%s %s", dateTend, timeTend)
+		endDate = getTimeMoscowLayout(endDateS, "02.01.2006 15:04:05")
+	} else if dateTend != "" {
+		endDate = getTimeMoscowLayout(dateTend, "02.01.2006")
+	} else {
+		endDate = time.Time{}
+	}
+	if (endDate == time.Time{}) {
+		Logging("Can not parse endDate in ", tn.url)
+		return
+	}
+	scoringDateT := strings.TrimSpace(doc.Find("span:contains('Дата определения победителя и заключение договора:') + p").First().Text())
+	scoringDate := getTimeMoscowLayout(scoringDateT, "02.01.2006")
 	db, err := sql.Open("mysql", Dsn)
 	if err != nil {
 		Logging("Ошибка подключения к БД", err)
@@ -116,7 +139,7 @@ func (t *ParserUva) Tender(tn TenderUva) {
 	defer db.Close()
 	db.SetConnMaxLifetime(time.Second * 3600)
 	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_tender FROM %stender WHERE purchase_number = ? AND type_fz = ? AND end_date = ? AND doc_publish_date = ?", Prefix))
-	res, err := stmt.Query(tn.purNum, t.TypeFz, tn.endDate, tn.pubDate)
+	res, err := stmt.Query(tn.purNum, t.TypeFz, endDate, pubDate)
 	stmt.Close()
 	if err != nil {
 		Logging("Ошибка выполения запроса", err)
@@ -129,16 +152,6 @@ func (t *ParserUva) Tender(tn TenderUva) {
 	}
 	res.Close()
 	upDate := time.Now()
-	r := DownloadPage(tn.url)
-	if r == "" {
-		Logging("Получили пустую строку", tn.url)
-		return
-	}
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(r))
-	if err != nil {
-		Logging(err)
-		return
-	}
 	var cancelStatus = 0
 	var updated = false
 	if tn.purNum != "" {
@@ -173,7 +186,9 @@ func (t *ParserUva) Tender(tn TenderUva) {
 	}
 	printForm := tn.url
 	idOrganizer := 0
-	orgName := "ООО «Ува-молоко»"
+	organizerPostAddress := strings.TrimSpace(doc.Find("span:contains('Адрес:') + p").First().Text())
+	idRegion := getRegionId(organizerPostAddress, db)
+	orgName := strings.TrimSpace(doc.Find("span:contains('Организатор:') + p").First().Text())
 	if orgName != "" {
 		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_organizer FROM %sorganizer WHERE full_name = ?", Prefix))
 		rows, err := stmt.Query(orgName)
@@ -191,11 +206,10 @@ func (t *ParserUva) Tender(tn TenderUva) {
 			rows.Close()
 		} else {
 			rows.Close()
-			email := ""
-			phone := ""
+			email := strings.TrimSpace(doc.Find("span:contains('Email:') + p > a").First().Text())
+			phone := strings.TrimSpace(doc.Find("span:contains('Контактный телефон:') + p").First().Text())
 			organizerINN := ""
-			organizerPostAddress := ""
-			contactPerson := strings.TrimSpace(strings.Replace(doc.Find("p:contains('Ответственный менеджер:')").First().Text(), "Ответственный менеджер:", "", -1))
+			contactPerson := strings.TrimSpace(doc.Find("span:contains('Контактное лицо:') + p").First().Text())
 			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sorganizer SET full_name = ?, inn = ?, post_address = ?, fact_address = ?, contact_email = ?, contact_phone = ?, contact_person = ?", Prefix))
 			res, err := stmt.Exec(orgName, organizerINN, organizerPostAddress, organizerPostAddress, email, phone, contactPerson)
 			stmt.Close()
@@ -209,15 +223,14 @@ func (t *ParserUva) Tender(tn TenderUva) {
 	}
 	idPlacingWay := 0
 	IdEtp := 0
-	etpName := orgName
-	etpUrl := "http://tender.uva-moloko.ru"
+	etpName := "Компания «Салым Петролеум Девелопмент Н.В.»"
+	etpUrl := "https://salympetroleum.ru"
 	IdEtp = getEtpId(etpName, etpUrl, db)
 	idXml := tn.purNum
 	version := 1
-	noticeV := strings.TrimSpace(strings.Replace(doc.Find("p:contains('Описание лота:')").First().Text(), "Описание лота:", "", -1))
 	idTender := 0
 	stmtt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %stender SET id_xml = ?, purchase_number = ?, doc_publish_date = ?, href = ?, purchase_object_info = ?, type_fz = ?, id_organizer = ?, id_placing_way = ?, id_etp = ?, end_date = ?, cancel = ?, date_version = ?, num_version = ?, xml = ?, print_form = ?, id_region = ?, notice_version = ?, bidding_date = ?, scoring_date = ?", Prefix))
-	rest, err := stmtt.Exec(idXml, tn.purNum, tn.pubDate, tn.url, tn.purName, t.TypeFz, idOrganizer, idPlacingWay, IdEtp, tn.endDate, cancelStatus, upDate, version, "", printForm, 0, noticeV, time.Time{}, time.Time{})
+	rest, err := stmtt.Exec(idXml, tn.purNum, pubDate, tn.url, tn.purName, t.TypeFz, idOrganizer, idPlacingWay, IdEtp, endDate, cancelStatus, upDate, version, "", printForm, idRegion, "", time.Time{}, scoringDate)
 	stmtt.Close()
 	if err != nil {
 		Logging("Ошибка вставки tender", err)
@@ -226,29 +239,17 @@ func (t *ParserUva) Tender(tn TenderUva) {
 	idt, err := rest.LastInsertId()
 	idTender = int(idt)
 	if updated {
-		UpdatetenderUva++
+		UpdatetenderSalym++
 	} else {
-		AddtenderUva++
+		AddtenderSalym++
 	}
-	currency := strings.TrimSpace(strings.Replace(doc.Find("p:contains('Валюта:')").First().Text(), "Валюта:", "", -1))
-	delivTerm1 := strings.TrimSpace(strings.Replace(doc.Find("p:contains('Условия поставки:')").First().Text(), "Условия поставки:", "", -1))
-	delivTerm2 := strings.TrimSpace(strings.Replace(doc.Find("p:contains('Условия оплаты:')").First().Text(), "Условия оплаты:", "", -1))
-	delivTerm := strings.TrimSpace(fmt.Sprintf("%s %s", delivTerm1, delivTerm2))
-	hrefT := doc.Find("b:contains('Приложенные файлы:') ~ a")
-	href, exist := hrefT.Attr("href")
-	if exist {
-		stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sattachment SET id_tender = ?, file_name = ?, url = ?", Prefix))
-		_, err := stmt.Exec(idTender, "Приложенные файлы:", href)
-		stmt.Close()
-		if err != nil {
-			Logging("Ошибка вставки attachment", err)
-			return
-		}
-	}
+	doc.Find("a[href ^= '/upload/medialibrary/']").Each(func(i int, s *goquery.Selection) {
+		t.documents(idTender, s, db)
+	})
 	var LotNumber = 1
 	idLot := 0
 	stmtl, _ := db.Prepare(fmt.Sprintf("INSERT INTO %slot SET id_tender = ?, lot_number = ?, currency = ?", Prefix))
-	resl, err := stmtl.Exec(idTender, LotNumber, currency)
+	resl, err := stmtl.Exec(idTender, LotNumber, "")
 	stmtl.Close()
 	if err != nil {
 		Logging("Ошибка вставки lot", err)
@@ -290,30 +291,13 @@ func (t *ParserUva) Tender(tn TenderUva) {
 			idCustomer = int(id)
 		}
 	}
-	if delivTerm != "" {
-		stmtcr, _ := db.Prepare(fmt.Sprintf("INSERT INTO %scustomer_requirement SET id_lot = ?, id_customer = ?, delivery_term = ?", Prefix))
-		_, errc := stmtcr.Exec(idLot, idCustomer, delivTerm)
-		stmtcr.Close()
-		if err != nil {
-			Logging("Ошибка вставки purchase_object", errc)
-			return
-		}
+	stmtr, _ := db.Prepare(fmt.Sprintf("INSERT INTO %spurchase_object SET id_lot = ?, id_customer = ?, name = ?", Prefix))
+	_, errr := stmtr.Exec(idLot, idCustomer, tn.purName)
+	stmtr.Close()
+	if errr != nil {
+		Logging("Ошибка вставки purchase_object", errr)
+		return
 	}
-	doc.Find("table.tenders_table tbody tr").Each(func(i int, s *goquery.Selection) {
-		pName := strings.TrimSpace(s.Find("td:nth-child(1)").First().Text())
-		quantity := strings.TrimSpace(s.Find("td:nth-child(2)").First().Text())
-		okei := strings.TrimSpace(s.Find("td:nth-child(3)").First().Text())
-		price := strings.TrimSpace(s.Find("td:nth-child(4) span").First().Text())
-		sum := strings.TrimSpace(s.Find("td:nth-child(5)").First().Text())
-		stmtr, _ := db.Prepare(fmt.Sprintf("INSERT INTO %spurchase_object SET id_lot = ?, id_customer = ?, name = ?, quantity_value = ?, okei = ?, customer_quantity_value = ?, price = ?, sum = ?", Prefix))
-		_, errr := stmtr.Exec(idLot, idCustomer, pName, quantity, okei, quantity, price, sum)
-		stmtr.Close()
-		if errr != nil {
-			Logging("Ошибка вставки purchase_object", errr)
-			return
-		}
-
-	})
 	e := TenderKwords(db, idTender)
 	if e != nil {
 		Logging("Ошибка обработки TenderKwords", e)
@@ -322,5 +306,25 @@ func (t *ParserUva) Tender(tn TenderUva) {
 	e1 := AddVerNumber(db, tn.purNum, t.TypeFz)
 	if e1 != nil {
 		Logging("Ошибка обработки AddVerNumber", e1)
+	}
+}
+
+func (t *ParserSalym) documents(idTender int, doc *goquery.Selection, db *sql.DB) {
+	defer SaveStack()
+	nameF := strings.TrimSpace(doc.Text())
+	href, exist := doc.Attr("href")
+	if !exist {
+		Logging("The element can not have href attribute", doc.Text())
+		return
+	}
+	href = fmt.Sprintf("https://salympetroleum.ru%s", href)
+	if nameF != "" {
+		stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sattachment SET id_tender = ?, file_name = ?, url = ?", Prefix))
+		_, err := stmt.Exec(idTender, nameF, href)
+		stmt.Close()
+		if err != nil {
+			Logging("Ошибка вставки attachment", err)
+			return
+		}
 	}
 }

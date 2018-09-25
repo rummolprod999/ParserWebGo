@@ -47,6 +47,9 @@ func main() {
 	case Uva:
 		p := ParserUva{TypeFz: 64}
 		MainParser(&p)
+	case Salym:
+		p := ParserSalym{TypeFz: 101}
+		MainParser(&p)
 
 	}
 }
