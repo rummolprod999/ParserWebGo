@@ -50,6 +50,9 @@ func main() {
 	case Salym:
 		p := ParserSalym{TypeFz: 101}
 		MainParser(&p)
+	case Monetka:
+		p := ParserMonetka{TypeFz: 104}
+		MainParser(&p)
 
 	}
 }
