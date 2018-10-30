@@ -53,6 +53,8 @@ func main() {
 	case Monetka:
 		p := ParserMonetka{TypeFz: 104}
 		MainParser(&p)
-
+	case Dtek:
+		p := ParserDtek{TypeFz: 117}
+		MainParser(&p)
 	}
 }
