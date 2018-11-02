@@ -10,37 +10,36 @@ import (
 	"time"
 )
 
-var AddtenderDtek int
-var UpdatetenderDtek int
+var AddtenderLetoile int
+var UpdatetenderLetoile int
 
-type ParserDtek struct {
+type ParserLetoile struct {
 	TypeFz int
+	Urls   []string
 }
 
-type TenderDtek struct {
+type TenderLetoile struct {
 	purName string
 	purNum  string
 	url     string
 	pubDate time.Time
 	endDate time.Time
-	cusName string
-	pwName  string
 }
 
-func (t *ParserDtek) parsing() {
+func (t *ParserLetoile) parsing() {
 	defer SaveStack()
 	Logging("Start parsing")
-	t.parsingPage("https://tenders.dtek.com/rus/purchase/?")
-	for i := 19; i <= 325; i += 18 {
-		url := fmt.Sprintf("%s%d", "https://tenders.dtek.com/rus/purchase/?&offers_next=", i)
-		t.parsingPage(url)
-	}
+	t.parsingPageAll()
 	Logging("End parsing")
-	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderDtek))
-	Logging(fmt.Sprintf("Обновили тендеров %d", UpdatetenderDtek))
+	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderLetoile))
+	Logging(fmt.Sprintf("Обновили тендеров %d", UpdatetenderLetoile))
 }
-
-func (t *ParserDtek) parsingPage(p string) {
+func (t *ParserLetoile) parsingPageAll() {
+	for _, p := range t.Urls {
+		t.parsingPage(p)
+	}
+}
+func (t *ParserLetoile) parsingPage(p string) {
 	defer SaveStack()
 	r := DownloadPage1251(p)
 	if r != "" {
@@ -49,66 +48,47 @@ func (t *ParserDtek) parsingPage(p string) {
 		Logging("Получили пустую строку", p)
 	}
 }
-
-func (t *ParserDtek) parsingTenderList(p string, url string) {
+func (t *ParserLetoile) parsingTenderList(p string, url string) {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(p))
 	if err != nil {
 		Logging(err)
 		return
 	}
-	doc.Find("table[cellspacing='0'] tbody tr").Each(func(i int, s *goquery.Selection) {
-		txt := s.Text()
-		if !strings.Contains(txt, "Короткое описание") {
-			t.parsingTenderFromList(s, url)
-		}
-
+	doc.Find("div.news-wide > div.news-item").Each(func(i int, s *goquery.Selection) {
+		t.parsingTenderFromList(s, url)
 	})
 }
-
-func (t *ParserDtek) parsingTenderFromList(p *goquery.Selection, url string) {
+func (t *ParserLetoile) parsingTenderFromList(p *goquery.Selection, url string) {
 	hrefT := p.Find("a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
 		Logging("The element can not have href attribute", hrefT.Text())
 		return
 	}
-	numTmp := strings.TrimSpace(p.Find("td:nth-child(1)").First().Text())
-	href = fmt.Sprintf("https://tenders.dtek.com/rus/purchase/%s", strings.TrimSpace(href))
-	purName := strings.TrimSpace(p.Find("td:nth-child(3)").First().Text())
-	if purName == "" {
-		purName = cleanString(numTmp)
-	}
+	href = strings.Replace(href, "./", "http://b2b.letoile.ru/company/tenders/current/", -1)
+	purName := strings.TrimSpace(p.Find("a").First().Text())
 	if purName == "" {
 		Logging("Can not find purName in ", url)
 		return
 	}
-	pwName := ""
-	cusName := strings.TrimSpace(p.Find("td:nth-child(2) strong").First().Text())
-	purNum := findFromRegExp(numTmp, `^(\d+)`)
-	if purNum == "" {
-		purNum = cleanString(numTmp)
-	} else {
-		pwName = strings.TrimSpace(strings.Replace(numTmp, purNum, "", -1))
-	}
+	purNum := findFromRegExp(href, `news=(\d+)$`)
 	if purNum == "" {
 		Logging("Can not find purnum in ", purName)
 		return
 	}
-
-	pubDateT := strings.TrimSpace(p.Find("td:nth-child(4)").First().Text())
-	pubDate := getTimeMoscowLayout(pubDateT, "02.01.2006 15:04")
-	endDateT := strings.TrimSpace(p.Find("td:nth-child(5)").First().Text())
-	endDate := getTimeMoscowLayout(endDateT, "02.01.2006 15:04")
-	if (pubDate == time.Time{} || endDate == time.Time{}) {
-		Logging("Can not find enddate or startdate in ", href, purNum)
+	pubDate := time.Now()
+	endDateT := strings.TrimSpace(p.Find("div:nth-child(1)").First().Text())
+	endDateTT := findFromRegExp(endDateT, `(\d{2}\.\d{2}\.\d{4})`)
+	endDate := getTimeMoscowLayout(endDateTT, "02.01.2006")
+	if (endDate == time.Time{}) {
+		Logging("Can not find enddate in ", href, purNum)
 		return
 	}
-	tnd := TenderDtek{purName: purName, purNum: purNum, url: href, pubDate: pubDate, endDate: endDate, cusName: cusName, pwName: pwName}
+	tnd := TenderLetoile{purName: purName, purNum: purNum, url: href, pubDate: pubDate, endDate: endDate}
 	t.Tender(tnd)
-
 }
 
-func (t *ParserDtek) Tender(tn TenderDtek) {
+func (t *ParserLetoile) Tender(tn TenderLetoile) {
 	defer SaveStack()
 	db, err := sql.Open("mysql", Dsn)
 	if err != nil {
@@ -120,8 +100,8 @@ func (t *ParserDtek) Tender(tn TenderDtek) {
 	upDate := time.Now()
 	idXml := tn.purNum
 	version := 1
-	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_tender FROM %stender WHERE purchase_number = ? AND doc_publish_date = ? AND type_fz = ? AND end_date = ?", Prefix))
-	res, err := stmt.Query(tn.purNum, tn.pubDate, t.TypeFz, tn.endDate)
+	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_tender FROM %stender WHERE purchase_number = ? AND type_fz = ? AND end_date = ?", Prefix))
+	res, err := stmt.Query(tn.purNum, t.TypeFz, tn.endDate)
 	stmt.Close()
 	if err != nil {
 		Logging("Ошибка выполения запроса", err)
@@ -178,7 +158,7 @@ func (t *ParserDtek) Tender(tn TenderDtek) {
 	}
 	printForm := tn.url
 	idOrganizer := 0
-	orgName := tn.cusName
+	orgName := "ООО \"Л` ЭТУАЛЬ\""
 	if orgName != "" {
 		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_organizer FROM %sorganizer WHERE full_name = ?", Prefix))
 		rows, err := stmt.Query(orgName)
@@ -196,11 +176,13 @@ func (t *ParserDtek) Tender(tn TenderDtek) {
 			rows.Close()
 		} else {
 			rows.Close()
-			contactPerson := strings.TrimSpace(doc.Find("td:contains('Ответственное лицо') + td").First().Text())
-			contactPhone := ""
-			contactEmail := ""
-			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sorganizer SET full_name = ?, contact_person = ?, contact_phone = ?, contact_email = ?", Prefix))
-			res, err := stmt.Exec(orgName, contactPerson, contactPhone, contactEmail)
+			contactPhone := "8-800-200-23-45"
+			contactEmail := "press@alkor.co.ru"
+			inn := ""
+			postAddress := ""
+			contactPerson := ""
+			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sorganizer SET full_name = ?, contact_person = ?, contact_phone = ?, contact_email = ?, inn = ?, post_address = ?", Prefix))
+			res, err := stmt.Exec(orgName, contactPerson, contactPhone, contactEmail, inn, postAddress)
 			stmt.Close()
 			if err != nil {
 				Logging("Ошибка вставки организатора", err)
@@ -211,17 +193,13 @@ func (t *ParserDtek) Tender(tn TenderDtek) {
 		}
 	}
 	idPlacingWay := 0
-	if tn.pwName != "" {
-		idPlacingWay = getPlacingWayId(tn.pwName, db)
-	}
 	IdEtp := 0
-	etpName := "ЭТП ДТЭК"
-	etpUrl := "https://tenders.dtek.com"
+	etpName := orgName
+	etpUrl := "http://b2b.letoile.ru/"
 	IdEtp = getEtpId(etpName, etpUrl, db)
 	idTender := 0
-	version_notice := strings.TrimSpace(doc.Find("td:contains('Описание') + td.content").First().Text())
 	stmtt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %stender SET id_xml = ?, purchase_number = ?, doc_publish_date = ?, href = ?, purchase_object_info = ?, type_fz = ?, id_organizer = ?, id_placing_way = ?, id_etp = ?, end_date = ?, cancel = ?, date_version = ?, num_version = ?, xml = ?, print_form = ?, id_region = ?, notice_version = ?", Prefix))
-	rest, err := stmtt.Exec(idXml, tn.purNum, tn.pubDate, tn.url, tn.purName, t.TypeFz, idOrganizer, idPlacingWay, IdEtp, tn.endDate, cancelStatus, upDate, version, tn.url, printForm, 0, version_notice)
+	rest, err := stmtt.Exec(idXml, tn.purNum, tn.pubDate, tn.url, tn.purName, t.TypeFz, idOrganizer, idPlacingWay, IdEtp, tn.endDate, cancelStatus, upDate, version, tn.url, printForm, 0, "")
 	stmtt.Close()
 	if err != nil {
 		Logging("Ошибка вставки tender", err)
@@ -230,9 +208,9 @@ func (t *ParserDtek) Tender(tn TenderDtek) {
 	idt, err := rest.LastInsertId()
 	idTender = int(idt)
 	if updated {
-		UpdatetenderDtek++
+		UpdatetenderLetoile++
 	} else {
-		AddtenderDtek++
+		AddtenderLetoile++
 	}
 	idCustomer := 0
 	if orgName != "" {
@@ -257,8 +235,9 @@ func (t *ParserDtek) Tender(tn TenderDtek) {
 				Logging("Ошибка генерации UUID", err)
 				return
 			}
-			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %scustomer SET full_name = ?, reg_num = ?, is223=1", Prefix))
-			res, err := stmt.Exec(orgName, out)
+			innCus := ""
+			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %scustomer SET full_name = ?, reg_num = ?, is223=1, inn = ?", Prefix))
+			res, err := stmt.Exec(orgName, out, innCus)
 			stmt.Close()
 			if err != nil {
 				Logging("Ошибка вставки заказчика", err)
@@ -286,6 +265,9 @@ func (t *ParserDtek) Tender(tn TenderDtek) {
 		Logging("Ошибка вставки purchase_object", errr)
 		return
 	}
+	doc.Find("a[href *= '/uploads/']").Each(func(i int, s *goquery.Selection) {
+		t.documents(idTender, s, db)
+	})
 	e := TenderKwords(db, idTender)
 	if e != nil {
 		Logging("Ошибка обработки TenderKwords", e)
@@ -294,5 +276,24 @@ func (t *ParserDtek) Tender(tn TenderDtek) {
 	e1 := AddVerNumber(db, tn.purNum, t.TypeFz)
 	if e1 != nil {
 		Logging("Ошибка обработки AddVerNumber", e1)
+	}
+}
+func (t *ParserLetoile) documents(idTender int, doc *goquery.Selection, db *sql.DB) {
+	defer SaveStack()
+	nameF := strings.TrimSpace(doc.First().Text())
+	href, exist := doc.Attr("href")
+	if !exist {
+		Logging("The element can not have href attribute", doc.Text())
+		return
+	}
+	href = fmt.Sprintf("http://b2b.letoile.ru%s", href)
+	if nameF != "" {
+		stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sattachment SET id_tender = ?, file_name = ?, url = ?", Prefix))
+		_, err := stmt.Exec(idTender, nameF, href)
+		stmt.Close()
+		if err != nil {
+			Logging("Ошибка вставки attachment", err)
+			return
+		}
 	}
 }
