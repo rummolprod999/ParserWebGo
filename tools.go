@@ -491,6 +491,7 @@ func findTwoFromRegExp(s string, t string) (string, string) {
 	match := re.FindStringSubmatch(s)
 	if match != nil && len(match) > 1 {
 		r = match[1]
+		p = match[2]
 	}
 	return r, p
 }

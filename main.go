@@ -62,5 +62,8 @@ func main() {
 	case Letoile:
 		p := ParserLetoile{TypeFz: 120, Urls: []string{"http://b2b.letoile.ru/company/tenders/current/"}}
 		MainParser(&p)
+	case Sistema:
+		p := ParserSistema{TypeFz: 121}
+		MainParser(&p)
 	}
 }
