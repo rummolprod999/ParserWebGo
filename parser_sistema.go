@@ -315,6 +315,15 @@ func (t *ParserSistema) Tender(tn TenderSistema) {
 	doc.Find("p.bodytext > a[href ^= 'fileadmin/user_upload']").Each(func(i int, s *goquery.Selection) {
 		t.documents(idTender, s, db)
 	})
+	e := TenderKwords(db, idTender)
+	if e != nil {
+		Logging("Ошибка обработки TenderKwords", e)
+	}
+
+	e1 := AddVerNumber(db, tn.purNum, t.TypeFz)
+	if e1 != nil {
+		Logging("Ошибка обработки AddVerNumber", e1)
+	}
 }
 func (t *ParserSistema) documents(idTender int, doc *goquery.Selection, db *sql.DB) {
 	defer SaveStack()
