@@ -65,5 +65,8 @@ func main() {
 	case Sistema:
 		p := ParserSistema{TypeFz: 121}
 		MainParser(&p)
+	case Metafrax:
+		p := ParserMetafrax{TypeFz: 122, Urls: []string{"http://metafrax.ru/ru/p/181"}}
+		MainParser(&p)
 	}
 }

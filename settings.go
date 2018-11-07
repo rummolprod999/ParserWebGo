@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 )
 
-var arguments = "x5, dixy, rusneft, phosagro, komtech, ocontract, cpc, novatek, azot, uva, salym, monetka, dtek, mmk, letoile, sistema"
+var arguments = "x5, dixy, rusneft, phosagro, komtech, ocontract, cpc, novatek, azot, uva, salym, monetka, dtek, mmk, letoile, sistema, metafrax"
 var Prefix string
 var DbName string
 var UserDb string
@@ -50,6 +50,8 @@ var TempLetoile string
 var LogLetoile string
 var TempSistema string
 var LogSistema string
+var TempMetafrax string
+var LogMetafrax string
 var ArgS string
 var A Arg
 var Dsn string
@@ -74,6 +76,7 @@ const (
 	Mmk
 	Letoile
 	Sistema
+	Metafrax
 )
 
 type Settings struct {
@@ -118,6 +121,8 @@ type Settings struct {
 	LogLetoile    string `xml:"logdir_letoile"`
 	TempSistema   string `xml:"tempdir_sistema"`
 	LogSistema    string `xml:"logdir_sistema"`
+	TempMetafrax  string `xml:"tempdir_metafrax"`
+	LogMetafrax   string `xml:"logdir_metafrax"`
 }
 
 func GetSetting() {
@@ -175,6 +180,8 @@ func GetSetting() {
 	TempLetoile = settings.TempLetole
 	LogSistema = settings.LogSistema
 	TempSistema = settings.TempSistema
+	LogMetafrax = settings.LogMetafrax
+	TempMetafrax = settings.TempMetafrax
 	Dsn = fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=true&readTimeout=60m&maxAllowedPacket=0&timeout=60m&writeTimeout=60m&autocommit=true&loc=Local", UserDb, PassDb, DbName)
 	checkEmptySettings()
 }
@@ -215,13 +222,15 @@ func GetArgument() {
 		A = Letoile
 	case "sistema":
 		A = Sistema
+	case "metafrax":
+		A = Metafrax
 	default:
 		fmt.Printf("Bad argument, please use %s", arguments)
 		os.Exit(1)
 	}
 }
 func checkEmptySettings() {
-	if DbName == "" || UserDb == "" || PassDb == "" || Server == "" || TempX5Group == "" || LogX5Group == "" || TempDixy == "" || LogDixy == "" || TempRusneft == "" || LogRusneft == "" || TempPhosagro == "" || LogPhosagro == "" || TempIcetrade == "" || LogIcetrade == "" || TempKomtech == "" || LogKomtech == "" || TempOcontract == "" || LogOcontract == "" || TempCpc == "" || LogCpc == "" || TempNovatek == "" || LogNovatek == "" || TempAzot == "" || LogAzot == "" || TempUva == "" || LogUva == "" || TempSalym == "" || LogSalym == "" || TempMonetka == "" || LogMonetka == "" || TempDtek == "" || LogDtek == "" || TempMmk == "" || LogMmk == "" || TempLetoile == "" || LogLetoile == "" || TempSistema == "" || LogSistema == "" {
+	if DbName == "" || UserDb == "" || PassDb == "" || Server == "" || TempX5Group == "" || LogX5Group == "" || TempDixy == "" || LogDixy == "" || TempRusneft == "" || LogRusneft == "" || TempPhosagro == "" || LogPhosagro == "" || TempIcetrade == "" || LogIcetrade == "" || TempKomtech == "" || LogKomtech == "" || TempOcontract == "" || LogOcontract == "" || TempCpc == "" || LogCpc == "" || TempNovatek == "" || LogNovatek == "" || TempAzot == "" || LogAzot == "" || TempUva == "" || LogUva == "" || TempSalym == "" || LogSalym == "" || TempMonetka == "" || LogMonetka == "" || TempDtek == "" || LogDtek == "" || TempMmk == "" || LogMmk == "" || TempLetoile == "" || LogLetoile == "" || TempSistema == "" || LogSistema == "" || TempMetafrax == "" || LogMetafrax == "" {
 		fmt.Println("bad settings xml")
 		os.Exit(1)
 	}
