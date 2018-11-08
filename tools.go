@@ -451,6 +451,41 @@ func getDateMonetka(s string) time.Time {
 	return p
 }
 
+func getDateIes(s string) time.Time {
+	var p = time.Time{}
+	s = strings.ToLower(s)
+	if s != "" {
+		dt := ""
+		if strings.Contains(s, "янв") {
+			dt = strings.Replace(s, "январь", "01", -1)
+		} else if strings.Contains(s, "фев") {
+			dt = strings.Replace(s, "февраль", "02", -1)
+		} else if strings.Contains(s, "мар") {
+			dt = strings.Replace(s, "март", "03", -1)
+		} else if strings.Contains(s, "апр") {
+			dt = strings.Replace(s, "апрель", "04", -1)
+		} else if strings.Contains(s, "мая") {
+			dt = strings.Replace(s, "май", "05", -1)
+		} else if strings.Contains(s, "июн") {
+			dt = strings.Replace(s, "июнь", "06", -1)
+		} else if strings.Contains(s, "июл") {
+			dt = strings.Replace(s, "июль", "07", -1)
+		} else if strings.Contains(s, "авг") {
+			dt = strings.Replace(s, "август", "08", -1)
+		} else if strings.Contains(s, "сен") {
+			dt = strings.Replace(s, "сентябрь", "09", -1)
+		} else if strings.Contains(s, "окт") {
+			dt = strings.Replace(s, "октябрь", "10", -1)
+		} else if strings.Contains(s, "ноя") {
+			dt = strings.Replace(s, "ноябрь", "11", -1)
+		} else if strings.Contains(s, "дек") {
+			dt = strings.Replace(s, "декабрь", "12", -1)
+		}
+		dt = cleanString(dt)
+		p = getTimeMoscowLayout(dt, "02 01 2006")
+	}
+	return p
+}
 func getTimeMoscowLayout(st string, l string) time.Time {
 	var p = time.Time{}
 	location, _ := time.LoadLocation("Europe/Moscow")

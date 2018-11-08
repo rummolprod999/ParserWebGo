@@ -68,5 +68,8 @@ func main() {
 	case Metafrax:
 		p := ParserMetafrax{TypeFz: 122, Urls: []string{"http://metafrax.ru/ru/p/181"}}
 		MainParser(&p)
+	case Ies:
+		p := ParserIes{TypeFz: 123, Urls: []string{"http://zakupki.ies-holding.com/other/"}}
+		MainParser(&p)
 	}
 }
