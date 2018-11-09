@@ -71,5 +71,8 @@ func main() {
 	case Ies:
 		p := ParserIes{TypeFz: 123, Urls: []string{"http://zakupki.ies-holding.com/other/"}}
 		MainParser(&p)
+	case UralChem:
+		p := ParserUralChem{TypeFz: 124, Urls: []string{"http://www.uralchem.ru/purchase/tenders/?PAGEN_1="}}
+		MainParser(&p)
 	}
 }
