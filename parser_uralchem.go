@@ -39,16 +39,28 @@ func (t *ParserUralChem) parsing() {
 }
 func (t *ParserUralChem) parsingPageAll() {
 	for _, p := range t.Urls {
-		for i := 1; i <= 3; i++ {
-			url := fmt.Sprintf("%s%d", p, i)
-			t.parsingPage(url)
+		if strings.Contains(p, "Ariba") {
+			for i := 1; i <= 2; i++ {
+				url := fmt.Sprintf("%s%d", p, i)
+				t.parsingPage(url)
+			}
+		} else {
+			for i := 1; i <= 3; i++ {
+				url := fmt.Sprintf("%s%d", p, i)
+				t.parsingPage(url)
+			}
 		}
 	}
 }
 
 func (t *ParserUralChem) parsingPage(p string) {
 	defer SaveStack()
-	r := DownloadPage(p)
+	r := ""
+	if strings.Contains(p, "Ariba") {
+		r = DownloadPageGzip(p)
+	} else {
+		r = DownloadPage(p)
+	}
 	if r != "" {
 		t.parsingTenderList(r, p)
 	} else {
@@ -91,6 +103,14 @@ func (t *ParserUralChem) parsingTenderFromList(p *goquery.Selection, url string)
 	pubDate := getTimeMoscowLayout(pubDateTT, "02.01.2006 15:04:05")
 	endDateTT := findFromRegExp(DateT, `окончания приема заявок:\s*(\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}:\d{2})`)
 	endDate := getTimeMoscowLayout(endDateTT, "02.01.2006 15:04:05")
+	if (pubDate == time.Time{}) {
+		Logging("Can not find pubDate in ", href, purNum)
+		return
+	}
+	if (endDate == time.Time{}) {
+		Logging("Can not find endDate in ", href, purNum)
+		return
+	}
 	tnd := TenderUralChem{purNum: purNum, purName: purName, orgName: orgName, url: href, pubDate: pubDate, endDate: endDate}
 	t.Tender(tnd)
 }
@@ -106,8 +126,8 @@ func (t *ParserUralChem) Tender(tn TenderUralChem) {
 	upDate := time.Now()
 	idXml := tn.purNum
 	version := 1
-	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_tender FROM %stender WHERE purchase_number = ? AND type_fz = ? AND doc_publish_date = ? AND end_date = ?", Prefix))
-	res, err := stmt.Query(tn.purNum, t.TypeFz, tn.pubDate, tn.endDate)
+	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_tender FROM %stender WHERE purchase_number = ? AND type_fz = ? AND end_date = ?", Prefix))
+	res, err := stmt.Query(tn.purNum, t.TypeFz, tn.endDate)
 	stmt.Close()
 	if err != nil {
 		Logging("Ошибка выполения запроса", err)

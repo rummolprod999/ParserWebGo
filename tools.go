@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	"database/sql"
 	"fmt"
 	"golang.org/x/text/encoding/charmap"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -64,6 +67,28 @@ func DownloadPage(url string) string {
 			return st
 		}
 		st = GetPage(url)
+		if st == "" {
+			count++
+			Logging("Получили пустую страницу", url)
+			time.Sleep(time.Second * 5)
+			continue
+		}
+		return st
+
+	}
+	return st
+}
+
+func DownloadPageGzip(url string) string {
+	count := 0
+	var st string
+	for {
+		//fmt.Println("Start download file")
+		if count > 50 {
+			Logging(fmt.Sprintf("Не скачали файл за %d попыток %s", count, url))
+			return st
+		}
+		st = GetPageGzip(url)
 		if st == "" {
 			count++
 			Logging("Получили пустую страницу", url)
@@ -145,6 +170,39 @@ func GetPage(url string) string {
 	}
 
 	return string(body)
+}
+
+func GetPageGzip(url string) string {
+	var st string
+	client := new(http.Client)
+	request, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		Logging("Ошибка request", url, err)
+		return st
+	}
+	request.Header.Add("Accept-Encoding", "gzip")
+
+	resp, err := client.Do(request)
+	if err != nil {
+		Logging("Ошибка resp", url, err)
+		return st
+	}
+	defer resp.Body.Close()
+	var reader io.ReadCloser
+	switch resp.Header.Get("Content-Encoding") {
+	case "gzip":
+		reader, err = gzip.NewReader(resp.Body)
+		if err != nil {
+			Logging("Ошибка reader", url, err)
+			return st
+		}
+		defer reader.Close()
+	default:
+		reader = resp.Body
+	}
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(reader)
+	return buf.String()
 }
 
 func GetPageUA(url string) string {
