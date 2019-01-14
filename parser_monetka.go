@@ -28,14 +28,16 @@ type TenderMonetka struct {
 func (t *ParserMonetka) parsing() {
 	defer SaveStack()
 	Logging("Start parsing")
+	t.parsingPage("http://www.monetka.ru/news/2")
 	starturl := t.getPageUrl()
-	if starturl == "" {
+	if starturl != "" {
+		for i := 1; i < 6; i++ {
+			url := fmt.Sprintf("%s%d", starturl, i)
+			t.parsingPage(url)
+		}
+
+	} else {
 		Logging("can not find starturl")
-		return
-	}
-	for i := 1; i < 6; i++ {
-		url := fmt.Sprintf("%s%d", starturl, i)
-		t.parsingPage(url)
 	}
 	Logging("End parsing")
 	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderMonetka))
