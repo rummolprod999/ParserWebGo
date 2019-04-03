@@ -95,8 +95,6 @@ func (t *ParserUralChem) parsingTenderFromList(p *goquery.Selection, url string)
 	md := md5.Sum([]byte(purName))
 	purNum := hex.EncodeToString(md[:])
 	orgName := strings.TrimSpace(p.Find("div.item-affiliate a").First().Text())
-	purNum = purNum
-	orgName = orgName
 	DateT := strings.TrimSpace(p.Find("div.item-date").First().Text())
 	DateT = cleanString(DateT)
 	pubDateTT := findFromRegExp(DateT, `Дата размещения:\s*(\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}:\d{2})`)

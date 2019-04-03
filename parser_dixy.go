@@ -1,7 +1,9 @@
 package main
 
 import (
+	"crypto/md5"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	_ "github.com/go-sql-driver/mysql"
@@ -75,6 +77,10 @@ func (t *ParserDixy) parsingTenderFromList(p *goquery.Selection) {
 	purNum := findFromRegExp(href, `item(\d+)`)
 	if purNum == "" {
 		purNum = findFromRegExp(href, `it(\d+)\.aspx`)
+	}
+	if purNum == "" {
+		md := md5.Sum([]byte(href))
+		purNum = hex.EncodeToString(md[:])
 	}
 	if purNum == "" {
 		Logging("Can not find purnum in ", href)

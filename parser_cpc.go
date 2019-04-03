@@ -1,7 +1,9 @@
 package main
 
 import (
+	"crypto/md5"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	_ "github.com/go-sql-driver/mysql"
@@ -51,16 +53,6 @@ func (t *ParserCpc) parsingTenderList(p string, url string) {
 }
 
 func (t *ParserCpc) parsingTenderFromList(p *goquery.Selection, url string) {
-	purNumT := strings.TrimSpace(p.Find("a").First().Text())
-	if purNumT == "" {
-		Logging("Can not find purnumT in ", url)
-		return
-	}
-	purNum := findFromRegExp(purNumT, `Тендер №\s(.+)`)
-	if purNum == "" {
-		Logging("Can not find purnum in ", url)
-		return
-	}
 	hrefT := p.Find("a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
@@ -68,6 +60,20 @@ func (t *ParserCpc) parsingTenderFromList(p *goquery.Selection, url string) {
 		return
 	}
 	href = fmt.Sprintf("http://www.cpc.ru%s", href)
+	purNumT := strings.TrimSpace(p.Find("a").First().Text())
+	if purNumT == "" {
+		Logging("Can not find purnumT in ", url)
+		return
+	}
+	purNum := findFromRegExp(purNumT, `Тендер №\s(.+)`)
+	if purNum == "" {
+		md := md5.Sum([]byte(href))
+		purNum = hex.EncodeToString(md[:])
+	}
+	if purNum == "" {
+		Logging("Can not find purnum in ", url)
+		return
+	}
 	tnd := TenderCpc{url: href, purNum: purNum}
 	t.Tender(tnd)
 }
