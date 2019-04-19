@@ -79,5 +79,8 @@ func main() {
 	case GosBy:
 		p := ParserGosBy{TypeFz: 137, Urls: []string{"http://www.goszakupki.by/search/auctions?auc_num=&search_text=&price_from=&price_to=&created_from=&created_to=&request_end_from=&request_end_to=&auction_date_from=&auction_date_to=&s[a]=1&s[b]=1&s[e]=1&s[p]=1&s[v]=1&s[c]=1&s[w]=1&s[s]=1&s[m]=1&s[ps]="}}
 		MainParser(&p)
+	case Apk:
+		p := ParserApk{TypeFz: 182, Urls: []string{"http://tender-apk.ru/?nav-list-lot=page-"}}
+		MainParser(&p)
 	}
 }
