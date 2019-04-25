@@ -41,7 +41,7 @@ func (t *ParserLetoile) parsingPageAll() {
 }
 func (t *ParserLetoile) parsingPage(p string) {
 	defer SaveStack()
-	r := DownloadPage1251(p)
+	r := DownloadPage1251NoCheckSSL(p)
 	if r != "" {
 		t.parsingTenderList(r, p)
 	} else {

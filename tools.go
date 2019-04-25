@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"compress/gzip"
+	"crypto/tls"
 	"database/sql"
 	"fmt"
 	"golang.org/x/text/encoding/charmap"
@@ -41,6 +42,31 @@ func DownloadPage1251(url string) string {
 			return st
 		}
 		st = GetPage(url)
+		if st == "" {
+			count++
+			Logging("Получили пустую страницу", url)
+			continue
+		}
+		dec := charmap.Windows1251.NewDecoder()
+		newBody := make([]byte, len(st)*2)
+		n, _, err := dec.Transform(newBody, []byte(st), false)
+		if err != nil {
+			panic(err)
+		}
+		newBody = newBody[:n]
+		return string(newBody)
+	}
+}
+
+func DownloadPage1251NoCheckSSL(url string) string {
+	var st string
+	count := 0
+	for {
+		if count > 50 {
+			Logging(fmt.Sprintf("Не скачали файл за %d попыток", count))
+			return st
+		}
+		st = GetPageNoSSL(url)
 		if st == "" {
 			count++
 			Logging("Получили пустую страницу", url)
@@ -152,6 +178,28 @@ func DownloadPageWithUAIceTrade(url string) string {
 }
 
 func GetPage(url string) string {
+	var st string
+	resp, err := http.Get(url)
+	if err != nil {
+		Logging("Ошибка response", url, err)
+		return st
+	}
+	defer resp.Body.Close()
+	if err != nil {
+		Logging("Ошибка скачивания", url, err)
+		return st
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		Logging("Ошибка чтения", url, err)
+		return st
+	}
+
+	return string(body)
+}
+
+func GetPageNoSSL(url string) string {
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	var st string
 	resp, err := http.Get(url)
 	if err != nil {
