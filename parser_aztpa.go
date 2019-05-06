@@ -271,6 +271,15 @@ func (t *ParserAztpa) Tender(tn TenderAztpa) {
 	doc.Find("td a[href *= '/zakupkilot/']").Each(func(i int, s *goquery.Selection) {
 		t.lots(i+1, idTender, idCustomer, s, db)
 	})
+	e := TenderKwords(db, idTender)
+	if e != nil {
+		Logging("Ошибка обработки TenderKwords", e)
+	}
+
+	e1 := AddVerNumber(db, tn.purNum, t.TypeFz)
+	if e1 != nil {
+		Logging("Ошибка обработки AddVerNumber", e1)
+	}
 
 }
 
@@ -331,9 +340,9 @@ func (t *ParserAztpa) lots(numLot int, idTender int, idCustomer int, doc *goquer
 			return
 		}
 	}
-	delivTerm1 := strings.TrimSpace(doc.Find("td:contains('Требуемые сроки поставки') + td > span").First().Text())
-	delivTerm2 := strings.TrimSpace(doc.Find("td:contains('Общие условия оплаты') + td > span").First().Text())
-	delivTerm3 := strings.TrimSpace(doc.Find("td:contains('Особые требования') + td > span").First().Text())
+	delivTerm1 := strings.TrimSpace(doclot.Find("td:contains('Требуемые сроки поставки') + td > span").First().Text())
+	delivTerm2 := strings.TrimSpace(doclot.Find("td:contains('Общие условия оплаты') + td > span").First().Text())
+	delivTerm3 := strings.TrimSpace(doclot.Find("td:contains('Особые требования') + td > span").First().Text())
 	delivTerm := fmt.Sprintf("Требуемые сроки поставки: %s \nОбщие условия оплаты: %s \nОсобые требования: %s", delivTerm1, delivTerm2, delivTerm3)
 	stmtcr, _ := db.Prepare(fmt.Sprintf("INSERT INTO %scustomer_requirement SET id_lot = ?, id_customer = ?, delivery_term = ?", Prefix))
 	_, errr := stmtcr.Exec(idLot, idCustomer, delivTerm)
