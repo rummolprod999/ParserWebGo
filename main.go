@@ -82,5 +82,8 @@ func main() {
 	case Apk:
 		p := ParserApk{TypeFz: 182, Urls: []string{"http://tender-apk.ru/?nav-list-lot=page-"}}
 		MainParser(&p)
+	case Aztpa:
+		p := ParserAztpa{TypeFz: 188, Urls: []string{"https://zakupki.aztpa.ru/zakupki/list?active=1&type=1"}}
+		MainParser(&p)
 	}
 }

@@ -88,6 +88,8 @@ func CreateLogFile() {
 		FileLog = Filelog(fmt.Sprintf("%s/log_GosBy_%v.log", dirlog, ft))
 	case Apk:
 		FileLog = Filelog(fmt.Sprintf("%s/log_Apk_%v.log", dirlog, ft))
+	case Aztpa:
+		FileLog = Filelog(fmt.Sprintf("%s/log_Aztpa_%v.log", dirlog, ft))
 	}
 
 }
@@ -183,6 +185,9 @@ func CreateEnv() {
 	case Apk:
 		DirLog = LogApk
 		DirTemp = TempApk
+	case Aztpa:
+		DirLog = LogAztpa
+		DirTemp = TempAztpa
 	}
 	CreateLogFile()
 	CreateTempDir()
