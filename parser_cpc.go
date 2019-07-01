@@ -65,7 +65,7 @@ func (t *ParserCpc) parsingTenderFromList(p *goquery.Selection, url string) {
 		Logging("Can not find purnumT in ", url)
 		return
 	}
-	purNum := findFromRegExp(purNumT, `Тендер №\s(.+)`)
+	purNum := purNumT
 	if purNum == "" {
 		md := md5.Sum([]byte(href))
 		purNum = hex.EncodeToString(md[:])
@@ -92,13 +92,16 @@ func (t *ParserCpc) Tender(tn TenderCpc) {
 	}
 	purObjInfo := strings.TrimSpace(doc.Find("div.cbq-layout-main p.first-paragraph").First().Text())
 	if purObjInfo == "" {
+		purObjInfo = strings.TrimSpace(doc.Find("li div:contains('Описание закупки') + div").First().Text())
+	}
+	if purObjInfo == "" {
 		Logging("Can not find purObjInfo in ", tn.url)
 		return
 	}
-	pubDateT := strings.TrimSpace(doc.Find("div:contains('Размещён:') + div").First().Text())
+	allDates := strings.TrimSpace(doc.Find("div.date-tender").First().Text())
+	pubDateT := strings.TrimSpace(doc.Find("li div:contains('Размещён:') + div").First().Text())
 	if pubDateT == "" {
-		Logging("Can not find pubDateT in ", tn.url)
-		return
+		pubDateT = findFromRegExp(allDates, `Размещено:\s+(\d{2}\s+.+?\d{4})`)
 	}
 	pubDate := getDateCpc(pubDateT)
 	if (pubDate == time.Time{}) {
@@ -106,7 +109,10 @@ func (t *ParserCpc) Tender(tn TenderCpc) {
 		return
 	}
 
-	endDateT := strings.TrimSpace(doc.Find("div:contains('Приём заявок до:') + div").First().Text())
+	endDateT := strings.TrimSpace(doc.Find("li div:contains('Приём заявок до:') + div").First().Text())
+	if endDateT == "" {
+		endDateT = findFromRegExp(allDates, `Приём заявок до:\s+(\d{2}\s+.+?\d{4})`)
+	}
 	if endDateT == "" {
 		Logging("Can not find endDateT in ", tn.url)
 		return
@@ -232,7 +238,7 @@ func (t *ParserCpc) Tender(tn TenderCpc) {
 	} else {
 		AddtenderCpc++
 	}
-	doc.Find("div:contains('Приложения:') + div a").Each(func(i int, s *goquery.Selection) {
+	doc.Find("li div:contains('Приложения:') + div a").Each(func(i int, s *goquery.Selection) {
 		t.documents(idTender, s, db)
 	})
 	idCustomer := 0
