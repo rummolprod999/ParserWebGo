@@ -11,84 +11,29 @@ import (
 	"time"
 )
 
-var AddtenderGosBy int
-var UpdatetenderGosBy int
-
-type ParserGosBy struct {
+type ParserGosByNew struct {
 	TypeFz int
-	Urls   []string
+	Url    string
 }
 
-type TenderGosBy struct {
+type TenderGosByNew struct {
 	purNum     string
 	url        string
-	orgName    string
-	lotPrice   string
 	purObjInfo string
-	currency   string
 	status     string
 	endDate    time.Time
 }
 
-func (t *ParserGosBy) parsing() {
+func (t *ParserGosByNew) parsing() {
 	defer SaveStack()
 	Logging("Start parsing")
-	t.parsingLastday()
-	t.parsingToday()
+	t.parsingPage(t.Url)
 	Logging("End parsing")
 	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderGosBy))
 	Logging(fmt.Sprintf("Обновили тендеров %d", UpdatetenderGosBy))
 }
-func (t *ParserGosBy) getCountPage(url string) int {
-	c := 10
-	u := fmt.Sprintf("%s%d", url, 1)
-	defer SaveStack()
-	r := DownloadPageWithUAIceTrade(u)
-	if r != "" {
-		doc, err := goquery.NewDocumentFromReader(strings.NewReader(r))
-		if err != nil {
-			Logging(err)
-			return c
-		}
-		numP := strings.TrimSpace(doc.Find("div.paging a").Last().Text())
-		i, err := strconv.Atoi(numP)
-		if err != nil {
-			return c
-		}
-		return i
-	} else {
-		Logging("Получили пустую строку", u)
-	}
-	return c
-}
-func (t *ParserGosBy) parsingLastday() {
-	var today = time.Now()
-	oneDay := time.Hour * -24
-	yesterday := today.Add(oneDay)
-	yesterdayS := yesterday.Format("02.01.2006")
-	startUrl := fmt.Sprintf("http://www.goszakupki.by/search/auctions?auc_num=&search_text=&industries=&search_company=&search_participant=&price_from=&price_to=&created_from=%s&created_to=%s&request_end_from=&request_end_to=&auction_date_from=&auction_date_to=&auc_type[]=&auc_type[]=Auction&auc_type[]=Request&r[]=1&r[]=2&r[]=3&r[]=4&r[]=6&r[]=5&s[a]=1&s[b]=1&s[e]=1&s[p]=1&s[v]=1&s[c]=1&s[w]=1&s[s]=1&s[m]=1&s[ps]=1&searchBtn=Искать&goSearch=1&p=", yesterdayS, yesterdayS)
-	countPage := t.getCountPage(startUrl)
-	for i := 1; i <= countPage; i++ {
-		ul := fmt.Sprintf("%s%d", startUrl, i)
-		t.parsingPage(ul)
-		time.Sleep(SleepingTime)
-	}
 
-}
-func (t *ParserGosBy) parsingToday() {
-	var today = time.Now()
-	yesterday := today
-	yesterdayS := yesterday.Format("02.01.2006")
-	startUrl := fmt.Sprintf("http://old.goszakupki.by/search/auctions?auc_num=&search_text=&industries=&search_company=&search_participant=&price_from=&price_to=&created_from=%s&created_to=%s&request_end_from=&request_end_to=&auction_date_from=&auction_date_to=&auc_type[]=&auc_type[]=Auction&auc_type[]=Request&r[]=1&r[]=2&r[]=3&r[]=4&r[]=6&r[]=5&s[a]=1&s[b]=1&s[e]=1&s[p]=1&s[v]=1&s[c]=1&s[w]=1&s[s]=1&s[m]=1&s[ps]=1&searchBtn=Искать&goSearch=1&p=", yesterdayS, yesterdayS)
-	countPage := t.getCountPage(startUrl)
-	for i := 1; i <= countPage; i++ {
-		ul := fmt.Sprintf("%s%d", startUrl, i)
-		t.parsingPage(ul)
-		time.Sleep(SleepingTime)
-	}
-}
-
-func (t *ParserGosBy) parsingPage(p string) {
+func (t *ParserGosByNew) parsingPage(p string) {
 	defer SaveStack()
 	r := DownloadPageWithUAIceTrade(p)
 	if r != "" {
@@ -98,59 +43,47 @@ func (t *ParserGosBy) parsingPage(p string) {
 	}
 }
 
-func (t *ParserGosBy) parsingTenderList(p string, url string) {
+func (t *ParserGosByNew) parsingTenderList(p string, url string) {
 	defer SaveStack()
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(p))
 	if err != nil {
 		Logging(err)
 		return
 	}
-	doc.Find("#auctions-list tbody tr[class^='rw']:nth-child(3n+1)").Each(func(i int, s *goquery.Selection) {
+	doc.Find("#lotsList tbody tr").Each(func(i int, s *goquery.Selection) {
 		t.parsingTenderFromList(s, url)
 
 	})
-
 }
-func (t *ParserGosBy) parsingTenderFromList(p *goquery.Selection, url string) {
+
+func (t *ParserGosByNew) parsingTenderFromList(p *goquery.Selection, url string) {
 	defer SaveStack()
-	orgName := strings.TrimSpace(p.Find("td:nth-child(2)").First().Text())
-	lotPrice := strings.TrimSpace(p.Find("td:nth-child(4) span").First().Text())
-	lotPrice = delallwhitespace(lotPrice)
-	currency := strings.TrimSpace(p.Find("td:nth-child(4)").First().Text())
-	//fmt.Println(currency)
-	currency = strings.TrimSpace(findFromRegExp(currency, `([^\d\s]+)$`))
-	if lotPrice == "" {
-		currency = ""
-	}
-	nextNode := p.Next()
-	purNum := strings.TrimSpace(nextNode.Find("td:nth-child(2) strong").First().Text())
+	purNum := strings.TrimSpace(p.Find("td:nth-child(1)").First().Text())
 	if purNum == "" {
 		Logging("Can not find purnum in ", url)
 		return
 	}
-	if strings.HasPrefix(purNum, "№") {
-		purNum = strings.Replace(purNum, "№", "", -1)
-	}
-	purObjInfo := strings.TrimSpace(nextNode.Find("td:nth-child(2) a").First().Text())
-	hrefT := nextNode.Find("td:nth-child(2) a")
+	purObjInfo := strings.TrimSpace(p.Find("td:nth-child(2) a").First().Text())
+	hrefT := p.Find("td:nth-child(2) a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
 		Logging("The element can not have href attribute", hrefT.Text())
 		return
 	}
-	endDateTT := cleanString(strings.TrimSpace(nextNode.Find("td:nth-child(4)").First().Text()))
+	href = fmt.Sprintf("http://goszakupki.by%s", href)
+	endDateTT := cleanString(strings.TrimSpace(p.Find("td:nth-child(5)").First().Text()))
 	endDateT := findFromRegExp(endDateTT, `(\d{2}\.\d{2}\.\d{4})`)
 	endDate := getTimeMoscowLayoutIceTrade(endDateT, "02.01.2006")
 	if (endDate == time.Time{}) {
 		Logging("Can not find end_date in ", href, purNum)
 		return
 	}
-	nextNode = nextNode.Next()
-	status := strings.TrimSpace(nextNode.Find("td:nth-child(2)").First().Text())
-	tnd := TenderGosBy{purNum: purNum, url: href, orgName: orgName, lotPrice: lotPrice, purObjInfo: purObjInfo, currency: currency, status: status, endDate: endDate}
+	status := strings.TrimSpace(p.Find("td:nth-child(4) span").First().Text())
+	tnd := TenderGosByNew{purNum: purNum, url: href, purObjInfo: purObjInfo, status: status, endDate: endDate}
 	t.Tender(tnd)
 }
-func (t *ParserGosBy) Tender(tn TenderGosBy) {
+
+func (t *ParserGosByNew) Tender(tn TenderGosByNew) {
 	defer SaveStack()
 	db, err := sql.Open("mysql", Dsn)
 	if err != nil {
@@ -216,7 +149,7 @@ func (t *ParserGosBy) Tender(tn TenderGosBy) {
 		Logging(err)
 		return
 	}
-	pubDateT := cleanString(strings.TrimSpace(doc.Find("table td:contains('Дата размещения приглашения') + td").First().Text()))
+	pubDateT := cleanString(strings.TrimSpace(doc.Find("table th:contains('Дата размещения приглашения') + td").First().Text()))
 	pubDate := getTimeMoscowLayoutIceTrade(pubDateT, "02.01.2006")
 	if (pubDate == time.Time{}) {
 		pubDate = getTimeMoscowLayoutIceTrade(pubDateT, "02.01.2006")
@@ -228,9 +161,10 @@ func (t *ParserGosBy) Tender(tn TenderGosBy) {
 	printForm := tn.url
 	idOrganizer := 0
 	organizerINN := ""
-	if tn.orgName != "" {
+	orgName := cleanString(strings.TrimSpace(doc.Find("table th:contains('Наименование организации') + td").First().Text()))
+	if orgName != "" {
 		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_organizer FROM %sorganizer WHERE full_name = ?", Prefix))
-		rows, err := stmt.Query(tn.orgName)
+		rows, err := stmt.Query(orgName)
 		stmt.Close()
 		if err != nil {
 			Logging("Ошибка выполения запроса", err)
@@ -247,11 +181,11 @@ func (t *ParserGosBy) Tender(tn TenderGosBy) {
 			rows.Close()
 			email := ""
 			phone := ""
-			organizerINN = findFromRegExp(cleanString(strings.TrimSpace(doc.Find("table td:contains('УНП') + td").First().Text())), `(\d{9})`)
-			organizerPostAddress := cleanString(strings.TrimSpace(doc.Find("table td:contains('Место нахождения') + td").First().Text()))
-			contactPerson := cleanString(strings.TrimSpace(doc.Find("table td:contains('Фамилии') + td").First().Text()))
+			organizerINN = findFromRegExp(cleanString(strings.TrimSpace(doc.Find("table th:contains('УНП') + td").First().Text())), `(\d{9})`)
+			organizerPostAddress := cleanString(strings.TrimSpace(doc.Find("table th:contains('Место нахождения') + td").First().Text()))
+			contactPerson := cleanString(strings.TrimSpace(doc.Find("table th:contains('Фамилии') + td").First().Text()))
 			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sorganizer SET full_name = ?, inn = ?, post_address = ?, fact_address = ?, contact_email = ?, contact_phone = ?, contact_person = ?", Prefix))
-			res, err := stmt.Exec(tn.orgName, organizerINN, organizerPostAddress, organizerPostAddress, email, phone, contactPerson)
+			res, err := stmt.Exec(orgName, organizerINN, organizerPostAddress, organizerPostAddress, email, phone, contactPerson)
 			stmt.Close()
 			if err != nil {
 				Logging("Ошибка вставки организатора", err)
@@ -284,21 +218,21 @@ func (t *ParserGosBy) Tender(tn TenderGosBy) {
 		AddtenderGosBy++
 	}
 	var requirement []string
-	qualrec := cleanString(strings.TrimSpace(doc.Find("table td:contains('Квалификационные') + td").First().Text()))
+	qualrec := cleanString(strings.TrimSpace(doc.Find("table th:contains('Квалификационные') + td").First().Text()))
 	if qualrec != "" {
 		requirement = append(requirement, qualrec)
 	}
-	rec := cleanString(strings.TrimSpace(doc.Find("table td:contains('Требования к составу') + td").First().Text()))
+	rec := cleanString(strings.TrimSpace(doc.Find("table th:contains('Требования к участникам') + td").First().Text()))
 	if rec != "" {
 		requirement = append(requirement, rec)
 	}
-	doc.Find("td.af-files a").Each(func(i int, s *goquery.Selection) {
+	doc.Find("a.modal-link").Each(func(i int, s *goquery.Selection) {
 		t.documents(idTender, s, db)
 	})
 	idCustomer := 0
-	if tn.orgName != "" {
+	if orgName != "" {
 		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_customer FROM %scustomer WHERE full_name = ?", Prefix))
-		rows, err := stmt.Query(tn.orgName)
+		rows, err := stmt.Query(orgName)
 		stmt.Close()
 		if err != nil {
 			Logging("Ошибка выполения запроса", err)
@@ -319,7 +253,7 @@ func (t *ParserGosBy) Tender(tn TenderGosBy) {
 				return
 			}
 			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %scustomer SET full_name = ?, reg_num = ?, is223=1, inn = ?", Prefix))
-			res, err := stmt.Exec(tn.orgName, out, organizerINN)
+			res, err := stmt.Exec(orgName, out, organizerINN)
 			stmt.Close()
 			if err != nil {
 				Logging("Ошибка вставки заказчика", err)
@@ -329,7 +263,8 @@ func (t *ParserGosBy) Tender(tn TenderGosBy) {
 			idCustomer = int(id)
 		}
 	}
-	doc.Find("#lots_list tr[id^='lotRow']").Each(t.parsingLots(tn, doc, db, idTender, requirement, idCustomer))
+	LotPT := cleanString(strings.TrimSpace(doc.Find("table th:contains('Общая ориентировочная стоимость') + td").First().Text()))
+	doc.Find("#lotsList tbody").Each(t.parsingLots(tn, doc, db, idTender, requirement, idCustomer, LotPT))
 	e := TenderKwords(db, idTender)
 	if e != nil {
 		Logging("Ошибка обработки TenderKwords", e)
@@ -341,30 +276,48 @@ func (t *ParserGosBy) Tender(tn TenderGosBy) {
 	}
 }
 
-func (t *ParserGosBy) parsingLots(tn TenderGosBy, doc *goquery.Document, db *sql.DB, idTender int, requirement []string, idCustomer int) func(i int, s *goquery.Selection) {
-	return func(i int, s *goquery.Selection) {
-		defer SaveStack()
-		lotId, exist := s.Attr("id")
-		if !exist {
-			Logging("The element can not have lotId attribute", s.Text())
+func (t *ParserGosByNew) documents(idTender int, doc *goquery.Selection, db *sql.DB) {
+	defer SaveStack()
+	nameF := strings.TrimSpace(doc.First().Text())
+	href, exist := doc.Attr("href")
+	if !exist {
+		Logging("The element can not have href attribute", doc.Text())
+		return
+	}
+	href = fmt.Sprintf("http://goszakupki.by%s", href)
+	if nameF != "" {
+		stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sattachment SET id_tender = ?, file_name = ?, url = ?", Prefix))
+		_, err := stmt.Exec(idTender, nameF, href)
+		stmt.Close()
+		if err != nil {
+			Logging("Ошибка вставки attachment", err)
 			return
 		}
-		lotNum, err := strconv.Atoi(cleanString(strings.TrimSpace(s.Find("td:nth-child(1)").First().Text())))
+	}
+}
+func (t *ParserGosByNew) parsingLots(tn TenderGosByNew, doc *goquery.Document, db *sql.DB, idTender int, requirement []string, idCustomer int, LotPT string) func(i int, s *goquery.Selection) {
+	return func(i int, s *goquery.Selection) {
+		defer SaveStack()
+		lotNum, err := strconv.Atoi(cleanString(strings.TrimSpace(s.Find("th.lot-num").First().Text())))
 		if err != nil {
 			Logging("can not find lotNum", err)
 			return
 		}
-		lotPriceT := strings.TrimSpace(s.Find("td:nth-child(3)").First().Text())
-		formatter := fmt.Sprintf(",([\\d\\.]+)[ //s]+%s", tn.currency)
+
+		lotPriceG := findFromRegExp(LotPT, `([\d ,.]+)`)
+		lotPriceG = delallwhitespace(lotPriceG)
+		currency := findFromRegExp(LotPT, `([^\d ,.]+)`)
+		lotPriceT := strings.TrimSpace(s.Find("td.lot-count-price").First().Text())
+		formatter := fmt.Sprintf(`,([\d \.]+)%s`, currency)
 		lt := delallwhitespace(lotPriceT)
 		lotPrice := findFromRegExp(lt, formatter)
 		if lotPrice == "" {
-			lotPrice = tn.lotPrice
+			lotPrice = lotPriceG
 		}
-		finSource := strings.TrimSpace(doc.Find(fmt.Sprintf("#%s ~ tr th:contains('Источник финансирования') + td div", lotId)).First().Text())
+		finSource := strings.TrimSpace(doc.Find("b:contains('Источник финансирования:') + span").First().Text())
 		idLot := 0
 		stmtl, _ := db.Prepare(fmt.Sprintf("INSERT INTO %slot SET id_tender = ?, lot_number = ?, max_price = ?, currency = ?, finance_source = ?", Prefix))
-		resl, err := stmtl.Exec(idTender, lotNum, lotPrice, tn.currency, finSource)
+		resl, err := stmtl.Exec(idTender, lotNum, lotPrice, currency, finSource)
 		stmtl.Close()
 		if err != nil {
 			Logging("Ошибка вставки lot", err)
@@ -381,9 +334,9 @@ func (t *ParserGosBy) parsingLots(tn TenderGosBy, doc *goquery.Document, db *sql
 				return
 			}
 		}
-		okpd2 := strings.TrimSpace(doc.Find(fmt.Sprintf("#%s ~ tr th:contains('ОКРБ') + td", lotId)).First().Text())
-		quantv := delallwhitespace(strings.TrimSpace(s.Find("td:nth-child(3) span").First().Text()))
-		nameL := cleanString(strings.TrimSpace(s.Find("td:nth-child(2)").First().Text()))
+		okpd2 := strings.TrimSpace(doc.Find("b:contains('Код предмета закупки по ОКРБ:') + span").First().Text())
+		quantv := strings.TrimSpace(s.Find("td.lot-count-price").First().Text())
+		nameL := cleanString(strings.TrimSpace(s.Find("td.lot-description").First().Text()))
 		stmtr, _ := db.Prepare(fmt.Sprintf("INSERT INTO %spurchase_object SET id_lot = ?, id_customer = ?, name = ?, okpd2_code = ?, sum = ?, quantity_value = ?, customer_quantity_value = ?", Prefix))
 		_, errr := stmtr.Exec(idLot, idCustomer, nameL, okpd2, lotPrice, quantv, quantv)
 		stmtr.Close()
@@ -391,8 +344,8 @@ func (t *ParserGosBy) parsingLots(tn TenderGosBy, doc *goquery.Document, db *sql
 			Logging("Ошибка вставки purchase_object", errr)
 			return
 		}
-		delivterm := strings.TrimSpace(doc.Find(fmt.Sprintf("#%s ~ tr th:contains('Срок поставки') + td", lotId)).First().Text())
-		delivplace := strings.TrimSpace(doc.Find(fmt.Sprintf("#%s ~ tr th:contains('Место поставки товара') + td div", lotId)).First().Text())
+		delivterm := strings.TrimSpace(doc.Find("b:contains('Срок поставки:') + span").First().Text())
+		delivplace := strings.TrimSpace(doc.Find("b:contains('Место поставки товара') + span").First().Text())
 		if delivterm != "" || delivplace != "" {
 			stmtcr, _ := db.Prepare(fmt.Sprintf("INSERT INTO %scustomer_requirement SET id_lot = ?, id_customer = ?, delivery_term = ?, delivery_place = ?, max_price = ?", Prefix))
 			_, err := stmtcr.Exec(idLot, idCustomer, delivterm, delivplace, lotPrice)
@@ -405,23 +358,4 @@ func (t *ParserGosBy) parsingLots(tn TenderGosBy, doc *goquery.Document, db *sql
 
 	}
 
-}
-func (t *ParserGosBy) documents(idTender int, doc *goquery.Selection, db *sql.DB) {
-	defer SaveStack()
-	nameF := strings.TrimSpace(doc.First().Text())
-	href, exist := doc.Attr("href")
-	if !exist {
-		Logging("The element can not have href attribute", doc.Text())
-		return
-	}
-	href = fmt.Sprintf("%s", href)
-	if nameF != "" {
-		stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sattachment SET id_tender = ?, file_name = ?, url = ?", Prefix))
-		_, err := stmt.Exec(idTender, nameF, href)
-		stmt.Close()
-		if err != nil {
-			Logging("Ошибка вставки attachment", err)
-			return
-		}
-	}
 }

@@ -27,6 +27,7 @@ func SaveStack() {
 			fmt.Println("Ошибка записи stack log", err)
 			return
 		}
+		fmt.Fprintln(file, fmt.Sprintf("Time %v", time.Now()))
 		fmt.Fprintln(file, fmt.Sprintf("Fatal Error %v", p))
 		fmt.Fprintf(file, "%v  ", string(buf[:n]))
 	}
@@ -177,8 +178,14 @@ func DownloadPageWithUAIceTrade(url string) string {
 	return st
 }
 
-func GetPage(url string) string {
+func GetPage(url string) (ret string) {
 	var st string
+	defer func() {
+		if r := recover(); r != nil {
+			Logging(fmt.Sprintf("was panic, recovered value: %v", r))
+			ret = ""
+		}
+	}()
 	resp, err := http.Get(url)
 	if err != nil {
 		Logging("Ошибка response", url, err)
@@ -253,8 +260,14 @@ func GetPageGzip(url string) string {
 	return buf.String()
 }
 
-func GetPageUA(url string) string {
+func GetPageUA(url string) (ret string) {
 	var st string
+	defer func() {
+		if r := recover(); r != nil {
+			Logging(fmt.Sprintf("was panic, recovered value: %v", r))
+			ret = ""
+		}
+	}()
 	client := &http.Client{}
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
