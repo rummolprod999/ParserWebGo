@@ -27,7 +27,11 @@ type TenderGosByNew struct {
 func (t *ParserGosByNew) parsing() {
 	defer SaveStack()
 	Logging("Start parsing")
-	t.parsingPage(t.Url)
+	for i := 1; i <= 10; i++ {
+		url := fmt.Sprintf("%s%d", t.Url, i)
+		t.parsingPage(url)
+	}
+
 	Logging("End parsing")
 	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderGosBy))
 	Logging(fmt.Sprintf("Обновили тендеров %d", UpdatetenderGosBy))
@@ -50,7 +54,7 @@ func (t *ParserGosByNew) parsingTenderList(p string, url string) {
 		Logging(err)
 		return
 	}
-	doc.Find("#lotsList tbody tr").Each(func(i int, s *goquery.Selection) {
+	doc.Find("#w0 table tbody > tr").Each(func(i int, s *goquery.Selection) {
 		t.parsingTenderFromList(s, url)
 
 	})
