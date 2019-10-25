@@ -27,7 +27,7 @@ type TenderGosByNew struct {
 func (t *ParserGosByNew) parsing() {
 	defer SaveStack()
 	Logging("Start parsing")
-	for i := 1; i <= 10; i++ {
+	for i := 1; i <= 20; i++ {
 		url := fmt.Sprintf("%s%d", t.Url, i)
 		t.parsingPage(url)
 	}
