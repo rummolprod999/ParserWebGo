@@ -98,6 +98,8 @@ func (t *ParserDtek) parsingTenderFromList(p *goquery.Selection, url string) {
 	pubDateT := strings.TrimSpace(p.Find("td:nth-child(4)").First().Text())
 	pubDate := getTimeMoscowLayout(pubDateT, "02.01.2006 15:04")
 	endDateT := strings.TrimSpace(p.Find("td:nth-child(5)").First().Text())
+	endDateT = strings.Replace(endDateT, "(продлено)", "", -1)
+	endDateT = strings.Trim(endDateT, "\n ")
 	endDate := getTimeMoscowLayout(endDateT, "02.01.2006 15:04")
 	if (pubDate == time.Time{} || endDate == time.Time{}) {
 		Logging("Can not find enddate or startdate in ", href, purNum)
