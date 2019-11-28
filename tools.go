@@ -658,6 +658,10 @@ func delallwhitespace(s string) string {
 	re := regexp.MustCompile(`\s+`)
 	return re.ReplaceAllString(s, "")
 }
+func delallwhitespaceAtom(s string) string {
+	re := regexp.MustCompile(`[^\d.]`)
+	return re.ReplaceAllString(s, "")
+}
 func findFromRegExpDixy(s string, t string) string {
 	r := ""
 	re := regexp.MustCompile(t)
