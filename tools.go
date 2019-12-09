@@ -3,8 +3,10 @@ package main
 import (
 	"bytes"
 	"compress/gzip"
+	"crypto/md5"
 	"crypto/tls"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"golang.org/x/text/encoding/charmap"
 	"io"
@@ -962,4 +964,10 @@ func getRegion(sp string) string {
 		s = ""
 	}
 	return s
+}
+
+func GetMd5(text string) string {
+	h := md5.New()
+	h.Write([]byte(text))
+	return hex.EncodeToString(h.Sum(nil))
 }

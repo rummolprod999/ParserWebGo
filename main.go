@@ -48,7 +48,7 @@ func main() {
 		p := ParserUva{TypeFz: 64}
 		MainParser(&p)
 	case Salym:
-		p := ParserSalym{TypeFz: 101}
+		p := ParserSalymNew{TypeFz: 101}
 		MainParser(&p)
 	case Monetka:
 		p := ParserMonetka{TypeFz: 104}
