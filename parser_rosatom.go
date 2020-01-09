@@ -75,7 +75,7 @@ func (t *ParserRosAtom) parsingTenderFromList(p *goquery.Selection, url string) 
 	hrefT := p.Find("td.description > p a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", p.Text())
+		Logging("The element can not have href attribute", url)
 		return
 	}
 	href = fmt.Sprintf("http://zakupki.rosatom.ru%s", href)
