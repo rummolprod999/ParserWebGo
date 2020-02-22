@@ -158,7 +158,10 @@ func (t *ParserOcontract) Tender(tn TenderOcontract) {
 	}
 	printForm := tn.url
 	idOrganizer := 0
-	orgFullName := strings.TrimSpace(doc.Find("td:contains('Заказчик') + td").First().Text())
+	orgFullName := strings.TrimSpace(doc.Find("td:contains('Заказчик') + td > a").First().Text())
+	if orgFullName == "" {
+		orgFullName = strings.TrimSpace(doc.Find("td:contains('Заказчик') + td").First().Text())
+	}
 	if orgFullName != "" {
 		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_organizer FROM %sorganizer WHERE full_name = ?", Prefix))
 		rows, err := stmt.Query(orgFullName)
