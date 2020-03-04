@@ -89,5 +89,9 @@ func main() {
 	case RosAtom:
 		p := ParserRosAtom{TypeFz: 221, Urls: []string{"http://zakupki.rosatom.ru/Web.aspx?node=currentorders&page="}}
 		MainParser(&p)
+	case Tpsre:
+		p := ParserTpsre{TypeFz: 240, Urls: []string{"https://www.tpsre.ru/tenders/"}}
+		MainParser(&p)
 	}
+
 }

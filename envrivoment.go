@@ -92,6 +92,8 @@ func CreateLogFile() {
 		FileLog = Filelog(fmt.Sprintf("%s/log_Aztpa_%v.log", dirlog, ft))
 	case RosAtom:
 		FileLog = Filelog(fmt.Sprintf("%s/log_RosAtom_%v.log", dirlog, ft))
+	case Tpsre:
+		FileLog = Filelog(fmt.Sprintf("%s/log_Tpsre_%v.log", dirlog, ft))
 	}
 
 }
@@ -193,6 +195,9 @@ func CreateEnv() {
 	case RosAtom:
 		DirLog = LogRosAtom
 		DirTemp = TempRosAtom
+	case Tpsre:
+		DirLog = LogTpsre
+		DirTemp = TempTpsre
 	}
 	CreateLogFile()
 	CreateTempDir()
