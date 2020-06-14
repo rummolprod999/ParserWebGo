@@ -95,6 +95,9 @@ func main() {
 	case Tektkp:
 		p := ParserTekTkp{TypeFz: 259, maxPage: 0}
 		MainParser(&p)
+	case Tekgaz:
+		p := ParserTektorg{TypeFz: 22, maxPage: 0, Addtender: 0, Updatetender: 0, EtpName: "ТЭК Торг Газпром бурение", EtpUrl: "https://www.tektorg.ru/gazprom/procedures", Section: "8"}
+		MainParser(&p)
 	}
 
 }
