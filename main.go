@@ -104,6 +104,9 @@ func main() {
 	case Tekrao:
 		p := ParserTektorg{TypeFz: 24, maxPage: 0, Addtender: 0, Updatetender: 0, EtpName: "ТЭК Торг Интер РАО", EtpUrl: "https://www.tektorg.ru/interao/procedures", Section: "9"}
 		MainParser(&p)
+	case Tekmos:
+		p := ParserTektorg{TypeFz: 140, maxPage: 0, Addtender: 0, Updatetender: 0, EtpName: "ТЭК Торг ТЭК Мосэнерго", EtpUrl: "https://www.tektorg.ru/mosenergo/procedures", Section: "14"}
+		MainParser(&p)
 	}
 
 }
