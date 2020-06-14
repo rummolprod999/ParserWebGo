@@ -92,6 +92,9 @@ func main() {
 	case Tpsre:
 		p := ParserTpsre{TypeFz: 240, Urls: []string{"https://www.tpsre.ru/tenders/"}}
 		MainParser(&p)
+	case Tektkp:
+		p := ParserTekTkp{TypeFz: 259, maxPage: 0}
+		MainParser(&p)
 	}
 
 }

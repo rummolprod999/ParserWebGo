@@ -15,6 +15,7 @@ import (
 	"os"
 	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -970,4 +971,22 @@ func GetMd5(text string) string {
 	h := md5.New()
 	h.Write([]byte(text))
 	return hex.EncodeToString(h.Sum(nil))
+}
+
+func GetOkpd(s string) (int, string) {
+	okpd2GroupCode := 0
+	okpd2GroupLevel1Code := ""
+	if len(s) > 1 {
+		if strings.Index(s, ".") != -1 {
+			okpd2GroupCode, _ = strconv.Atoi(s[:2])
+		} else {
+			okpd2GroupCode, _ = strconv.Atoi(s[:2])
+		}
+	}
+	if len(s) > 3 {
+		if strings.Index(s, ".") != -1 {
+			okpd2GroupLevel1Code = s[3:4]
+		}
+	}
+	return okpd2GroupCode, okpd2GroupLevel1Code
 }

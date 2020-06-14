@@ -25,7 +25,6 @@ func Logging(args ...interface{}) {
 
 		fmt.Fprintf(file, " %v", v)
 	}
-	//fmt.Fprintf(file, " %s", UrlXml)
 	fmt.Fprintln(file, "")
 
 }
@@ -94,6 +93,8 @@ func CreateLogFile() {
 		FileLog = Filelog(fmt.Sprintf("%s/log_RosAtom_%v.log", dirlog, ft))
 	case Tpsre:
 		FileLog = Filelog(fmt.Sprintf("%s/log_Tpsre_%v.log", dirlog, ft))
+	case Tektkp:
+		FileLog = Filelog(fmt.Sprintf("%s/log_TekTkp_%v.log", dirlog, ft))
 	}
 
 }
@@ -198,6 +199,9 @@ func CreateEnv() {
 	case Tpsre:
 		DirLog = LogTpsre
 		DirTemp = TempTpsre
+	case Tektkp:
+		DirLog = LogTektkp
+		DirTemp = TempTektkp
 	}
 	CreateLogFile()
 	CreateTempDir()
