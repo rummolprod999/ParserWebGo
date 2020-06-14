@@ -107,6 +107,12 @@ func main() {
 	case Tekmos:
 		p := ParserTektorg{TypeFz: 140, maxPage: 0, Addtender: 0, Updatetender: 0, EtpName: "ТЭК Торг ТЭК Мосэнерго", EtpUrl: "https://www.tektorg.ru/mosenergo/procedures", Section: "14"}
 		MainParser(&p)
+	case Tekrn:
+		p := ParserTektorg{TypeFz: 149, maxPage: 0, Addtender: 0, Updatetender: 0, EtpName: "ТЭК Торг ТЭК Роснефть", EtpUrl: "https://www.tektorg.ru/rosneft/procedures", Section: "6"}
+		MainParser(&p)
+	case Tekkom:
+		p := ParserTektorg{TypeFz: 138, maxPage: 0, Addtender: 0, Updatetender: 0, EtpName: "ТЭК Торг Коммерческие закупки и 223-ФЗ", EtpUrl: "https://www.tektorg.ru/223-fz/procedures", Section: "3"}
+		MainParser(&p)
 	}
 
 }
