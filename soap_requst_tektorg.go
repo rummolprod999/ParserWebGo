@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-var timeOffset = time.Now().Add(time.Hour * -72).Format("2006-01-02T15:04:05")
+var timeOffset = time.Now().Add(time.Hour * -24 * 30 * 6).Format("2006-01-02T15:04:05")
 var templateSoap = `<soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:soap="http://api.tektorg.ru/procedures/soap">
    <soapenv:Header/>
    <soapenv:Body>

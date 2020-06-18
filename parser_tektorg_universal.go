@@ -20,7 +20,6 @@ type ParserTektorg struct {
 
 func (prot *ParserTektorg) parsing() {
 	defer SaveStack()
-	timeOffset = time.Now().Add(time.Hour * -500).Format("2006-01-02T15:04:05")
 	Logging("Start parsing")
 	protocols := callSOAPClient(prot.Section, 1)
 	if protocols.TotalPage == 0 {
