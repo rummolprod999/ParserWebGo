@@ -63,14 +63,14 @@ func (t *ParserOcontract) parsingTenderList(p string, url string) {
 func (t *ParserOcontract) parsingTenderFromList(p *goquery.Selection, url string) {
 	purNum := strings.TrimSpace(p.Find("td:nth-child(1) > a").First().Text())
 	if purNum == "" {
-		Logging("Can not find purnum in ", url)
+		Logging("cannot find purnum in ", url)
 		return
 	}
 	purObjInfo := strings.TrimSpace(p.Find("td:nth-child(3) a").First().Text())
 	hrefT := p.Find("td:nth-child(3) a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", hrefT.Text())
+		Logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	href = fmt.Sprintf("http://onlinecontract.ru%s", href)
@@ -80,7 +80,7 @@ func (t *ParserOcontract) parsingTenderFromList(p *goquery.Selection, url string
 	endDateT = re.ReplaceAllString(endDateT, " ")
 	endDate := getTimeMoscowLayout(endDateT, "15:04 02.01.2006")
 	if (endDate == time.Time{}) {
-		Logging("Can not find enddate in ", url, purNum)
+		Logging("cannot find enddate in ", url, purNum)
 		return
 	}
 	tnd := TenderOcontract{url: href, purObjInfo: purObjInfo, dateEnd: endDate, purNum: purNum}

@@ -62,18 +62,18 @@ func (t *ParserLetoile) parsingTenderFromList(p *goquery.Selection, url string) 
 	hrefT := p.Find("a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", hrefT.Text())
+		Logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	href = strings.Replace(href, "./", "http://b2b.letoile.ru/company/tenders/current/", -1)
 	purName := strings.TrimSpace(p.Find("a").First().Text())
 	if purName == "" {
-		Logging("Can not find purName in ", url)
+		Logging("cannot find purName in ", url)
 		return
 	}
 	purNum := findFromRegExp(href, `news=(\d+)$`)
 	if purNum == "" {
-		Logging("Can not find purnum in ", purName)
+		Logging("cannot find purnum in ", purName)
 		return
 	}
 	pubDate := time.Now()
@@ -81,7 +81,7 @@ func (t *ParserLetoile) parsingTenderFromList(p *goquery.Selection, url string) 
 	endDateTT := findFromRegExp(endDateT, `(\d{2}\.\d{2}\.\d{4})`)
 	endDate := getTimeMoscowLayout(endDateTT, "02.01.2006")
 	if (endDate == time.Time{}) {
-		Logging("Can not find enddate in ", href, purNum)
+		Logging("cannot find enddate in ", href, purNum)
 		return
 	}
 	tnd := TenderLetoile{purName: purName, purNum: purNum, url: href, pubDate: pubDate, endDate: endDate}
@@ -283,7 +283,7 @@ func (t *ParserLetoile) documents(idTender int, doc *goquery.Selection, db *sql.
 	nameF := strings.TrimSpace(doc.First().Text())
 	href, exist := doc.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", doc.Text())
+		Logging("The element cannot have href attribute", doc.Text())
 		return
 	}
 	href = fmt.Sprintf("http://b2b.letoile.ru%s", href)

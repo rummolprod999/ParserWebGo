@@ -69,7 +69,7 @@ func (t *ParserDtek) parsingTenderFromList(p *goquery.Selection, url string) {
 	hrefT := p.Find("a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", hrefT.Text())
+		Logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	numTmp := strings.TrimSpace(p.Find("td:nth-child(1)").First().Text())
@@ -79,7 +79,7 @@ func (t *ParserDtek) parsingTenderFromList(p *goquery.Selection, url string) {
 		purName = cleanString(numTmp)
 	}
 	if purName == "" {
-		Logging("Can not find purName in ", url)
+		Logging("cannot find purName in ", url)
 		return
 	}
 	pwName := ""
@@ -91,7 +91,7 @@ func (t *ParserDtek) parsingTenderFromList(p *goquery.Selection, url string) {
 		pwName = strings.TrimSpace(strings.Replace(numTmp, purNum, "", -1))
 	}
 	if purNum == "" {
-		Logging("Can not find purnum in ", purName)
+		Logging("cannot find purnum in ", purName)
 		return
 	}
 
@@ -102,7 +102,7 @@ func (t *ParserDtek) parsingTenderFromList(p *goquery.Selection, url string) {
 	endDateT = strings.Trim(endDateT, "\n ")
 	endDate := getTimeMoscowLayout(endDateT, "02.01.2006 15:04")
 	if (pubDate == time.Time{} || endDate == time.Time{}) {
-		Logging("Can not find enddate or startdate in ", href, purNum)
+		Logging("cannot find enddate or startdate in ", href, purNum)
 		return
 	}
 	tnd := TenderDtek{purName: purName, purNum: purNum, url: href, pubDate: pubDate, endDate: endDate, cusName: cusName, pwName: pwName}

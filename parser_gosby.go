@@ -125,7 +125,7 @@ func (t *ParserGosBy) parsingTenderFromList(p *goquery.Selection, url string) {
 	nextNode := p.Next()
 	purNum := strings.TrimSpace(nextNode.Find("td:nth-child(2) strong").First().Text())
 	if purNum == "" {
-		Logging("Can not find purnum in ", url)
+		Logging("cannot find purnum in ", url)
 		return
 	}
 	if strings.HasPrefix(purNum, "№") {
@@ -135,14 +135,14 @@ func (t *ParserGosBy) parsingTenderFromList(p *goquery.Selection, url string) {
 	hrefT := nextNode.Find("td:nth-child(2) a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", hrefT.Text())
+		Logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	endDateTT := cleanString(strings.TrimSpace(nextNode.Find("td:nth-child(4)").First().Text()))
 	endDateT := findFromRegExp(endDateTT, `(\d{2}\.\d{2}\.\d{4})`)
 	endDate := getTimeMoscowLayoutIceTrade(endDateT, "02.01.2006")
 	if (endDate == time.Time{}) {
-		Logging("Can not find end_date in ", href, purNum)
+		Logging("cannot find end_date in ", href, purNum)
 		return
 	}
 	nextNode = nextNode.Next()
@@ -222,7 +222,7 @@ func (t *ParserGosBy) Tender(tn TenderGosBy) {
 		pubDate = getTimeMoscowLayoutIceTrade(pubDateT, "02.01.2006")
 	}
 	if (pubDate == time.Time{}) {
-		Logging("Can not find startdate in ", tn.url, tn.purNum)
+		Logging("cannot find startdate in ", tn.url, tn.purNum)
 		return
 	}
 	printForm := tn.url
@@ -346,12 +346,12 @@ func (t *ParserGosBy) parsingLots(tn TenderGosBy, doc *goquery.Document, db *sql
 		defer SaveStack()
 		lotId, exist := s.Attr("id")
 		if !exist {
-			Logging("The element can not have lotId attribute", s.Text())
+			Logging("The element cannot have lotId attribute", s.Text())
 			return
 		}
 		lotNum, err := strconv.Atoi(cleanString(strings.TrimSpace(s.Find("td:nth-child(1)").First().Text())))
 		if err != nil {
-			Logging("can not find lotNum", err)
+			Logging("cannot find lotNum", err)
 			return
 		}
 		lotPriceT := strings.TrimSpace(s.Find("td:nth-child(3)").First().Text())
@@ -411,7 +411,7 @@ func (t *ParserGosBy) documents(idTender int, doc *goquery.Selection, db *sql.DB
 	nameF := strings.TrimSpace(doc.First().Text())
 	href, exist := doc.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", doc.Text())
+		Logging("The element cannot have href attribute", doc.Text())
 		return
 	}
 	href = fmt.Sprintf("%s", href)

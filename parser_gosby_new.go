@@ -64,14 +64,14 @@ func (t *ParserGosByNew) parsingTenderFromList(p *goquery.Selection, url string)
 	defer SaveStack()
 	purNum := strings.TrimSpace(p.Find("td:nth-child(1)").First().Text())
 	if purNum == "" {
-		Logging("Can not find purnum in ", url)
+		Logging("cannot find purnum in ", url)
 		return
 	}
 	purObjInfo := strings.TrimSpace(p.Find("td:nth-child(2) a").First().Text())
 	hrefT := p.Find("td:nth-child(2) a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", hrefT.Text())
+		Logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	href = fmt.Sprintf("http://goszakupki.by%s", href)
@@ -79,7 +79,7 @@ func (t *ParserGosByNew) parsingTenderFromList(p *goquery.Selection, url string)
 	endDateT := findFromRegExp(endDateTT, `(\d{2}\.\d{2}\.\d{4})`)
 	endDate := getTimeMoscowLayoutIceTrade(endDateT, "02.01.2006")
 	if (endDate == time.Time{}) {
-		Logging("Can not find end_date in ", href, purNum)
+		Logging("cannot find end_date in ", href, purNum)
 		return
 	}
 	status := strings.TrimSpace(p.Find("td:nth-child(4) span").First().Text())
@@ -159,7 +159,7 @@ func (t *ParserGosByNew) Tender(tn TenderGosByNew) {
 		pubDate = getTimeMoscowLayoutIceTrade(pubDateT, "02.01.2006")
 	}
 	if (pubDate == time.Time{}) {
-		Logging("Can not find startdate in ", tn.url, tn.purNum)
+		Logging("cannot find startdate in ", tn.url, tn.purNum)
 		return
 	}
 	printForm := tn.url
@@ -285,7 +285,7 @@ func (t *ParserGosByNew) documents(idTender int, doc *goquery.Selection, db *sql
 	nameF := strings.TrimSpace(doc.First().Text())
 	href, exist := doc.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", doc.Text())
+		Logging("The element cannot have href attribute", doc.Text())
 		return
 	}
 	href = fmt.Sprintf("http://goszakupki.by%s", href)
@@ -304,7 +304,7 @@ func (t *ParserGosByNew) parsingLots(tn TenderGosByNew, doc *goquery.Document, d
 		defer SaveStack()
 		lotNum, err := strconv.Atoi(cleanString(strings.TrimSpace(s.Find("th.lot-num").First().Text())))
 		if err != nil {
-			Logging("can not find lotNum", err)
+			Logging("cannot find lotNum", err)
 			return
 		}
 

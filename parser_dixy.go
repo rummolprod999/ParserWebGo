@@ -63,7 +63,7 @@ func (t *ParserDixy) parsingTenderFromList(p *goquery.Selection) {
 	hrefT := p.Find("span p a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", hrefT.Text())
+		Logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	href = fmt.Sprintf("http://www.dixygroup.ru%s", href)
@@ -71,7 +71,7 @@ func (t *ParserDixy) parsingTenderFromList(p *goquery.Selection) {
 	purName := strings.TrimSpace(p.Find("span p a").First().Text())
 	pubDate := getDateDixy(dateT)
 	if (pubDate == time.Time{}) {
-		Logging("Can not parse dates in ", href)
+		Logging("cannot parse dates in ", href)
 		return
 	}
 	purNum := findFromRegExp(href, `item(\d+)`)
@@ -83,7 +83,7 @@ func (t *ParserDixy) parsingTenderFromList(p *goquery.Selection) {
 		purNum = hex.EncodeToString(md[:])
 	}
 	if purNum == "" {
-		Logging("Can not find purnum in ", href)
+		Logging("cannot find purnum in ", href)
 		return
 	}
 	t.Tender(purNum, href, pubDate, purName)

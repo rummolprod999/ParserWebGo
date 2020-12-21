@@ -62,7 +62,7 @@ func (t *ParserTpsre) parsingTenderList(p string, url string) {
 func (t *ParserTpsre) parsingTenderFromList(p *goquery.Selection, url string) {
 	href, exist := p.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", url)
+		Logging("The element cannot have href attribute", url)
 		return
 	}
 	href = fmt.Sprintf("https://www.tpsre.ru%s", href)
@@ -96,14 +96,14 @@ func (t *ParserTpsre) Tender(tn TenderTpsre) {
 	dateStart = findFromRegExp(dateStart, `^(\d{2}\.\d{2}\.\d{4})`)
 	pubDate := getTimeMoscowLayout(dateStart, "02.01.2006")
 	if (pubDate == time.Time{}) {
-		Logging("Can not find pubDate in ", tn.url)
+		Logging("cannot find pubDate in ", tn.url)
 		return
 	}
 	EndDateT := strings.TrimSpace(doc.Find("p:contains('Приём заявок') + p").First().Text())
 	EndDateT = findFromRegExp(EndDateT, `(\d{2}\.\d{2}\.\d{4})`)
 	endDate := getTimeMoscowLayout(EndDateT, "02.01.2006")
 	if (endDate == time.Time{}) {
-		Logging("Can not find endDate in ", tn.url)
+		Logging("cannot find endDate in ", tn.url)
 		return
 	}
 	tenderSubj := strings.TrimSpace(doc.Find("p:contains('Объект тендера') + p > a").First().Text())

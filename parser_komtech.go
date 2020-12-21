@@ -63,7 +63,7 @@ func (t *ParserKomtech) parsingTenderFromList(p *goquery.Selection, url string) 
 	defer SaveStack()
 	fullString := strings.TrimSpace(p.Find("span.txt_rem").First().Text())
 	if fullString == "" {
-		Logging("Can not find fullString in ", url)
+		Logging("cannot find fullString in ", url)
 		return
 	}
 	pubDateT := strings.TrimSpace(findFromRegExp(fullString, `^(\d{2}.\d{2}.\d{4})`))
@@ -72,13 +72,13 @@ func (t *ParserKomtech) parsingTenderFromList(p *goquery.Selection, url string) 
 	endDate := getTimeMoscowLayout(endDateT, "02.01.2006")
 	status := strings.TrimSpace(findFromRegExp(fullString, `Статус заявки: (.+)`))
 	if (pubDate == time.Time{} || endDate == time.Time{}) {
-		Logging("Can not find enddate or startdate in ", fullString)
+		Logging("cannot find enddate or startdate in ", fullString)
 		return
 	}
 	hrefT := p.Find("a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", hrefT.Text())
+		Logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	href = fmt.Sprintf("http://zakupki.kom-tech.ru/%s", href)
@@ -108,7 +108,7 @@ func (t *ParserKomtech) Tender(tn TenderKomtech) {
 	}
 	purNum := strings.TrimSpace(doc.Find("table span.ttl2").First().Text())
 	if purNum == "" {
-		Logging("Can not find purnum in ", tn.url)
+		Logging("cannot find purnum in ", tn.url)
 		return
 	}
 	upDate := time.Now()
@@ -314,7 +314,7 @@ func (t *ParserKomtech) documents(idTender int, doc *goquery.Selection, db *sql.
 	nameF := strings.TrimSpace(doc.First().Text())
 	href, exist := doc.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", doc.Text())
+		Logging("The element cannot have href attribute", doc.Text())
 		return
 	}
 	if nameF != "" {

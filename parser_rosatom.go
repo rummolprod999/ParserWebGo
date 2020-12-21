@@ -75,31 +75,31 @@ func (t *ParserRosAtom) parsingTenderFromList(p *goquery.Selection, url string) 
 	hrefT := p.Find("td.description > p a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", url)
+		Logging("The element cannot have href attribute", url)
 		return
 	}
 	href = fmt.Sprintf("http://zakupki.rosatom.ru%s", href)
 	purName := strings.TrimSpace(p.Find("td.description > p a").First().Text())
 	if purName == "" {
-		Logging("Can not find purName in ", url)
+		Logging("cannot find purName in ", url)
 		return
 	}
 	purNum := strings.TrimSpace(p.Find("td.description p").First().Text())
 	if purNum == "" {
-		Logging("Can not find purNum in ", url)
+		Logging("cannot find purNum in ", url)
 		return
 	}
 	PubDateT := strings.TrimSpace(p.Find("td:nth-of-type(6) > p").First().Text())
 	pubDate := getTimeMoscowLayout(PubDateT, "02.01.2006")
 	if (pubDate == time.Time{}) {
-		Logging("Can not find pubDate in ", href, purNum)
+		Logging("cannot find pubDate in ", href, purNum)
 		return
 	}
 	EndDateT := strings.TrimSpace(p.Find("td:nth-of-type(7) > p").First().Text())
 	EndDateT = findFromRegExp(EndDateT, `(\d{2}\.\d{2}\.\d{4})`)
 	endDate := getTimeMoscowLayout(EndDateT, "02.01.2006")
 	if (endDate == time.Time{}) {
-		Logging("Can not find endDate in ", href, purNum)
+		Logging("cannot find endDate in ", href, purNum)
 		return
 	}
 	status := strings.TrimSpace(p.Find("td:nth-of-type(8) > p").First().Text())
@@ -253,7 +253,7 @@ func (t *ParserRosAtom) Tender(tn TenderRosAtom) {
 func (t *ParserRosAtom) lots(numLot int, idTender int, d *goquery.Selection, db *sql.DB) {
 	href, exist := d.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", d.Text())
+		Logging("The element cannot have href attribute", d.Text())
 		return
 	}
 	href = fmt.Sprintf("http://zakupki.rosatom.ru%s", href)
@@ -337,7 +337,7 @@ func (t *ParserRosAtom) documents(idTender int, doc *goquery.Selection, db *sql.
 	nameF := strings.TrimSpace(doc.First().Text())
 	href, exist := doc.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", doc.Text())
+		Logging("The element cannot have href attribute", doc.Text())
 		return
 	}
 	href = fmt.Sprintf("http://zakupki.rosatom.ru%s", href)

@@ -56,13 +56,13 @@ func (t *ParserCpc) parsingTenderFromList(p *goquery.Selection, url string) {
 	hrefT := p.Find("a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", hrefT.Text())
+		Logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	href = fmt.Sprintf("http://www.cpc.ru%s", href)
 	purNumT := strings.TrimSpace(p.Find("a").First().Text())
 	if purNumT == "" {
-		Logging("Can not find purnumT in ", url)
+		Logging("cannot find purnumT in ", url)
 		return
 	}
 	purNum := purNumT
@@ -71,7 +71,7 @@ func (t *ParserCpc) parsingTenderFromList(p *goquery.Selection, url string) {
 		purNum = hex.EncodeToString(md[:])
 	}
 	if purNum == "" {
-		Logging("Can not find purnum in ", url)
+		Logging("cannot find purnum in ", url)
 		return
 	}
 	tnd := TenderCpc{url: href, purNum: purNum}
@@ -95,7 +95,7 @@ func (t *ParserCpc) Tender(tn TenderCpc) {
 		purObjInfo = strings.TrimSpace(doc.Find("li div:contains('Описание закупки') + div").First().Text())
 	}
 	if purObjInfo == "" {
-		Logging("Can not find purObjInfo in ", tn.url)
+		Logging("cannot find purObjInfo in ", tn.url)
 		return
 	}
 	allDates := strings.TrimSpace(doc.Find("div.date-tender").First().Text())
@@ -105,7 +105,7 @@ func (t *ParserCpc) Tender(tn TenderCpc) {
 	}
 	pubDate := getDateCpc(pubDateT)
 	if (pubDate == time.Time{}) {
-		Logging("Can not parse pubDate in ", tn.url)
+		Logging("cannot parse pubDate in ", tn.url)
 		return
 	}
 
@@ -114,12 +114,12 @@ func (t *ParserCpc) Tender(tn TenderCpc) {
 		endDateT = findFromRegExp(allDates, `Приём заявок до:\s+(\d{2}\s+.+?\d{4})`)
 	}
 	if endDateT == "" {
-		Logging("Can not find endDateT in ", tn.url)
+		Logging("cannot find endDateT in ", tn.url)
 		return
 	}
 	endDate := getDateCpc(endDateT)
 	if (endDate == time.Time{}) {
-		Logging("Can not parse endDate in ", tn.url)
+		Logging("cannot parse endDate in ", tn.url)
 		return
 	}
 
@@ -309,7 +309,7 @@ func (t *ParserCpc) documents(idTender int, doc *goquery.Selection, db *sql.DB) 
 	nameF := strings.TrimSpace(doc.First().Text())
 	href, exist := doc.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", doc.Text())
+		Logging("The element cannot have href attribute", doc.Text())
 		return
 	}
 	href = fmt.Sprintf("http://www.cpc.ru%s", href)

@@ -69,7 +69,7 @@ func (t *ParserPhosagro) parsingTenderList(p string, url string) {
 func (t *ParserPhosagro) parsingTenderFromList(p *goquery.Selection, url string) {
 	purNum := strings.TrimSpace(p.Find("td:nth-child(1)").First().Text())
 	if purNum == "" {
-		Logging("Can not find purnum in ", url)
+		Logging("cannot find purnum in ", url)
 		return
 	}
 	pubDateT := strings.TrimSpace(p.Find("td:nth-child(4)").First().Text())
@@ -83,7 +83,7 @@ func (t *ParserPhosagro) parsingTenderFromList(p *goquery.Selection, url string)
 		endDate = getTimeMoscowLayout(endDateT, "02.01.2006")
 	}
 	if (pubDate == time.Time{} || endDate == time.Time{}) {
-		Logging("Can not find enddate or startdate in ", url, purNum)
+		Logging("cannot find enddate or startdate in ", url, purNum)
 		return
 	}
 	orgName := strings.TrimSpace(p.Find("td:nth-child(3)").First().Text())
@@ -92,7 +92,7 @@ func (t *ParserPhosagro) parsingTenderFromList(p *goquery.Selection, url string)
 	hrefT := p.Find("td:nth-child(2) a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", hrefT.Text())
+		Logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	href = fmt.Sprintf("https://etpreg.phosagro.ru/tenders/%s", href)

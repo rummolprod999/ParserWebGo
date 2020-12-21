@@ -67,7 +67,7 @@ func (t *ParserIes) parsingTenderFromList(p *goquery.Selection, url string) {
 	hrefT := p.Find("h3 a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", hrefT.Text())
+		Logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	if strings.Contains(href, "result") {
@@ -76,12 +76,12 @@ func (t *ParserIes) parsingTenderFromList(p *goquery.Selection, url string) {
 	href = fmt.Sprintf("http://zakupki.ies-holding.com/%s", href)
 	purName := strings.TrimSpace(p.Find("h3 a").First().Text())
 	if purName == "" {
-		Logging("Can not find purName in ", url)
+		Logging("cannot find purName in ", url)
 		return
 	}
 	purNum := findFromRegExp(href, `/(\d+)/$`)
 	if purNum == "" {
-		Logging("Can not find purnum in ", purName)
+		Logging("cannot find purnum in ", purName)
 		return
 	}
 	orgName := strings.TrimSpace(p.Find("span.news-cat").First().Text())
@@ -90,7 +90,7 @@ func (t *ParserIes) parsingTenderFromList(p *goquery.Selection, url string) {
 	pubDateT := strings.TrimSpace(p.Find("em.news-date").First().Text())
 	pubDate := getDateIes(pubDateT)
 	if (pubDate == time.Time{}) {
-		Logging("Can not find pubDate in ", href, purNum)
+		Logging("cannot find pubDate in ", href, purNum)
 		return
 	}
 	tnd := TenderIes{purNum: purNum, purName: purName, orgName: orgName, url: href, pubDate: pubDate, endDate: endDate, pwName: pwName}
@@ -295,7 +295,7 @@ func (t *ParserIes) documents(idTender int, doc *goquery.Selection, db *sql.DB) 
 	nameF := strings.TrimSpace(doc.First().Text())
 	href, exist := doc.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", doc.Text())
+		Logging("The element cannot have href attribute", doc.Text())
 		return
 	}
 	href = fmt.Sprintf("http://zakupki.ies-holding.com/%s", href)

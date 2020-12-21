@@ -74,27 +74,27 @@ func (t *ParserAzot) parsingTenderFromList(p *goquery.Selection) {
 	defer SaveStack()
 	purName := strings.TrimSpace(p.Find("div.line div:contains('Предмет') + div").First().Text())
 	if purName == "" {
-		Logging("The element can not have purNum", p.Text())
+		Logging("The element cannot have purNum", p.Text())
 		return
 	}
 	pubDateT := strings.TrimSpace(p.Find("div.line div:contains('Дата объявления') + div").First().Text())
 	if pubDateT == "" {
-		Logging("Can not find pubDateT", purName)
+		Logging("cannot find pubDateT", purName)
 		return
 	}
 	pubDate := getTimeMoscowLayout(pubDateT, "02.01.2006")
 	if (pubDate == time.Time{}) {
-		Logging("Can not parse pubDate in ", purName)
+		Logging("cannot parse pubDate in ", purName)
 		return
 	}
 	endDateT := strings.TrimSpace(p.Find("div.line div:contains('Дата вскрытия') + div").First().Text())
 	if endDateT == "" {
-		Logging("Can not find endDateT in ", purName)
+		Logging("cannot find endDateT in ", purName)
 		return
 	}
 	endDate := getTimeMoscowLayout(endDateT, "02.01.2006")
 	if (endDate == time.Time{}) {
-		Logging("Can not parse endDate in ", purName)
+		Logging("cannot parse endDate in ", purName)
 		return
 	}
 	status := strings.TrimSpace(p.Find("div.line div:contains('Статус') + div").First().Text())
@@ -102,7 +102,7 @@ func (t *ParserAzot) parsingTenderFromList(p *goquery.Selection) {
 	purNum := strings.TrimSpace(p.Find("div.title b").First().Text())
 	noticeV := strings.TrimSpace(p.Find("div.title + div.zamanda").First().Text())
 	if purName == "" {
-		Logging("The element can not have purNum", purName)
+		Logging("The element cannot have purNum", purName)
 		return
 	}
 	tnd := TenderAzot{purName: purName, purNum: purNum, status: status, pWay: pWay, pubDate: pubDate, endDate: endDate, noticeV: noticeV}

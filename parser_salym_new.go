@@ -60,7 +60,7 @@ func (t *ParserSalymNew) parsingTenderFromList(p *goquery.Selection) {
 	defer SaveStack()
 	purName := strings.TrimSpace(p.Find("span:contains('Наименование тендера:') + p").First().Text())
 	if purName == "" {
-		Logging("Can not find purName in ")
+		Logging("cannot find purName in ")
 		return
 	}
 	href := "https://salympetroleum.ru/cp/tenders/"
@@ -71,7 +71,7 @@ func (t *ParserSalymNew) parsingTenderFromList(p *goquery.Selection) {
 func (t *ParserSalymNew) Tender(tn TenderSalymNew, doc *goquery.Selection) {
 	pubDateTT := strings.TrimSpace(doc.Find("span:contains('Дата и время начала приема заявок:') + p").First().Text())
 	if pubDateTT == "" {
-		Logging("Can not find pubDateTT", tn.url)
+		Logging("cannot find pubDateTT", tn.url)
 		return
 	}
 	dateT := findFromRegExp(pubDateTT, `(\d{2}.\d{2}.\d{4})`)
@@ -86,12 +86,12 @@ func (t *ParserSalymNew) Tender(tn TenderSalymNew, doc *goquery.Selection) {
 		pubDate = time.Time{}
 	}
 	if (pubDate == time.Time{}) {
-		Logging("Can not parse pubDate in ", tn.url)
+		Logging("cannot parse pubDate in ", tn.url)
 		return
 	}
 	endDateTT := strings.TrimSpace(doc.Find("span:contains('Дата и время окончания приема заявок:') + p").First().Text())
 	if endDateTT == "" {
-		Logging("Can not find endDateTT", tn.url)
+		Logging("cannot find endDateTT", tn.url)
 		return
 	}
 	dateTend := findFromRegExp(endDateTT, `(\d{2}.\d{2}.\d{4})`)
@@ -106,7 +106,7 @@ func (t *ParserSalymNew) Tender(tn TenderSalymNew, doc *goquery.Selection) {
 		endDate = time.Time{}
 	}
 	if (endDate == time.Time{}) {
-		Logging("Can not parse endDate in ", tn.url)
+		Logging("cannot parse endDate in ", tn.url)
 		return
 	}
 	scoringDateT := strings.TrimSpace(doc.Find("span:contains('Дата определения победителя и заключение договора:') + p").First().Text())
@@ -294,7 +294,7 @@ func (t *ParserSalymNew) documents(idTender int, doc *goquery.Selection, db *sql
 	nameF := strings.TrimSpace(doc.Text())
 	href, exist := doc.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", doc.Text())
+		Logging("The element cannot have href attribute", doc.Text())
 		return
 	}
 	href = fmt.Sprintf("https://salympetroleum.ru%s", href)

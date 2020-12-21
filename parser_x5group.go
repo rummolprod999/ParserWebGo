@@ -63,7 +63,7 @@ func (t *ParserX5Group) parsingTenderFromList(p *goquery.Selection) {
 	hrefT := p.Find("td[align='left'] a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", hrefT.Text())
+		Logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	href = fmt.Sprintf("https://tender.x5.ru%s", href)
@@ -91,19 +91,19 @@ func (t *ParserX5Group) parsingTender(doc *goquery.Document, page string) {
 	purNum := doc.Find("td:contains('Номер конкурса') + td").First().Text()
 	purNum = strings.TrimSpace(purNum)
 	if purNum == "" {
-		Logging("Can not find purchase number in ", page)
+		Logging("cannot find purchase number in ", page)
 		return
 	}
 	pubDateT := strings.TrimSpace(doc.Find("td:contains('Дата и время начала подачи заявок на участие в конкурсе') + td").First().Text())
 	endDateT := strings.TrimSpace(doc.Find("td:contains('Дата и время начала конкурса') + td").First().Text())
 	if pubDateT == "" || endDateT == "" {
-		Logging("Can not find dates in ", page)
+		Logging("cannot find dates in ", page)
 		return
 	}
 	pubDate := getTimeMoscow(pubDateT)
 	endDate := getTimeMoscow(endDateT)
 	if (pubDate == time.Time{}) || (endDate == time.Time{}) {
-		Logging("Can not parse dates in ", page)
+		Logging("cannot parse dates in ", page)
 		return
 	}
 	t.Tender(purNum, page, pubDate, endDate, doc)

@@ -68,13 +68,13 @@ func (t *ParserMetafrax) parsingTenderList(p string, url string) {
 func (t *ParserMetafrax) parsingTenderFromList(p *goquery.Selection, url string) {
 	purName := strings.TrimSpace(p.Find("td:nth-child(2) a").First().Text())
 	if purName == "" {
-		Logging("Can not find purName in ", url)
+		Logging("cannot find purName in ", url)
 		return
 	}
 	hrefT := p.Find("td:nth-child(2) a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", hrefT.Text())
+		Logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	href = fmt.Sprintf("http://metafrax.ru%s", href)
@@ -85,7 +85,7 @@ func (t *ParserMetafrax) parsingTenderFromList(p *goquery.Selection, url string)
 	pubDate := getTimeMoscowLayout(pubDateTT, "02.01.2006")
 	purNum := purName
 	if (endDate == time.Time{} || pubDate == time.Time{}) {
-		Logging("Can not find endDate or pubDate in ", href, purNum)
+		Logging("cannot find endDate or pubDate in ", href, purNum)
 		return
 	}
 	docList := make([]map[string]string, 0)

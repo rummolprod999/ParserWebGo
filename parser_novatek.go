@@ -72,35 +72,35 @@ func (t *ParserNovatek) parsingTenderFromList(p *goquery.Selection) {
 	hrefT := p.Find("td:nth-child(1) a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", hrefT.Text())
+		Logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	href = fmt.Sprintf("http://www.novatek.ru%s", href)
 	purName := strings.TrimSpace(p.Find("td:nth-child(1) a").First().Text())
 	purNum := findFromRegExp(href, `=(\d+)$`)
 	if purName == "" {
-		Logging("The element can not have purNum", href)
+		Logging("The element cannot have purNum", href)
 		return
 	}
 	cusName := strings.TrimSpace(p.Find("td:nth-child(2)").First().Text())
 	pubDateT := strings.TrimSpace(p.Find("td:nth-child(3)").First().Text())
 	if pubDateT == "" {
-		Logging("Can not find pubDateT in ", href)
+		Logging("cannot find pubDateT in ", href)
 		return
 	}
 	pubDate := getDateCpc(pubDateT)
 	if (pubDate == time.Time{}) {
-		Logging("Can not parse pubDate in ", href)
+		Logging("cannot parse pubDate in ", href)
 		return
 	}
 	endDateT := strings.TrimSpace(p.Find("td:nth-child(4)").First().Text())
 	if endDateT == "" {
-		Logging("Can not find endDateT in ", href)
+		Logging("cannot find endDateT in ", href)
 		return
 	}
 	endDate := getDateCpc(endDateT)
 	if (endDate == time.Time{}) {
-		Logging("Can not parse endDate in ", href)
+		Logging("cannot parse endDate in ", href)
 		return
 	}
 	tnd := TenderNovatek{url: href, purName: purName, purNum: purNum, cusName: cusName, pubDate: pubDate, endDate: endDate}
@@ -238,7 +238,7 @@ func (t *ParserNovatek) Tender(tn TenderNovatek) {
 	dochrefT := doc.Find("div.download span a")
 	hrefD, exist := dochrefT.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", dochrefT.Text())
+		Logging("The element cannot have href attribute", dochrefT.Text())
 	}
 	hrefD = fmt.Sprintf("http://www.novatek.ru%s", hrefD)
 	docName := strings.TrimSpace(doc.Find("div.download span a").First().Text())

@@ -114,7 +114,7 @@ func (t *ParserIcetrade) parsingTenderFromList(p *goquery.Selection, url string)
 	defer SaveStack()
 	purNum := strings.TrimSpace(p.Find("td:nth-child(4)").First().Text())
 	if purNum == "" {
-		Logging("Can not find purnum in ", url)
+		Logging("cannot find purnum in ", url)
 		return
 	}
 	orgName := strings.TrimSpace(p.Find("td:nth-child(2)").First().Text())
@@ -122,7 +122,7 @@ func (t *ParserIcetrade) parsingTenderFromList(p *goquery.Selection, url string)
 	hrefT := p.Find("td:nth-child(1) a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", hrefT.Text())
+		Logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	lotPrice := strings.TrimSpace(p.Find("td:nth-child(5) span").First().Text())
@@ -151,7 +151,7 @@ func (t *ParserIcetrade) Tender(tn TenderIcetrade) {
 		pubDate = getTimeMoscowLayoutIceTrade(pubDateT, "02.01.2006 15:04")
 	}
 	if (pubDate == time.Time{}) {
-		Logging("Can not find startdate in ", tn.url, tn.purNum)
+		Logging("cannot find startdate in ", tn.url, tn.purNum)
 		return
 	}
 	endDateTT := cleanString(strings.TrimSpace(doc.Find("table td:contains('Дата и время окончания приема предложений') + td").First().Text()))
@@ -164,7 +164,7 @@ func (t *ParserIcetrade) Tender(tn TenderIcetrade) {
 		endDate = getTimeMoscowLayoutIceTrade(endDateT, "02.01.2006")
 	}
 	if (endDate == time.Time{}) {
-		Logging("Can not find enddate in ", tn.url, tn.purNum)
+		Logging("cannot find enddate in ", tn.url, tn.purNum)
 		return
 	}
 	db, err := sql.Open("mysql", Dsn)
@@ -342,12 +342,12 @@ func (t *ParserIcetrade) parsingLots(tn TenderIcetrade, doc *goquery.Document, d
 		defer SaveStack()
 		lotId, exist := s.Attr("id")
 		if !exist {
-			Logging("The element can not have lotId attribute", s.Text())
+			Logging("The element cannot have lotId attribute", s.Text())
 			return
 		}
 		lotNum, err := strconv.Atoi(cleanString(strings.TrimSpace(s.Find("td:nth-child(1)").First().Text())))
 		if err != nil {
-			Logging("can not find lotNum", err)
+			Logging("cannot find lotNum", err)
 			return
 		}
 		lotPriceT := strings.TrimSpace(s.Find("td:nth-child(3)").First().Text())
@@ -407,7 +407,7 @@ func (t *ParserIcetrade) documents(idTender int, doc *goquery.Selection, db *sql
 	nameF := strings.TrimSpace(doc.First().Text())
 	href, exist := doc.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", doc.Text())
+		Logging("The element cannot have href attribute", doc.Text())
 		return
 	}
 	href = fmt.Sprintf("%s", href)

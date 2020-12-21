@@ -72,31 +72,31 @@ func (t *ParserApk) parsingTenderFromList(p *goquery.Selection, url string) {
 	hrefT := p.Find("a.t_lot_title")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", hrefT.Text())
+		Logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	href = fmt.Sprintf("http://tender-apk.ru/%s", href)
 	purName := strings.TrimSpace(p.Find("a.t_lot_title").First().Text())
 	if purName == "" {
-		Logging("Can not find purName in ", url)
+		Logging("cannot find purName in ", url)
 		return
 	}
 	purNum := findFromRegExp(href, `LOT_ID=(\d{1,})`)
 	if purNum == "" {
-		Logging("Can not find purnum in ", url)
+		Logging("cannot find purnum in ", url)
 		return
 	}
 	pwName := strings.TrimSpace(p.Find("div.t_lot_descr span.label-info").First().Text())
 	PubDateT := strings.TrimSpace(p.Find("span.t_lot_start_date").First().Text())
 	pubDate := getTimeMoscowLayout(PubDateT, "02.01.2006 15:04:05")
 	if (pubDate == time.Time{}) {
-		Logging("Can not find pubDate in ", href, purNum)
+		Logging("cannot find pubDate in ", href, purNum)
 		return
 	}
 	EndDateT := strings.TrimSpace(p.Find("span.t_lot_end_date").First().Text())
 	endDate := getTimeMoscowLayout(EndDateT, "02.01.2006 15:04:05")
 	if (endDate == time.Time{}) {
-		Logging("Can not find endDate in ", href, purNum)
+		Logging("cannot find endDate in ", href, purNum)
 		return
 	}
 	tnd := TenderApk{purNum: purNum, purName: purName, pwName: pwName, url: href, pubDate: pubDate, endDate: endDate}

@@ -57,7 +57,7 @@ func (t *ParserSistema) getPageList(url string) []string {
 	doc.Find("div.browseLinksWrap > a[href ^= 'zakupki/zakupki']").Each(func(i int, s *goquery.Selection) {
 		href, exist := s.Attr("href")
 		if !exist {
-			Logging("The element can not have href attribute", s.Text())
+			Logging("The element cannot have href attribute", s.Text())
 			return
 		}
 		href = fmt.Sprintf("http://www.sistema.ru/%s", href)
@@ -92,18 +92,18 @@ func (t *ParserSistema) parsingTenderFromList(p *goquery.Selection, url string) 
 	hrefT := p.Find("a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", hrefT.Text())
+		Logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	href = fmt.Sprintf("http://www.sistema.ru/%s", href)
 	purName := strings.TrimSpace(p.Find("a").First().Text())
 	if purName == "" {
-		Logging("Can not find purName in ", url)
+		Logging("cannot find purName in ", url)
 		return
 	}
 	purNum := findFromRegExp(href, `/(\d+)/$`)
 	if purNum == "" {
-		Logging("Can not find purnum in ", purName)
+		Logging("cannot find purnum in ", purName)
 		return
 	}
 	endDate := time.Now()
@@ -111,7 +111,7 @@ func (t *ParserSistema) parsingTenderFromList(p *goquery.Selection, url string) 
 	pubDateT = cleanString(pubDateT)
 	pubDate := getDateDixy(pubDateT)
 	if (pubDate == time.Time{}) {
-		Logging("Can not find pubDate in ", href, purNum)
+		Logging("cannot find pubDate in ", href, purNum)
 		return
 	}
 	tnd := TenderSistema{purName: purName, purNum: purNum, pubDate: pubDate, endDate: endDate, url: href}
@@ -330,7 +330,7 @@ func (t *ParserSistema) documents(idTender int, doc *goquery.Selection, db *sql.
 	nameF := strings.TrimSpace(doc.First().Text())
 	href, exist := doc.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", doc.Text())
+		Logging("The element cannot have href attribute", doc.Text())
 		return
 	}
 	href = fmt.Sprintf("http://www.sistema.ru/%s", href)

@@ -37,7 +37,7 @@ func (t *ParserMonetka) parsing() {
 		}
 
 	} else {
-		Logging("can not find starturl")
+		Logging("cannot find starturl")
 	}
 	Logging("End parsing")
 	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderMonetka))
@@ -71,24 +71,24 @@ func (t *ParserMonetka) parsingTenderFromList(p *goquery.Selection, url string) 
 	hrefT := p.Find("a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", hrefT.Text())
+		Logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	href = fmt.Sprintf("http://www.monetka.ru%s", strings.TrimSpace(href))
 	purName := strings.TrimSpace(hrefT.Text())
 	if purName == "" {
-		Logging("Can not find purName in ", url)
+		Logging("cannot find purName in ", url)
 		return
 	}
 	purNum := findFromRegExp(purName, `(\d+)`)
 	if purNum == "" {
-		Logging("Can not find purnum in ", purName)
+		Logging("cannot find purnum in ", purName)
 		return
 	}
 	pubDateT := strings.TrimSpace(p.Find("div.dt.grey").First().Text())
 	pubDate := getDateMonetka(pubDateT)
 	if (pubDate == time.Time{}) {
-		Logging("Can not find startdate in ", url, purNum)
+		Logging("cannot find startdate in ", url, purNum)
 		return
 	}
 	tnd := TenderMonetka{pubDate: pubDate, purName: purName, purNum: purNum, url: href}
@@ -288,7 +288,7 @@ func (t *ParserMonetka) documents(idTender int, doc *goquery.Selection, db *sql.
 	nameF := strings.TrimSpace(doc.Text())
 	href, exist := doc.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", doc.Text())
+		Logging("The element cannot have href attribute", doc.Text())
 		return
 	}
 	href = fmt.Sprintf("http://www.monetka.ru%s", href)
@@ -317,7 +317,7 @@ func (t *ParserMonetka) getPageUrl() string {
 		}
 		href, exist := url.Attr("href")
 		if !exist {
-			Logging("The element can not have href attribute startpage")
+			Logging("The element cannot have href attribute startpage")
 			return ""
 		}
 		if href == "" {

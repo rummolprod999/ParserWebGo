@@ -67,39 +67,39 @@ func (t *ParserUva) parsingTenderFromList(p *goquery.Selection) {
 	defer SaveStack()
 	purName := strings.TrimSpace(p.Find("td:nth-child(3) a").First().Text())
 	if purName == "" {
-		Logging("The element can not have purName", p.Text())
+		Logging("The element cannot have purName", p.Text())
 		return
 	}
 	pubDateT := strings.TrimSpace(p.Find("td:nth-child(5)").First().Text())
 	if pubDateT == "" {
-		Logging("Can not find pubDateT", purName)
+		Logging("cannot find pubDateT", purName)
 		return
 	}
 	pubDate := getTimeMoscowLayout(pubDateT, "02.01.2006 15:04:05")
 	if (pubDate == time.Time{}) {
-		Logging("Can not parse pubDate in ", purName)
+		Logging("cannot parse pubDate in ", purName)
 		return
 	}
 	endDateT := strings.TrimSpace(p.Find("td:nth-child(6)").First().Text())
 	if endDateT == "" {
-		Logging("Can not find endDateT in ", purName)
+		Logging("cannot find endDateT in ", purName)
 		return
 	}
 	endDate := getTimeMoscowLayout(endDateT, "02.01.2006 15:04:05")
 	if (endDate == time.Time{}) {
-		Logging("Can not parse endDate in ", purName)
+		Logging("cannot parse endDate in ", purName)
 		return
 	}
 	hrefT := p.Find("td:nth-child(3) a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", hrefT.Text())
+		Logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	href = fmt.Sprintf("http://tender.uva-moloko.ru%s", href)
 	purNum := findFromRegExp(href, `id=(\d+)$`)
 	if purNum == "" {
-		Logging("The element can not have purNum", href)
+		Logging("The element cannot have purNum", href)
 		return
 	}
 	tnd := TenderUva{purName: purName, purNum: purNum, url: href, pubDate: pubDate, endDate: endDate}

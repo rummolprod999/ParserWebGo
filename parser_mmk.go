@@ -68,25 +68,25 @@ func (t *ParserMmk) parsingTenderFromList(p *goquery.Selection, url string) {
 	hrefT := p.Find("a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", hrefT.Text())
+		Logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	href = fmt.Sprintf("http://mmk.ru%s", href)
 	purName := strings.TrimSpace(p.Find("a").First().Text())
 	if purName == "" {
-		Logging("Can not find purName in ", url)
+		Logging("cannot find purName in ", url)
 		return
 	}
 	purNum := findFromRegExp(href, `/(\d+)/$`)
 	if purNum == "" {
-		Logging("Can not find purnum in ", purName)
+		Logging("cannot find purnum in ", purName)
 		return
 	}
 	pubDate := time.Now()
 	endDateT := strings.TrimSpace(p.Find("td:nth-child(4)").First().Text())
 	endDate := getTimeMoscowLayout(endDateT, "02.01.2006 15:04:05")
 	if (endDate == time.Time{}) {
-		Logging("Can not find enddate in ", href, purNum)
+		Logging("cannot find enddate in ", href, purNum)
 		return
 	}
 	status := strings.TrimSpace(p.Find("td:nth-child(2)").First().Text())
@@ -290,7 +290,7 @@ func (t *ParserMmk) documents(idTender int, doc *goquery.Selection, db *sql.DB) 
 	nameF := strings.TrimSpace(doc.First().Text())
 	href, exist := doc.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", doc.Text())
+		Logging("The element cannot have href attribute", doc.Text())
 		return
 	}
 	href = fmt.Sprintf("http://mmk.ru%s", href)

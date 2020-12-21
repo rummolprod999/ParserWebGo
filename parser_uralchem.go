@@ -83,13 +83,13 @@ func (t *ParserUralChem) parsingTenderFromList(p *goquery.Selection, url string)
 	hrefT := p.Find("div.item-text > a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", hrefT.Text())
+		Logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	href = fmt.Sprintf("http://www.uralchem.ru%s", href)
 	purName := strings.TrimSpace(p.Find("div.item-text > a").First().Text())
 	if purName == "" {
-		Logging("Can not find purName in ", url)
+		Logging("cannot find purName in ", url)
 		return
 	}
 	md := md5.Sum([]byte(purName))
@@ -102,11 +102,11 @@ func (t *ParserUralChem) parsingTenderFromList(p *goquery.Selection, url string)
 	endDateTT := findFromRegExp(DateT, `окончания приема заявок:\s*(\d{2}\.\d{2}\.\d{4} \d{2}:\d{2}:\d{2})`)
 	endDate := getTimeMoscowLayout(endDateTT, "02.01.2006 15:04:05")
 	if (pubDate == time.Time{}) {
-		Logging("Can not find pubDate in ", href, purNum)
+		Logging("cannot find pubDate in ", href, purNum)
 		return
 	}
 	if (endDate == time.Time{}) {
-		Logging("Can not find endDate in ", href, purNum)
+		Logging("cannot find endDate in ", href, purNum)
 		return
 	}
 	tnd := TenderUralChem{purNum: purNum, purName: purName, orgName: orgName, url: href, pubDate: pubDate, endDate: endDate}

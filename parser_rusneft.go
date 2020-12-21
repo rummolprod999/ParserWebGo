@@ -63,7 +63,7 @@ func (t *ParserRusneft) parsingTenderFromList(p *goquery.Selection, url string) 
 	defer SaveStack()
 	purNum := strings.TrimSpace(p.Find("span.tender-table__info-item_title").First().Text())
 	if purNum == "" {
-		Logging("Can not find purnum in ", url)
+		Logging("cannot find purnum in ", url)
 		return
 	}
 	if strings.Contains(url, "tenders/russneft") {
@@ -81,7 +81,7 @@ func (t *ParserRusneft) parsingTenderFromList(p *goquery.Selection, url string) 
 	}
 	dates := p.Find("span.tender-table__info-item")
 	if len(dates.Nodes) < 3 {
-		Logging("Can not find 3 dates in ", url)
+		Logging("cannot find 3 dates in ", url)
 		return
 	}
 	pubDateT := strings.TrimSpace(dates.Eq(0).Text())
@@ -93,7 +93,7 @@ func (t *ParserRusneft) parsingTenderFromList(p *goquery.Selection, url string) 
 		endDate = getTimeMoscowLayout(endDateT, "02.01.2006")
 	}
 	if (pubDate == time.Time{} || endDate == time.Time{}) {
-		Logging("Can not find enddate or startdate in ", url, purNum)
+		Logging("cannot find enddate or startdate in ", url, purNum)
 		return
 	}
 	purNum = fmt.Sprintf("%s_%s", purNum, pubDate.Format("2006-01-02"))
@@ -162,7 +162,7 @@ func (t *ParserRusneft) Tender(purNum string, page string, pubDate time.Time, en
 	hrefT := p.Find("td a").First()
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", hrefT.Text())
+		Logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	href = fmt.Sprintf("http://www.russneft.ru%s", href)
@@ -320,7 +320,7 @@ func (t *ParserRusneft) documents(idTender int, doc *goquery.Selection, db *sql.
 	nameF := strings.TrimSpace(doc.First().Text())
 	href, exist := doc.Attr("href")
 	if !exist {
-		Logging("The element can not have href attribute", doc.Text())
+		Logging("The element cannot have href attribute", doc.Text())
 		return
 	}
 	href = fmt.Sprintf("http://www.russneft.ru%s", href)
