@@ -742,6 +742,16 @@ func findFromRegExpDixy(s string, t string) string {
 	return r
 }
 
+func findFromRegExpTwoValue(s string, t string) (string, string) {
+	r := ""
+	re := regexp.MustCompile(t)
+	match := re.FindStringSubmatch(s)
+	if len(match) > 2 {
+		return match[1], match[2]
+	}
+	return r, r
+}
+
 func GetConformity(conf string) int {
 	s := strings.ToLower(conf)
 	switch {

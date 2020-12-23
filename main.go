@@ -57,6 +57,8 @@ func main() {
 		p := ParserDtek{TypeFz: 117}
 		MainParser(&p)
 	case Mmk:
+		m := ParserMmk2{TypeFz: 119, Urls: []string{"http://mmk.ru/for_suppliers/auction/"}}
+		MainParser(&m)
 		p := ParserMmk{TypeFz: 119, Urls: []string{"http://mmk.ru/for_suppliers/tenders1/", "http://mmk.ru/for_suppliers/tenders2/"}}
 		MainParser(&p)
 	case Letoile:
