@@ -35,7 +35,7 @@ func (t *ParserSistema) parsing() {
 }
 
 func (t *ParserSistema) parsingPageAll() {
-	startUrl := "http://www.sistema.ru/zakupki/zakupki/"
+	startUrl := "https://sistema.ru/procurements"
 	lst := t.getPageList(startUrl)
 	for _, p := range lst {
 		t.parsingPage(p)
@@ -54,7 +54,7 @@ func (t *ParserSistema) getPageList(url string) []string {
 		Logging(err)
 		panic(err)
 	}
-	doc.Find("div.browseLinksWrap > a[href ^= 'zakupki/zakupki']").Each(func(i int, s *goquery.Selection) {
+	doc.Find("div[class ^='Cells__Item']").Each(func(i int, s *goquery.Selection) {
 		href, exist := s.Attr("href")
 		if !exist {
 			Logging("The element cannot have href attribute", s.Text())
