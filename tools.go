@@ -11,6 +11,7 @@ import (
 	"golang.org/x/text/encoding/charmap"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"os"
 	"regexp"
@@ -109,6 +110,28 @@ func DownloadPage(url string) string {
 	return st
 }
 
+func DownloadPageInsecure(url string) string {
+	count := 0
+	var st string
+	for {
+		//fmt.Println("Start download file")
+		if count > 50 {
+			Logging(fmt.Sprintf("Не скачали файл за %d попыток %s", count, url))
+			return st
+		}
+		st = GetPageIns(url)
+		if st == "" {
+			count++
+			Logging("Получили пустую страницу", url)
+			time.Sleep(time.Second * 5)
+			continue
+		}
+		return st
+
+	}
+	return st
+}
+
 func DownloadPageGzip(url string) string {
 	count := 0
 	var st string
@@ -190,6 +213,50 @@ func GetPage(url string) (ret string) {
 		}
 	}()
 	resp, err := http.Get(url)
+	if err != nil {
+		Logging("Ошибка response", url, err)
+		return st
+	}
+	defer resp.Body.Close()
+	if err != nil {
+		Logging("Ошибка скачивания", url, err)
+		return st
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		Logging("Ошибка чтения", url, err)
+		return st
+	}
+
+	return string(body)
+}
+
+func GetPageIns(url string) (ret string) {
+	var st string
+	defer func() {
+		if r := recover(); r != nil {
+			Logging(fmt.Sprintf("was panic, recovered value: %v", r))
+			ret = ""
+		}
+	}()
+	var client = &http.Client{
+		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
+			DialContext: (&net.Dialer{
+				Timeout:   30 * time.Second,
+				KeepAlive: 30 * time.Second,
+			}).DialContext,
+			ForceAttemptHTTP2:     true,
+			MaxIdleConns:          100,
+			IdleConnTimeout:       90 * time.Second,
+			TLSHandshakeTimeout:   10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
+	}
+	resp, err := client.Get(url)
 	if err != nil {
 		Logging("Ошибка response", url, err)
 		return st

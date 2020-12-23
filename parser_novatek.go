@@ -45,7 +45,7 @@ func (t *ParserNovatek) parsingPageAll() {
 
 func (t *ParserNovatek) parsingPage(p string) {
 	defer SaveStack()
-	r := DownloadPage(p)
+	r := DownloadPageInsecure(p)
 	if r != "" {
 		t.parsingTenderList(r)
 	} else {
@@ -60,30 +60,34 @@ func (t *ParserNovatek) parsingTenderList(p string) {
 		Logging(err)
 		return
 	}
-	doc.Find("div.tenders-list tbody tr").Each(func(i int, s *goquery.Selection) {
-		txt := s.Text()
-		if !strings.Contains(txt, "Название конкурса") {
+	count := 0
+	doc.Find("div.tlike div.tr").Each(func(i int, s *goquery.Selection) {
+		if count > 0 {
 			t.parsingTenderFromList(s)
 		}
+		count++
 	})
 }
 func (t *ParserNovatek) parsingTenderFromList(p *goquery.Selection) {
 	defer SaveStack()
-	hrefT := p.Find("td:nth-child(1) a")
+	hrefT := p.Find("div:nth-child(1) a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
 		Logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	href = fmt.Sprintf("http://www.novatek.ru%s", href)
-	purName := strings.TrimSpace(p.Find("td:nth-child(1) a").First().Text())
+	purName := strings.TrimSpace(p.Find("div:nth-child(1) a").First().Text())
+	purName = strings.TrimSpace(strings.Replace(purName, "Тендер", "", -1))
 	purNum := findFromRegExp(href, `=(\d+)$`)
 	if purName == "" {
 		Logging("The element cannot have purNum", href)
 		return
 	}
-	cusName := strings.TrimSpace(p.Find("td:nth-child(2)").First().Text())
-	pubDateT := strings.TrimSpace(p.Find("td:nth-child(3)").First().Text())
+	cusName := strings.TrimSpace(p.Find("div:nth-child(2)").First().Text())
+	cusName = strings.TrimSpace(strings.Replace(cusName, "Заказчик", "", -1))
+	pubDateT := strings.TrimSpace(p.Find("div:nth-child(3)").First().Text())
+	pubDateT = strings.TrimSpace(strings.Replace(pubDateT, "Начало сбора оферт", "", -1))
 	if pubDateT == "" {
 		Logging("cannot find pubDateT in ", href)
 		return
@@ -93,7 +97,8 @@ func (t *ParserNovatek) parsingTenderFromList(p *goquery.Selection) {
 		Logging("cannot parse pubDate in ", href)
 		return
 	}
-	endDateT := strings.TrimSpace(p.Find("td:nth-child(4)").First().Text())
+	endDateT := strings.TrimSpace(p.Find("div:nth-child(4)").First().Text())
+	endDateT = strings.TrimSpace(strings.Replace(endDateT, "Окончание сбора оферт", "", -1))
 	if endDateT == "" {
 		Logging("cannot find endDateT in ", href)
 		return
@@ -110,15 +115,15 @@ func (t *ParserNovatek) parsingTenderFromList(p *goquery.Selection) {
 
 func (t *ParserNovatek) Tender(tn TenderNovatek) {
 	defer SaveStack()
-	r := DownloadPage(tn.url)
+	r := DownloadPageInsecure(tn.url)
 	if r == "" {
 		Logging("Получили пустую строку", tn.url)
 		return
 	}
-	if strings.Contains(r, "etp.gpb.ru/#com") {
+	/*if strings.Contains(r, "etp.gpb.ru/#com") {
 		Logging("this tender was published on gpb", tn.url)
 		return
-	}
+	}*/
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(r))
 	if err != nil {
 		Logging(err)
@@ -235,22 +240,22 @@ func (t *ParserNovatek) Tender(tn TenderNovatek) {
 	} else {
 		AddtenderNovatek++
 	}
-	dochrefT := doc.Find("div.download span a")
+	dochrefT := doc.Find("div.download a")
 	hrefD, exist := dochrefT.Attr("href")
-	if !exist {
-		Logging("The element cannot have href attribute", dochrefT.Text())
-	}
-	hrefD = fmt.Sprintf("http://www.novatek.ru%s", hrefD)
-	docName := strings.TrimSpace(doc.Find("div.download span a").First().Text())
-	if docName != "" {
-		stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sattachment SET id_tender = ?, file_name = ?, url = ?", Prefix))
-		_, err := stmt.Exec(idTender, docName, hrefD)
-		stmt.Close()
-		if err != nil {
-			Logging("Ошибка вставки attachment", err)
-			return
+	if exist {
+		hrefD = fmt.Sprintf("http://www.novatek.ru%s", hrefD)
+		docName := strings.TrimSpace(dochrefT.Text())
+		if docName != "" {
+			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sattachment SET id_tender = ?, file_name = ?, url = ?", Prefix))
+			_, err := stmt.Exec(idTender, docName, hrefD)
+			stmt.Close()
+			if err != nil {
+				Logging("Ошибка вставки attachment", err)
+				return
+			}
 		}
 	}
+
 	var LotNumber = 1
 	idLot := 0
 	stmtl, _ := db.Prepare(fmt.Sprintf("INSERT INTO %slot SET id_tender = ?, lot_number = ?", Prefix))
