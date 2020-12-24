@@ -133,7 +133,7 @@ func (t *ParserMmk2) parsingTenderFromJsonList(page string) {
 		t.Tender(tnd)
 	}, "aaData")
 	if err != nil {
-		Logging(err, "sportItem tournaments")
+		Logging(err, "AAAAAAAAAAAAAAAAAAAAAA!!!!!!!!!!!!!!")
 		return
 	}
 }
