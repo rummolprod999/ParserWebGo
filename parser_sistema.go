@@ -1,7 +1,9 @@
 package main
 
 import (
+	"crypto/md5"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	_ "github.com/go-sql-driver/mysql"
@@ -36,11 +38,7 @@ func (t *ParserSistema) parsing() {
 
 func (t *ParserSistema) parsingPageAll() {
 	startUrl := "https://sistema.ru/procurements"
-	lst := t.getPageList(startUrl)
-	for _, p := range lst {
-		t.parsingPage(p)
-	}
-
+	t.parsingPage(startUrl)
 }
 func (t *ParserSistema) getPageList(url string) []string {
 	var l = make([]string, 0)
@@ -83,33 +81,35 @@ func (t *ParserSistema) parsingTenderList(p string, url string) {
 		Logging(err)
 		return
 	}
-	doc.Find("div.pagingResultsWrapper > div.zakupki").Each(func(i int, s *goquery.Selection) {
+	doc.Find("div[class ^='Cells__Item']").Each(func(i int, s *goquery.Selection) {
 		t.parsingTenderFromList(s, url)
 	})
 }
 
 func (t *ParserSistema) parsingTenderFromList(p *goquery.Selection, url string) {
-	hrefT := p.Find("a")
+	hrefT := p.Find("a[href ^= '/procurements/']")
 	href, exist := hrefT.Attr("href")
 	if !exist {
 		Logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
-	href = fmt.Sprintf("http://www.sistema.ru/%s", href)
-	purName := strings.TrimSpace(p.Find("a").First().Text())
+	href = fmt.Sprintf("http://www.sistema.ru%s", href)
+	purName := strings.TrimSpace(p.Find("div[class ^= 'Cells__NameWrapper'] div[class ^= 'Cells__Title_'] + div").First().Text())
 	if purName == "" {
 		Logging("cannot find purName in ", url)
 		return
 	}
-	purNum := findFromRegExp(href, `/(\d+)/$`)
+	md := md5.Sum([]byte(purName))
+	purNum := hex.EncodeToString(md[:])
 	if purNum == "" {
-		Logging("cannot find purnum in ", purName)
+		Logging("cannot find purName in ", purName)
 		return
 	}
-	endDate := time.Now()
-	pubDateT := strings.TrimSpace(p.Find("h4").First().Text())
-	pubDateT = cleanString(pubDateT)
-	pubDate := getDateDixy(pubDateT)
+	dates := strings.TrimSpace(p.Find("div[class ^= 'Cells__Date']").First().Text())
+	dates = strings.Replace(dates, "Начало и окончание приёма заявок", "", -1)
+	datePubT, dateEndT := findFromRegExpTwoValue(dates, `(\d{2}.+\d{4}).+(\d{2}.+\d{4})`)
+	pubDate := getDateCpc(datePubT)
+	endDate := getDateCpc(dateEndT)
 	if (pubDate == time.Time{}) {
 		Logging("cannot find pubDate in ", href, purNum)
 		return
@@ -226,23 +226,29 @@ func (t *ParserSistema) Tender(tn TenderSistema) {
 	etpName := orgName
 	etpUrl := "http://www.sistema.ru/"
 	IdEtp = getEtpId(etpName, etpUrl, db)
-	endDateTmp := strings.TrimSpace(doc.Find("p:contains('Срок окончания приема предложений')").First().Text())
+	tempEndDate := tn.endDate
+	endDateTmp := strings.TrimSpace(doc.Find("p b:contains('Срок окончания приема предложений')").First().Text())
 	if endDateTmp == "" {
-		endDateTmp = strings.TrimSpace(doc.Find("p:contains('Дата окончания приема предложений')").First().Text())
+		endDateTmp = strings.TrimSpace(doc.Find("p b:contains('Дата окончания приема предложений')").First().Text())
 	}
 	if endDateTmp == "" {
-		endDateTmp = strings.TrimSpace(doc.Find("p:contains('Срок окончания приема документов')").First().Text())
+		endDateTmp = strings.TrimSpace(doc.Find("p b:contains('Срок окончания приема документов')").First().Text())
 	}
-	endDateTmp = cleanString(endDateTmp)
-	tm, dt := findTwoFromRegExp(endDateTmp, `до\s?(\d{2}\.\d{2}).*(\d{2}\.\d{2}\.\d{4})`)
-	endDateT := fmt.Sprintf("%s %s", dt, strings.Replace(tm, ".", ":", -1))
-	tn.endDate = getTimeMoscowLayout(endDateT, "02.01.2006 15:04")
+	if endDateTmp != "" {
+		endDateTmp = cleanString(endDateTmp)
+		tm, dt := findTwoFromRegExp(endDateTmp, `до\s?(\d{2}\.\d{2}).*(\d{2}\.\d{2}\.\d{4})`)
+		endDateT := fmt.Sprintf("%s %s", dt, strings.Replace(tm, ".", ":", -1))
+		tn.endDate = getTimeMoscowLayout(endDateT, "02.01.2006 15:04")
+		if (tn.endDate == time.Time{}) {
+			endDateTmp = findFromRegExp(endDateTmp, `(["«]\d{2}["»].+\d{4})`)
+			endDateTmp = strings.Replace(endDateTmp, "\"", "", -1)
+			endDateTmp = strings.Replace(endDateTmp, "«", "", -1)
+			endDateTmp = strings.Replace(endDateTmp, "»", "", -1)
+			tn.endDate = getDateCpc(endDateTmp)
+		}
+	}
 	if (tn.endDate == time.Time{}) {
-		endDateTmp = findFromRegExp(endDateTmp, `(["«]\d{2}["»].+\d{4})`)
-		endDateTmp = strings.Replace(endDateTmp, "\"", "", -1)
-		endDateTmp = strings.Replace(endDateTmp, "«", "", -1)
-		endDateTmp = strings.Replace(endDateTmp, "»", "", -1)
-		tn.endDate = getDateCpc(endDateTmp)
+		tn.endDate = tempEndDate
 	}
 	idTender := 0
 	stmtt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %stender SET id_xml = ?, purchase_number = ?, doc_publish_date = ?, href = ?, purchase_object_info = ?, type_fz = ?, id_organizer = ?, id_placing_way = ?, id_etp = ?, end_date = ?, cancel = ?, date_version = ?, num_version = ?, xml = ?, print_form = ?, id_region = ?, notice_version = ?", Prefix))
@@ -312,7 +318,7 @@ func (t *ParserSistema) Tender(tn TenderSistema) {
 		Logging("Ошибка вставки purchase_object", errr)
 		return
 	}
-	doc.Find("p.bodytext > a[href ^= 'fileadmin/user_upload']").Each(func(i int, s *goquery.Selection) {
+	doc.Find("p > a[href ^= '/upload/']").Each(func(i int, s *goquery.Selection) {
 		t.documents(idTender, s, db)
 	})
 	e := TenderKwords(db, idTender)
@@ -333,7 +339,7 @@ func (t *ParserSistema) documents(idTender int, doc *goquery.Selection, db *sql.
 		Logging("The element cannot have href attribute", doc.Text())
 		return
 	}
-	href = fmt.Sprintf("http://www.sistema.ru/%s", href)
+	href = fmt.Sprintf("http://www.sistema.ru%s", href)
 	if nameF != "" {
 		nameF = fmt.Sprintf("Закупочная документация %s", nameF)
 		stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sattachment SET id_tender = ?, file_name = ?, url = ?", Prefix))
