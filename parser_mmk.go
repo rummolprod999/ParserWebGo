@@ -32,9 +32,6 @@ func (t *ParserMmk) parsing() {
 	defer SaveStack()
 	Logging("Start parsing")
 	t.parsingPageAll()
-	Logging("End parsing")
-	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderMmk))
-	Logging(fmt.Sprintf("Обновили тендеров %d", UpdatetenderMmk))
 }
 
 func (t *ParserMmk) parsingPageAll() {
