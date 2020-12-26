@@ -328,6 +328,7 @@ func (t *ParserMmk2) Lots(tn TenderMmk2, lots string, idCustomer, idTender int, 
 		}
 		id, _ := resl.LastInsertId()
 		idLot = int(id)
+		LotNumber++
 		purName, err := jsonparser.GetString(value, "[1]")
 		if err != nil {
 			purName = tn.purName
