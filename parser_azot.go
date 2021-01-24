@@ -39,7 +39,7 @@ func (t *ParserAzot) parsing() {
 }
 
 func (t *ParserAzot) parsingPageAll() {
-	for i := 1; i <= 10; i++ {
+	for i := 1; i <= 30; i++ {
 		url := fmt.Sprintf("%s%d", t.Url, i)
 		t.parsingPage(url)
 	}

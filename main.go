@@ -42,7 +42,7 @@ func main() {
 		p := ParserNovatek{TypeFz: 60, Urls: []string{"https://www.novatek.ru/ru/about/tenders/supply/", "https://www.novatek.ru/ru/about/tenders/service/"}}
 		MainParser(&p)
 	case Azot:
-		p := ParserAzot{TypeFz: 61, Url: "http://zakupki.sbu-azot.ru/?PAGEN_1="}
+		p := ParserAzot{TypeFz: 61, Url: "http://zakupki.sbu-azot.ru/procurement_requests/open_request_for_proposals/current/?SECTION_CODE=procurement_requests&SECTION_CODE_2=open_request_for_proposals&SECTION_CODE_3=current&PAGEN_1="}
 		MainParser(&p)
 	case Uva:
 		p := ParserUva{TypeFz: 64}
