@@ -68,7 +68,7 @@ func main() {
 		p := ParserSistema{TypeFz: 121}
 		MainParser(&p)
 	case Metafrax:
-		p := ParserMetafrax{TypeFz: 122, Urls: []string{"http://metafrax.ru/ru/p/181"}}
+		p := ParserMetafrax{TypeFz: 122, Urls: []string{"http://metafrax.ru/tender/tendery-na-postavku-tovarov", "http://metafrax.ru/tender/tendery-na-vypolnenie-rabot-i-uslug"}}
 		MainParser(&p)
 	case Ies:
 		p := ParserIes{TypeFz: 123, Urls: []string{"http://zakupki.ies-holding.com/other/"}}

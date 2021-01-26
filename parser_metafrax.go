@@ -57,8 +57,8 @@ func (t *ParserMetafrax) parsingTenderList(p string, url string) {
 		Logging(err)
 		return
 	}
-	doc.Find("table:contains('Срок подачи заявки') tr").Each(func(i int, s *goquery.Selection) {
-		if !strings.Contains(s.Text(), "Срок подачи заявки") {
+	doc.Find("div.tender_itm").Each(func(i int, s *goquery.Selection) {
+		if strings.Contains(s.Text(), "Срок подачи заявки") {
 			t.parsingTenderFromList(s, url)
 		}
 
@@ -66,30 +66,30 @@ func (t *ParserMetafrax) parsingTenderList(p string, url string) {
 }
 
 func (t *ParserMetafrax) parsingTenderFromList(p *goquery.Selection, url string) {
-	purName := strings.TrimSpace(p.Find("td:nth-child(2) a").First().Text())
+	purName := strings.TrimSpace(p.Find("p > strong").First().Text())
 	if purName == "" {
 		Logging("cannot find purName in ", url)
 		return
 	}
-	hrefT := p.Find("td:nth-child(2) a")
+	hrefT := p.Find("a.tenderDoc")
 	href, exist := hrefT.Attr("href")
 	if !exist {
 		Logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	href = fmt.Sprintf("http://metafrax.ru%s", href)
-	dateTmp := strings.TrimSpace(p.Find("td:nth-child(1)").First().Text())
+	dateTmp := strings.TrimSpace(p.Find("p:nth-child(2) > span:nth-child(2)").First().Text())
 	endDateTT := findFromRegExp(dateTmp, `-\s*(\d{2}\.\d{2}\.\d{4})`)
 	endDate := getTimeMoscowLayout(endDateTT, "02.01.2006")
 	pubDateTT := findFromRegExp(dateTmp, `(\d{2}\.\d{2}\.\d{4})\s*-`)
 	pubDate := getTimeMoscowLayout(pubDateTT, "02.01.2006")
-	purNum := purName
+	purNum := GetMd5(purName)
 	if (endDate == time.Time{} || pubDate == time.Time{}) {
 		Logging("cannot find endDate or pubDate in ", href, purNum)
 		return
 	}
 	docList := make([]map[string]string, 0)
-	p.Find("td:nth-child(3) a").Each(func(i int, s *goquery.Selection) {
+	p.Find("a.tenderDoc").Each(func(i int, s *goquery.Selection) {
 		hrefDoc, existD := s.Attr("href")
 		if existD {
 			hrefDoc = fmt.Sprintf("http://metafrax.ru%s", hrefDoc)
