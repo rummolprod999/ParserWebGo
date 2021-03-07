@@ -109,7 +109,7 @@ func (t *ParserOcontract) Tender(tn TenderOcontract) {
 		return
 	}
 	res.Close()
-	r := DownloadPage(tn.url)
+	r := DownloadPage("http://onlinecontract.ru/tenders/395290")
 	if r == "" {
 		Logging("Получили пустую строку", tn.url)
 		return
