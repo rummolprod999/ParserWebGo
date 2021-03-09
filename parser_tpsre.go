@@ -109,8 +109,8 @@ func (t *ParserTpsre) Tender(tn TenderTpsre) {
 	tenderSubj := strings.TrimSpace(doc.Find("p:contains('Объект тендера') + p > a").First().Text())
 	if tenderSubj != "" {
 		tn.purName = fmt.Sprintf("%s %s", tn.purName, tenderSubj)
-		tn.purNum = GetMd5(tn.purName)
 	}
+	tn.purNum = strings.TrimSpace(findFromRegExp(tn.url, `/(\d+)/$`))
 	defer db.Close()
 	db.SetConnMaxLifetime(time.Second * 3600)
 	upDate := time.Now()
