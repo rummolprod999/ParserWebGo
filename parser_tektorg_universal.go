@@ -330,6 +330,17 @@ func (prot *ParserTektorg) ParserProtocol(p Protocol, db *sql.DB) error {
 			QuantityValue = lot.DeliveryPlaces[0].Quantity
 		}
 
+		for _, po := range lot.LotUnits {
+			okpd2GroupCode, okpd2GroupLevel1Code := GetOkpd(po.Okp2Code)
+			stmtr, _ := db.Prepare(fmt.Sprintf("INSERT INTO %spurchase_object SET id_lot = ?, id_customer = ?, okpd2_code = ?, okpd2_group_code = ?, okpd2_group_level1_code = ?, okpd_name = ?, name = ?, quantity_value = ?, customer_quantity_value = ?", Prefix))
+			_, errr := stmtr.Exec(idLot, idCustomer, po.Okp2Code, okpd2GroupCode, okpd2GroupLevel1Code, "", po.Name, po.Quantity, po.Quantity)
+			stmtr.Close()
+			if errr != nil {
+				Logging("Ошибка вставки purchase_object", errr)
+				return err
+			}
+		}
+
 		okpd2Code := lot.Okpd2Code
 		okpdName := lot.OkpdName
 		okpd2GroupCode, okpd2GroupLevel1Code := GetOkpd(okpd2Code)

@@ -56,6 +56,7 @@ type Lot struct {
 	Customers      []Customer      `xml:"customers>customer"`
 	DeliveryPlaces []DeliveryPlace `xml:"deliveryPlaces>deliveryPlace"`
 	AttachmentsLot []AttachmentLot `xml:"documents>document"`
+	LotUnits       []LotUnits      `xml:"lotUnits>unit"`
 }
 
 type Customer struct {
@@ -71,4 +72,10 @@ type DeliveryPlace struct {
 type AttachmentLot struct {
 	AttachName string `xml:"filename"`
 	AttachUrl  string `xml:"file"`
+}
+
+type LotUnits struct {
+	Okp2Code string  `xml:"okpd2_code"`
+	Name     string  `xml:"name"`
+	Quantity float64 `xml:"quantity"`
 }
