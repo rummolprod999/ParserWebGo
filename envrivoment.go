@@ -107,6 +107,8 @@ func CreateLogFile() {
 		FileLog = Filelog(fmt.Sprintf("%s/log_TekRn_%v.log", dirlog, ft))
 	case Tekkom:
 		FileLog = Filelog(fmt.Sprintf("%s/log_TekKom_%v.log", dirlog, ft))
+	case Tekrusgazbur:
+		FileLog = Filelog(fmt.Sprintf("%s/log_TekRusGazBur_%v.log", dirlog, ft))
 	}
 
 }
@@ -232,6 +234,9 @@ func CreateEnv() {
 	case Tekkom:
 		DirLog = LogTekKom
 		DirTemp = TempTekKom
+	case Tekrusgazbur:
+		DirLog = LogTekRusGazBur
+		DirTemp = TempTekRusGazBur
 	}
 	CreateLogFile()
 	CreateTempDir()
