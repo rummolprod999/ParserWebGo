@@ -46,7 +46,7 @@ func generateSOAPRequest(section string, page int) (*http.Request, error) {
 		Logging(err.Error())
 		return nil, err
 	}
-	r, err := http.NewRequest(http.MethodPost, "http://api.tektorg.ru/procedures/soap", bytes.NewBuffer([]byte(templateSoap)))
+	r, err := http.NewRequest(http.MethodPost, "https://api.tektorg.ru/procedures/soap", bytes.NewBuffer([]byte(templateSoap)))
 	if err != nil {
 		Logging(err.Error())
 		return nil, err
