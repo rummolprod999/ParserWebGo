@@ -301,7 +301,7 @@ func GetSetting() {
 	TempTekRosImport = settings.TempTekrosimport
 	LogTekTyumen = settings.LogTektyumen
 	TempTekTyumen = settings.TempTektyumen
-	Dsn = fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=true&readTimeout=60m&maxAllowedPacket=0&timeout=60m&writeTimeout=60m&autocommit=true&loc=Local", UserDb, PassDb, DbName)
+	Dsn = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=true&readTimeout=60m&maxAllowedPacket=0&timeout=60m&writeTimeout=60m&autocommit=true&loc=Local", UserDb, PassDb, Server, Port, DbName)
 	checkEmptySettings()
 }
 
