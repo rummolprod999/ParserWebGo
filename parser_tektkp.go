@@ -9,50 +9,50 @@ import (
 	"time"
 )
 
-var AddtenderTektkp int
-var UpdatetenderTektkp int
+var addtenderTektkp int
+var updatetenderTektkp int
 
-type ParserTekTkp struct {
+type parserTekTkp struct {
 	maxPage int
 	TypeFz  int
 }
 
-func (prot *ParserTekTkp) parsing() {
+func (prot *parserTekTkp) parsing() {
 	defer SaveStack()
-	Logging("Start parsing")
+	logging("Start parsing")
 	protocols := callSOAPClient("17", 1)
 	if protocols.TotalPage == 0 {
-		Logging("total page not found")
+		logging("total page not found")
 		return
 	}
 	prot.maxPage = protocols.TotalPage
-	prot.ParserProtocols(protocols)
+	prot.parserProtocols(protocols)
 	for i := 2; i <= prot.maxPage; i++ {
 		protocols = callSOAPClient("17", i)
-		prot.ParserProtocols(protocols)
+		prot.parserProtocols(protocols)
 	}
-	Logging("End parsing")
-	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderTektkp))
-	Logging(fmt.Sprintf("Обновили тендеров %d", UpdatetenderTektkp))
+	logging("End parsing")
+	logging(fmt.Sprintf("Добавили тендеров %d", addtenderTektkp))
+	logging(fmt.Sprintf("Обновили тендеров %d", updatetenderTektkp))
 }
 
-func (prot *ParserTekTkp) ParserProtocols(protocols *FileProtocols) {
+func (prot *parserTekTkp) parserProtocols(protocols *fileProtocols) {
 	defer SaveStack()
-	db, err := sql.Open("mysql", Dsn)
+	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		Logging("Ошибка подключения к БД", err)
+		logging("Ошибка подключения к БД", err)
 		return
 	}
 	defer db.Close()
 	db.SetConnMaxLifetime(time.Second * 3600)
 	if err != nil {
-		Logging("Ошибка подключения к БД", err)
+		logging("Ошибка подключения к БД", err)
 	}
 	for _, pr := range protocols.Protocols {
-		_ = prot.ParserProtocol(pr, db)
+		_ = prot.parserProtocol(pr, db)
 	}
 }
-func (prot *ParserTekTkp) ParserProtocol(p Protocol, db *sql.DB) error {
+func (prot *parserTekTkp) parserProtocol(p protocol, db *sql.DB) error {
 	layout := "2006-01-02T15:04:05"
 	RegistryNumber := p.RegistryNumber
 	DatePublishedS := p.DatePublished[:19]
@@ -66,11 +66,11 @@ func (prot *ParserTekTkp) ParserProtocol(p Protocol, db *sql.DB) error {
 	IdXml := p.IdProtocol
 	Version := 0
 
-	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_tender FROM %stender WHERE id_xml = ? AND purchase_number = ? AND date_version = ? AND type_fz = ?", Prefix))
+	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_tender FROM %stender WHERE id_xml = ? AND purchase_number = ? AND date_version = ? AND type_fz = ?", prefix))
 	res, err := stmt.Query(IdXml, RegistryNumber, DateUpdated, prot.TypeFz)
 	stmt.Close()
 	if err != nil {
-		Logging("Ошибка выполения запроса", err)
+		logging("Ошибка выполения запроса", err)
 		return err
 	}
 	if res.Next() {
@@ -81,11 +81,11 @@ func (prot *ParserTekTkp) ParserProtocol(p Protocol, db *sql.DB) error {
 	var cancelStatus = 0
 	var updated = false
 	if RegistryNumber != "" {
-		stmt, err := db.Prepare(fmt.Sprintf("SELECT id_tender, date_version FROM %stender WHERE purchase_number = ? AND cancel=0 AND type_fz = ?", Prefix))
+		stmt, err := db.Prepare(fmt.Sprintf("SELECT id_tender, date_version FROM %stender WHERE purchase_number = ? AND cancel=0 AND type_fz = ?", prefix))
 		rows, err := stmt.Query(RegistryNumber, prot.TypeFz)
 		stmt.Close()
 		if err != nil {
-			Logging("Ошибка выполения запроса", err)
+			logging("Ошибка выполения запроса", err)
 			return err
 		}
 		for rows.Next() {
@@ -94,12 +94,12 @@ func (prot *ParserTekTkp) ParserProtocol(p Protocol, db *sql.DB) error {
 			var dateVersion time.Time
 			err = rows.Scan(&idTender, &dateVersion)
 			if err != nil {
-				Logging("Ошибка чтения результата запроса", err)
+				logging("Ошибка чтения результата запроса", err)
 				return err
 			}
 			//fmt.Println(DateUpdated.Sub(dateVersion))
 			if dateVersion.Sub(DateUpdated) <= 0 {
-				stmtupd, _ := db.Prepare(fmt.Sprintf("UPDATE %stender SET cancel=1 WHERE id_tender = ?", Prefix))
+				stmtupd, _ := db.Prepare(fmt.Sprintf("UPDATE %stender SET cancel=1 WHERE id_tender = ?", prefix))
 				_, err = stmtupd.Exec(idTender)
 				stmtupd.Close()
 
@@ -117,17 +117,17 @@ func (prot *ParserTekTkp) ParserProtocol(p Protocol, db *sql.DB) error {
 	IdOrganizer := 0
 	OrganizerfullName := p.OrganizerfullNameU
 	if OrganizerfullName != "" {
-		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_organizer FROM %sorganizer WHERE full_name LIKE ? LIMIT 1", Prefix))
+		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_organizer FROM %sorganizer WHERE full_name LIKE ? LIMIT 1", prefix))
 		rows, err := stmt.Query(OrganizerfullName)
 		stmt.Close()
 		if err != nil {
-			Logging("Ошибка выполения запроса", err)
+			logging("Ошибка выполения запроса", err)
 			return err
 		}
 		if rows.Next() {
 			err = rows.Scan(&IdOrganizer)
 			if err != nil {
-				Logging("Ошибка чтения результата запроса", err)
+				logging("Ошибка чтения результата запроса", err)
 				return err
 			}
 			rows.Close()
@@ -138,11 +138,11 @@ func (prot *ParserTekTkp) ParserProtocol(p Protocol, db *sql.DB) error {
 			ContactEmail := p.ContactEmail
 			ContactPhone := p.ContactPhone
 			ContactPerson := p.ContactPerson
-			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sorganizer SET full_name = ?, post_address = ?, fact_address = ?, contact_email = ?, contact_phone = ?, contact_person = ?", Prefix))
+			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sorganizer SET full_name = ?, post_address = ?, fact_address = ?, contact_email = ?, contact_phone = ?, contact_person = ?", prefix))
 			res, err := stmt.Exec(OrganizerfullName, OrgPostAddress, OrgUrAddress, ContactEmail, ContactPhone, ContactPerson)
 			stmt.Close()
 			if err != nil {
-				Logging("Ошибка вставки организатора", err)
+				logging("Ошибка вставки организатора", err)
 				return err
 			}
 			id, err := res.LastInsertId()
@@ -154,27 +154,27 @@ func (prot *ParserTekTkp) ParserProtocol(p Protocol, db *sql.DB) error {
 	PwCode := p.ProcedureTypeId
 	PwName := p.ProcedureTypeName
 	if PwCode != "" && PwName != "" {
-		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_placing_way FROM %splacing_way WHERE code = ? AND name = ? LIMIT 1", Prefix))
+		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_placing_way FROM %splacing_way WHERE code = ? AND name = ? LIMIT 1", prefix))
 		rows, err := stmt.Query(PwCode, PwName)
 		stmt.Close()
 		if err != nil {
-			Logging("Ошибка выполения запроса", err)
+			logging("Ошибка выполения запроса", err)
 			return err
 		}
 		if rows.Next() {
 			err = rows.Scan(&IdPlacingWay)
 			if err != nil {
-				Logging("Ошибка чтения результата запроса", err)
+				logging("Ошибка чтения результата запроса", err)
 				return err
 			}
 			rows.Close()
 		} else {
 			rows.Close()
-			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %splacing_way SET code= ?, name= ?", Prefix))
+			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %splacing_way SET code= ?, name= ?", prefix))
 			res, err := stmt.Exec(PwCode, PwName)
 			stmt.Close()
 			if err != nil {
-				Logging("Ошибка вставки placing way", err)
+				logging("Ошибка вставки placing way", err)
 				return err
 			}
 			id, err := res.LastInsertId()
@@ -186,27 +186,27 @@ func (prot *ParserTekTkp) ParserProtocol(p Protocol, db *sql.DB) error {
 	etpName := "ТЭК Торг  Роснефть - Запросы (Т)КП"
 	etpUrl := "https://www.tektorg.ru/rosnefttkp/procedures"
 	if true {
-		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_etp FROM %setp WHERE name = ? AND url = ? LIMIT 1", Prefix))
+		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_etp FROM %setp WHERE name = ? AND url = ? LIMIT 1", prefix))
 		rows, err := stmt.Query(etpName, etpUrl)
 		stmt.Close()
 		if err != nil {
-			Logging("Ошибка выполения запроса", err)
+			logging("Ошибка выполения запроса", err)
 			return err
 		}
 		if rows.Next() {
 			err = rows.Scan(&IdEtp)
 			if err != nil {
-				Logging("Ошибка чтения результата запроса", err)
+				logging("Ошибка чтения результата запроса", err)
 				return err
 			}
 			rows.Close()
 		} else {
 			rows.Close()
-			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %setp SET name = ?, url = ?, conf=0", Prefix))
+			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %setp SET name = ?, url = ?, conf=0", prefix))
 			res, err := stmt.Exec(etpName, etpUrl)
 			stmt.Close()
 			if err != nil {
-				Logging("Ошибка вставки etp", err)
+				logging("Ошибка вставки etp", err)
 				return err
 			}
 			id, err := res.LastInsertId()
@@ -224,28 +224,28 @@ func (prot *ParserTekTkp) ParserProtocol(p Protocol, db *sql.DB) error {
 		ScoringDate, _ = time.Parse(layout, ScoringDateS[:19])
 	}
 	idTender := 0
-	stmtt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %stender SET id_region = 0, id_xml = ?, purchase_number = ?, doc_publish_date = ?, href = ?, purchase_object_info = ?, type_fz = ?, id_organizer = ?, id_placing_way = ?, id_etp = ?, end_date = ?, scoring_date = ?, bidding_date = ?, cancel = ?, date_version = ?, num_version = ?, notice_version = ?, xml = ?, print_form = ?", Prefix))
+	stmtt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %stender SET id_region = 0, id_xml = ?, purchase_number = ?, doc_publish_date = ?, href = ?, purchase_object_info = ?, type_fz = ?, id_organizer = ?, id_placing_way = ?, id_etp = ?, end_date = ?, scoring_date = ?, bidding_date = ?, cancel = ?, date_version = ?, num_version = ?, notice_version = ?, xml = ?, print_form = ?", prefix))
 	rest, err := stmtt.Exec(IdXml, RegistryNumber, DatePublished, Href, PurchaseObjectInfo, prot.TypeFz, IdOrganizer, IdPlacingWay, IdEtp, EndDate, ScoringDate, BiddingDate, cancelStatus, DateUpdated, Version, NoticeVersion, Href, PrintForm)
 	stmtt.Close()
 	if err != nil {
-		Logging("Ошибка вставки tender", err)
+		logging("Ошибка вставки tender", err)
 		return err
 	}
 	idt, err := rest.LastInsertId()
 	idTender = int(idt)
 	if updated {
-		UpdatetenderTektkp++
+		updatetenderTektkp++
 	} else {
-		AddtenderTektkp++
+		addtenderTektkp++
 	}
 	for _, att := range p.Attachments {
 		attachName := att.AttachName
 		attachUrl := att.AttachUrl
-		stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sattachment SET id_tender = ?, file_name = ?, url = ?", Prefix))
+		stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sattachment SET id_tender = ?, file_name = ?, url = ?", prefix))
 		_, err := stmt.Exec(idTender, attachName, attachUrl)
 		stmt.Close()
 		if err != nil {
-			Logging("Ошибка вставки attachment", err)
+			logging("Ошибка вставки attachment", err)
 			return err
 		}
 	}
@@ -255,11 +255,11 @@ func (prot *ParserTekTkp) ParserProtocol(p Protocol, db *sql.DB) error {
 		MaxPrice := lot.StartPrice
 		Currency := p.Currency
 		idLot := 0
-		stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %slot SET id_tender = ?, lot_number = ?, max_price = ?, currency = ?", Prefix))
+		stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %slot SET id_tender = ?, lot_number = ?, max_price = ?, currency = ?", prefix))
 		res, err := stmt.Exec(idTender, LotNumber, MaxPrice, Currency)
 		stmt.Close()
 		if err != nil {
-			Logging("Ошибка вставки lot", err)
+			logging("Ошибка вставки lot", err)
 			return err
 		}
 		id, _ := res.LastInsertId()
@@ -267,28 +267,28 @@ func (prot *ParserTekTkp) ParserProtocol(p Protocol, db *sql.DB) error {
 		for _, attL := range lot.AttachmentsLot {
 			attachName := attL.AttachName
 			attachUrl := attL.AttachUrl
-			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sattachment SET id_tender = ?, file_name = ?, url = ?", Prefix))
+			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sattachment SET id_tender = ?, file_name = ?, url = ?", prefix))
 			_, err := stmt.Exec(idTender, attachName, attachUrl)
 			stmt.Close()
 			if err != nil {
-				Logging("Ошибка вставки attachmentLot", err)
+				logging("Ошибка вставки attachmentLot", err)
 				return err
 			}
 		}
 		idCustomer := 0
 		if len(lot.Customers) > 0 {
 			if lot.Customers[0].FullName != "" {
-				stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_customer FROM %scustomer WHERE full_name LIKE ? LIMIT 1", Prefix))
+				stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_customer FROM %scustomer WHERE full_name LIKE ? LIMIT 1", prefix))
 				rows, err := stmt.Query(lot.Customers[0].FullName)
 				stmt.Close()
 				if err != nil {
-					Logging("Ошибка выполения запроса", err)
+					logging("Ошибка выполения запроса", err)
 					return err
 				}
 				if rows.Next() {
 					err = rows.Scan(&idCustomer)
 					if err != nil {
-						Logging("Ошибка чтения результата запроса", err)
+						logging("Ошибка чтения результата запроса", err)
 						return err
 					}
 					rows.Close()
@@ -296,14 +296,14 @@ func (prot *ParserTekTkp) ParserProtocol(p Protocol, db *sql.DB) error {
 					rows.Close()
 					out, err := exec.Command("uuidgen").Output()
 					if err != nil {
-						Logging("Ошибка генерации UUID", err)
+						logging("Ошибка генерации UUID", err)
 						return err
 					}
-					stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %scustomer SET full_name = ?, is223=1, reg_num = ?", Prefix))
+					stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %scustomer SET full_name = ?, is223=1, reg_num = ?", prefix))
 					res, err := stmt.Exec(lot.Customers[0].FullName, out)
 					stmt.Close()
 					if err != nil {
-						Logging("Ошибка вставки организатора", err)
+						logging("Ошибка вставки организатора", err)
 						return err
 					}
 					id, err := res.LastInsertId()
@@ -315,11 +315,11 @@ func (prot *ParserTekTkp) ParserProtocol(p Protocol, db *sql.DB) error {
 		for _, cusR := range lot.DeliveryPlaces {
 			deliveryPlace := cusR.Address
 			deliveryTerm := cusR.Term
-			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %scustomer_requirement SET id_lot = ?, id_customer = ?, delivery_place = ?, delivery_term = ?", Prefix))
+			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %scustomer_requirement SET id_lot = ?, id_customer = ?, delivery_place = ?, delivery_term = ?", prefix))
 			_, err := stmt.Exec(idLot, idCustomer, deliveryPlace, deliveryTerm)
 			stmt.Close()
 			if err != nil {
-				Logging("Ошибка вставки customer_requirement", err)
+				logging("Ошибка вставки customer_requirement", err)
 				return err
 
 			}
@@ -332,23 +332,23 @@ func (prot *ParserTekTkp) ParserProtocol(p Protocol, db *sql.DB) error {
 		okpd2Code := lot.Okpd2Code
 		okpdName := lot.OkpdName
 		okpd2GroupCode, okpd2GroupLevel1Code := GetOkpd(okpd2Code)
-		stmtr, _ := db.Prepare(fmt.Sprintf("INSERT INTO %spurchase_object SET id_lot = ?, id_customer = ?, okpd2_code = ?, okpd2_group_code = ?, okpd2_group_level1_code = ?, okpd_name = ?, name = ?, quantity_value = ?, customer_quantity_value = ?", Prefix))
+		stmtr, _ := db.Prepare(fmt.Sprintf("INSERT INTO %spurchase_object SET id_lot = ?, id_customer = ?, okpd2_code = ?, okpd2_group_code = ?, okpd2_group_level1_code = ?, okpd_name = ?, name = ?, quantity_value = ?, customer_quantity_value = ?", prefix))
 		_, errr := stmtr.Exec(idLot, idCustomer, okpd2Code, okpd2GroupCode, okpd2GroupLevel1Code, okpdName, lot.LotSubject, QuantityValue, QuantityValue)
 		stmtr.Close()
 		if errr != nil {
-			Logging("Ошибка вставки purchase_object", errr)
+			logging("Ошибка вставки purchase_object", errr)
 			return err
 		}
 
 	}
 	e := TenderKwords(db, idTender)
 	if e != nil {
-		Logging("Ошибка обработки TenderKwords", e)
+		logging("Ошибка обработки TenderKwords", e)
 	}
 
 	e1 := AddVerNumber(db, RegistryNumber, prot.TypeFz)
 	if e1 != nil {
-		Logging("Ошибка обработки AddVerNumber", e1)
+		logging("Ошибка обработки AddVerNumber", e1)
 	}
 	return nil
 }

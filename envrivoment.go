@@ -7,14 +7,14 @@ import (
 	"time"
 )
 
-type Filelog string
+type filelog string
 
-var DirLog string
-var DirTemp string
-var FileLog Filelog
+var dirLog string
+var dirTemp string
+var fileLog filelog
 
-func Logging(args ...interface{}) {
-	file, err := os.OpenFile(string(FileLog), os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
+func logging(args ...interface{}) {
+	file, err := os.OpenFile(string(fileLog), os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
 	defer file.Close()
 	if err != nil {
 		fmt.Println("Ошибка записи в файл лога", err)
@@ -29,9 +29,9 @@ func Logging(args ...interface{}) {
 
 }
 
-func CreateLogFile() {
+func createLogFile() {
 	dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
-	dirlog := fmt.Sprintf("%s/%s", dir, DirLog)
+	dirlog := fmt.Sprintf("%s/%s", dir, dirLog)
 	if _, err := os.Stat(dirlog); os.IsNotExist(err) {
 		err := os.MkdirAll(dirlog, 0711)
 
@@ -42,84 +42,84 @@ func CreateLogFile() {
 	}
 	t := time.Now()
 	ft := t.Format("2006-01-02")
-	switch A {
-	case X5Group:
-		FileLog = Filelog(fmt.Sprintf("%s/log_X5Group_%v.log", dirlog, ft))
-	case Dixy:
-		FileLog = Filelog(fmt.Sprintf("%s/log_Dixy_%v.log", dirlog, ft))
-	case Rusneft:
-		FileLog = Filelog(fmt.Sprintf("%s/log_Rusneft_%v.log", dirlog, ft))
-	case Phosagro:
-		FileLog = Filelog(fmt.Sprintf("%s/log_Phosagro_%v.log", dirlog, ft))
-	case Icetrade:
-		FileLog = Filelog(fmt.Sprintf("%s/log_Icetrade_%v.log", dirlog, ft))
-	case Komtech:
-		FileLog = Filelog(fmt.Sprintf("%s/log_Komtech_%v.log", dirlog, ft))
-	case Ocontract:
-		FileLog = Filelog(fmt.Sprintf("%s/log_Ocontract_%v.log", dirlog, ft))
-	case Cpc:
-		FileLog = Filelog(fmt.Sprintf("%s/log_Cpc_%v.log", dirlog, ft))
-	case Novatek:
-		FileLog = Filelog(fmt.Sprintf("%s/log_Novatek_%v.log", dirlog, ft))
-	case Azot:
-		FileLog = Filelog(fmt.Sprintf("%s/log_Azot_%v.log", dirlog, ft))
-	case Uva:
-		FileLog = Filelog(fmt.Sprintf("%s/log_Uva_%v.log", dirlog, ft))
-	case Salym:
-		FileLog = Filelog(fmt.Sprintf("%s/log_Salym_%v.log", dirlog, ft))
-	case Monetka:
-		FileLog = Filelog(fmt.Sprintf("%s/log_Monetka_%v.log", dirlog, ft))
-	case Dtek:
-		FileLog = Filelog(fmt.Sprintf("%s/log_Dtek_%v.log", dirlog, ft))
-	case Mmk:
-		FileLog = Filelog(fmt.Sprintf("%s/log_Mmk_%v.log", dirlog, ft))
-	case Letoile:
-		FileLog = Filelog(fmt.Sprintf("%s/log_Letoile_%v.log", dirlog, ft))
-	case Sistema:
-		FileLog = Filelog(fmt.Sprintf("%s/log_Sistema_%v.log", dirlog, ft))
-	case Metafrax:
-		FileLog = Filelog(fmt.Sprintf("%s/log_Metafrax_%v.log", dirlog, ft))
-	case Ies:
-		FileLog = Filelog(fmt.Sprintf("%s/log_Ies_%v.log", dirlog, ft))
-	case UralChem:
-		FileLog = Filelog(fmt.Sprintf("%s/log_UralChem_%v.log", dirlog, ft))
-	case GosBy:
-		FileLog = Filelog(fmt.Sprintf("%s/log_GosBy_%v.log", dirlog, ft))
-	case Apk:
-		FileLog = Filelog(fmt.Sprintf("%s/log_Apk_%v.log", dirlog, ft))
-	case Aztpa:
-		FileLog = Filelog(fmt.Sprintf("%s/log_Aztpa_%v.log", dirlog, ft))
-	case RosAtom:
-		FileLog = Filelog(fmt.Sprintf("%s/log_RosAtom_%v.log", dirlog, ft))
-	case Tpsre:
-		FileLog = Filelog(fmt.Sprintf("%s/log_Tpsre_%v.log", dirlog, ft))
-	case Tektkp:
-		FileLog = Filelog(fmt.Sprintf("%s/log_TekTkp_%v.log", dirlog, ft))
-	case Tekgaz:
-		FileLog = Filelog(fmt.Sprintf("%s/log_TekGaz_%v.log", dirlog, ft))
-	case Tekmarket:
-		FileLog = Filelog(fmt.Sprintf("%s/log_TekMarket_%v.log", dirlog, ft))
-	case Tekrao:
-		FileLog = Filelog(fmt.Sprintf("%s/log_TekRao_%v.log", dirlog, ft))
-	case Tekmos:
-		FileLog = Filelog(fmt.Sprintf("%s/log_TekMos_%v.log", dirlog, ft))
-	case Tekrn:
-		FileLog = Filelog(fmt.Sprintf("%s/log_TekRn_%v.log", dirlog, ft))
-	case Tekkom:
-		FileLog = Filelog(fmt.Sprintf("%s/log_TekKom_%v.log", dirlog, ft))
-	case Tekrusgazbur:
-		FileLog = Filelog(fmt.Sprintf("%s/log_TekRusGazBur_%v.log", dirlog, ft))
-	case Tekrosimport:
-		FileLog = Filelog(fmt.Sprintf("%s/log_TekRosImport_%v.log", dirlog, ft))
-	case Tektyumen:
-		FileLog = Filelog(fmt.Sprintf("%s/log_TekTyumen_%v.log", dirlog, ft))
+	switch a {
+	case x5Group:
+		fileLog = filelog(fmt.Sprintf("%s/log_X5Group_%v.log", dirlog, ft))
+	case dixy:
+		fileLog = filelog(fmt.Sprintf("%s/log_Dixy_%v.log", dirlog, ft))
+	case rusneft:
+		fileLog = filelog(fmt.Sprintf("%s/log_Rusneft_%v.log", dirlog, ft))
+	case phosagro:
+		fileLog = filelog(fmt.Sprintf("%s/log_Phosagro_%v.log", dirlog, ft))
+	case icetrade:
+		fileLog = filelog(fmt.Sprintf("%s/log_Icetrade_%v.log", dirlog, ft))
+	case komtech:
+		fileLog = filelog(fmt.Sprintf("%s/log_Komtech_%v.log", dirlog, ft))
+	case ocontract:
+		fileLog = filelog(fmt.Sprintf("%s/log_Ocontract_%v.log", dirlog, ft))
+	case cpc:
+		fileLog = filelog(fmt.Sprintf("%s/log_Cpc_%v.log", dirlog, ft))
+	case novatek:
+		fileLog = filelog(fmt.Sprintf("%s/log_Novatek_%v.log", dirlog, ft))
+	case azot:
+		fileLog = filelog(fmt.Sprintf("%s/log_Azot_%v.log", dirlog, ft))
+	case uva:
+		fileLog = filelog(fmt.Sprintf("%s/log_Uva_%v.log", dirlog, ft))
+	case salym:
+		fileLog = filelog(fmt.Sprintf("%s/log_Salym_%v.log", dirlog, ft))
+	case monetka:
+		fileLog = filelog(fmt.Sprintf("%s/log_Monetka_%v.log", dirlog, ft))
+	case dtek:
+		fileLog = filelog(fmt.Sprintf("%s/log_Dtek_%v.log", dirlog, ft))
+	case mmk:
+		fileLog = filelog(fmt.Sprintf("%s/log_Mmk_%v.log", dirlog, ft))
+	case letoile:
+		fileLog = filelog(fmt.Sprintf("%s/log_Letoile_%v.log", dirlog, ft))
+	case sistema:
+		fileLog = filelog(fmt.Sprintf("%s/log_Sistema_%v.log", dirlog, ft))
+	case metafrax:
+		fileLog = filelog(fmt.Sprintf("%s/log_Metafrax_%v.log", dirlog, ft))
+	case ies:
+		fileLog = filelog(fmt.Sprintf("%s/log_Ies_%v.log", dirlog, ft))
+	case uralChem:
+		fileLog = filelog(fmt.Sprintf("%s/log_UralChem_%v.log", dirlog, ft))
+	case gosBy:
+		fileLog = filelog(fmt.Sprintf("%s/log_GosBy_%v.log", dirlog, ft))
+	case apk:
+		fileLog = filelog(fmt.Sprintf("%s/log_Apk_%v.log", dirlog, ft))
+	case aztpa:
+		fileLog = filelog(fmt.Sprintf("%s/log_Aztpa_%v.log", dirlog, ft))
+	case rosAtom:
+		fileLog = filelog(fmt.Sprintf("%s/log_RosAtom_%v.log", dirlog, ft))
+	case tpsre:
+		fileLog = filelog(fmt.Sprintf("%s/log_Tpsre_%v.log", dirlog, ft))
+	case tektkp:
+		fileLog = filelog(fmt.Sprintf("%s/log_TekTkp_%v.log", dirlog, ft))
+	case tekgaz:
+		fileLog = filelog(fmt.Sprintf("%s/log_TekGaz_%v.log", dirlog, ft))
+	case tekmarket:
+		fileLog = filelog(fmt.Sprintf("%s/log_TekMarket_%v.log", dirlog, ft))
+	case tekrao:
+		fileLog = filelog(fmt.Sprintf("%s/log_TekRao_%v.log", dirlog, ft))
+	case tekmos:
+		fileLog = filelog(fmt.Sprintf("%s/log_TekMos_%v.log", dirlog, ft))
+	case tekrn:
+		fileLog = filelog(fmt.Sprintf("%s/log_TekRn_%v.log", dirlog, ft))
+	case tekkom:
+		fileLog = filelog(fmt.Sprintf("%s/log_TekKom_%v.log", dirlog, ft))
+	case tekrusgazbur:
+		fileLog = filelog(fmt.Sprintf("%s/log_TekRusGazBur_%v.log", dirlog, ft))
+	case tekrosimport:
+		fileLog = filelog(fmt.Sprintf("%s/log_TekRosImport_%v.log", dirlog, ft))
+	case tektyumen:
+		fileLog = filelog(fmt.Sprintf("%s/log_TekTyumen_%v.log", dirlog, ft))
 	}
 
 }
 
-func CreateTempDir() {
+func createTempDir() {
 	dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
-	dirtemp := fmt.Sprintf("%s/%s", dir, DirTemp)
+	dirtemp := fmt.Sprintf("%s/%s", dir, dirTemp)
 	if _, err := os.Stat(dirtemp); os.IsNotExist(err) {
 		err := os.MkdirAll(dirtemp, 0711)
 
@@ -140,114 +140,114 @@ func CreateTempDir() {
 	}
 }
 
-func CreateEnv() {
-	switch A {
-	case X5Group:
-		DirLog = LogX5Group
-		DirTemp = TempX5Group
-	case Dixy:
-		DirLog = LogDixy
-		DirTemp = TempDixy
-	case Rusneft:
-		DirLog = LogRusneft
-		DirTemp = TempRusneft
-	case Phosagro:
-		DirLog = LogPhosagro
-		DirTemp = TempPhosagro
-	case Icetrade:
-		DirLog = LogIcetrade
-		DirTemp = TempIcetrade
-	case Komtech:
-		DirLog = LogKomtech
-		DirTemp = TempKomtech
-	case Ocontract:
-		DirLog = LogOcontract
-		DirTemp = TempOcontract
-	case Cpc:
-		DirLog = LogCpc
-		DirTemp = TempCpc
-	case Novatek:
-		DirLog = LogNovatek
-		DirTemp = TempNovatek
-	case Azot:
-		DirLog = LogAzot
-		DirTemp = TempAzot
-	case Uva:
-		DirLog = LogUva
-		DirTemp = TempUva
-	case Salym:
-		DirLog = LogSalym
-		DirTemp = TempSalym
-	case Monetka:
-		DirLog = LogMonetka
-		DirTemp = TempMonetka
-	case Dtek:
-		DirLog = LogDtek
-		DirTemp = TempDtek
-	case Mmk:
-		DirLog = LogMmk
-		DirTemp = TempMmk
-	case Letoile:
-		DirLog = LogLetoile
-		DirTemp = TempLetoile
-	case Sistema:
-		DirLog = LogSistema
-		DirTemp = TempSistema
-	case Metafrax:
-		DirLog = LogMetafrax
-		DirTemp = TempMetafrax
-	case Ies:
-		DirLog = LogIes
-		DirTemp = TempIes
-	case UralChem:
-		DirLog = LogUralChem
-		DirTemp = TempUralChem
-	case GosBy:
-		DirLog = LogGosBy
-		DirTemp = TempGosBy
-	case Apk:
-		DirLog = LogApk
-		DirTemp = TempApk
-	case Aztpa:
-		DirLog = LogAztpa
-		DirTemp = TempAztpa
-	case RosAtom:
-		DirLog = LogRosAtom
-		DirTemp = TempRosAtom
-	case Tpsre:
-		DirLog = LogTpsre
-		DirTemp = TempTpsre
-	case Tektkp:
-		DirLog = LogTektkp
-		DirTemp = TempTektkp
-	case Tekgaz:
-		DirLog = LogTekGaz
-		DirTemp = TempTekGaz
-	case Tekmarket:
-		DirLog = LogTekMarket
-		DirTemp = TempTekMarket
-	case Tekrao:
-		DirLog = LogTekRao
-		DirTemp = TempTekRao
-	case Tekmos:
-		DirLog = LogTekMos
-		DirTemp = TempTekMos
-	case Tekrn:
-		DirLog = LogTekRn
-		DirTemp = TempTekRn
-	case Tekkom:
-		DirLog = LogTekKom
-		DirTemp = TempTekKom
-	case Tekrusgazbur:
-		DirLog = LogTekRusGazBur
-		DirTemp = TempTekRusGazBur
-	case Tekrosimport:
-		DirLog = LogTekRosImport
-		DirTemp = TempTekRosImport
-	case Tektyumen:
-		DirLog = LogTekTyumen
-		DirTemp = TempTekTyumen
+func createEnv() {
+	switch a {
+	case x5Group:
+		dirLog = logX5Group
+		dirTemp = tempX5Group
+	case dixy:
+		dirLog = logDixy
+		dirTemp = tempDixy
+	case rusneft:
+		dirLog = logRusneft
+		dirTemp = tempRusneft
+	case phosagro:
+		dirLog = logPhosagro
+		dirTemp = tempPhosagro
+	case icetrade:
+		dirLog = logIcetrade
+		dirTemp = tempIcetrade
+	case komtech:
+		dirLog = logKomtech
+		dirTemp = tempKomtech
+	case ocontract:
+		dirLog = logOcontract
+		dirTemp = tempOcontract
+	case cpc:
+		dirLog = logCpc
+		dirTemp = tempCpc
+	case novatek:
+		dirLog = logNovatek
+		dirTemp = tempNovatek
+	case azot:
+		dirLog = logAzot
+		dirTemp = tempAzot
+	case uva:
+		dirLog = logUva
+		dirTemp = tempUva
+	case salym:
+		dirLog = logSalym
+		dirTemp = tempSalym
+	case monetka:
+		dirLog = logMonetka
+		dirTemp = tempMonetka
+	case dtek:
+		dirLog = logDtek
+		dirTemp = tempDtek
+	case mmk:
+		dirLog = logMmk
+		dirTemp = tempMmk
+	case letoile:
+		dirLog = logLetoile
+		dirTemp = tempLetoile
+	case sistema:
+		dirLog = logSistema
+		dirTemp = tempSistema
+	case metafrax:
+		dirLog = logMetafrax
+		dirTemp = tempMetafrax
+	case ies:
+		dirLog = logIes
+		dirTemp = tempIes
+	case uralChem:
+		dirLog = logUralChem
+		dirTemp = tempUralChem
+	case gosBy:
+		dirLog = logGosBy
+		dirTemp = tempGosBy
+	case apk:
+		dirLog = logApk
+		dirTemp = tempApk
+	case aztpa:
+		dirLog = logAztpa
+		dirTemp = tempAztpa
+	case rosAtom:
+		dirLog = logRosAtom
+		dirTemp = tempRosAtom
+	case tpsre:
+		dirLog = logTpsre
+		dirTemp = tempTpsre
+	case tektkp:
+		dirLog = logTektkp
+		dirTemp = tempTektkp
+	case tekgaz:
+		dirLog = logTekGaz
+		dirTemp = tempTekGaz
+	case tekmarket:
+		dirLog = logTekMarket
+		dirTemp = tempTekMarket
+	case tekrao:
+		dirLog = logTekRao
+		dirTemp = tempTekRao
+	case tekmos:
+		dirLog = logTekMos
+		dirTemp = tempTekMos
+	case tekrn:
+		dirLog = logTekRn
+		dirTemp = tempTekRn
+	case tekkom:
+		dirLog = logTekKom
+		dirTemp = tempTekKom
+	case tekrusgazbur:
+		dirLog = logTekRusGazBur
+		dirTemp = tempTekRusGazBur
+	case tekrosimport:
+		dirLog = logTekRosImport
+		dirTemp = tempTekRosImport
+	case tektyumen:
+		dirLog = logTekTyumen
+		dirTemp = tempTekTyumen
 	}
-	CreateLogFile()
-	CreateTempDir()
+	createLogFile()
+	createTempDir()
 }

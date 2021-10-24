@@ -10,15 +10,15 @@ import (
 	"time"
 )
 
-var AddtenderPhosagro int
-var UpdatetenderPhosagro int
+var addtenderPhosagro int
+var updatetenderPhosagro int
 
-type ParserPhosagro struct {
+type parserPhosagro struct {
 	TypeFz int
 	Urls   []string
 }
 
-type TenderPhosagro struct {
+type tenderPhosagro struct {
 	purNum     string
 	url        string
 	datePub    time.Time
@@ -28,9 +28,9 @@ type TenderPhosagro struct {
 	purObjInfo string
 }
 
-func (t *ParserPhosagro) parsing() {
+func (t *parserPhosagro) parsing() {
 	defer SaveStack()
-	Logging("Start parsing")
+	logging("Start parsing")
 	for _, p := range t.Urls {
 		for i := 1; i < 6; i++ {
 			urllist := fmt.Sprintf("%s%d", p, i)
@@ -38,26 +38,26 @@ func (t *ParserPhosagro) parsing() {
 		}
 	}
 
-	Logging("End parsing")
-	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderPhosagro))
-	Logging(fmt.Sprintf("Обновили тендеров %d", UpdatetenderPhosagro))
+	logging("End parsing")
+	logging(fmt.Sprintf("Добавили тендеров %d", addtenderPhosagro))
+	logging(fmt.Sprintf("Обновили тендеров %d", updatetenderPhosagro))
 }
 
-func (t *ParserPhosagro) parsingPage(p string) {
+func (t *parserPhosagro) parsingPage(p string) {
 	defer SaveStack()
 	r := DownloadPage(p)
 	if r != "" {
 		t.parsingTenderList(r, p)
 	} else {
-		Logging("Получили пустую строку", p)
+		logging("Получили пустую строку", p)
 	}
 }
 
-func (t *ParserPhosagro) parsingTenderList(p string, url string) {
+func (t *parserPhosagro) parsingTenderList(p string, url string) {
 	defer SaveStack()
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(p))
 	if err != nil {
-		Logging(err)
+		logging(err)
 		return
 	}
 	doc.Find("table.b-tbl-tenders tbody tr").Each(func(i int, s *goquery.Selection) {
@@ -66,10 +66,10 @@ func (t *ParserPhosagro) parsingTenderList(p string, url string) {
 	})
 }
 
-func (t *ParserPhosagro) parsingTenderFromList(p *goquery.Selection, url string) {
+func (t *parserPhosagro) parsingTenderFromList(p *goquery.Selection, url string) {
 	purNum := strings.TrimSpace(p.Find("td:nth-child(1)").First().Text())
 	if purNum == "" {
-		Logging("cannot find purnum in ", url)
+		logging("cannot find purnum in ", url)
 		return
 	}
 	pubDateT := strings.TrimSpace(p.Find("td:nth-child(4)").First().Text())
@@ -83,7 +83,7 @@ func (t *ParserPhosagro) parsingTenderFromList(p *goquery.Selection, url string)
 		endDate = getTimeMoscowLayout(endDateT, "02.01.2006")
 	}
 	if (pubDate == time.Time{} || endDate == time.Time{}) {
-		Logging("cannot find enddate or startdate in ", url, purNum)
+		logging("cannot find enddate or startdate in ", url, purNum)
 		return
 	}
 	orgName := strings.TrimSpace(p.Find("td:nth-child(3)").First().Text())
@@ -92,19 +92,19 @@ func (t *ParserPhosagro) parsingTenderFromList(p *goquery.Selection, url string)
 	hrefT := p.Find("td:nth-child(2) a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element cannot have href attribute", hrefT.Text())
+		logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	href = fmt.Sprintf("https://etpreg.phosagro.ru/tenders/%s", href)
-	tnd := TenderPhosagro{purNum: purNum, url: href, datePub: pubDate, dateEnd: endDate, orgName: orgName, status: status, purObjInfo: purObjInfo}
-	t.Tender(tnd)
+	tnd := tenderPhosagro{purNum: purNum, url: href, datePub: pubDate, dateEnd: endDate, orgName: orgName, status: status, purObjInfo: purObjInfo}
+	t.tender(tnd)
 
 }
-func (t *ParserPhosagro) Tender(tn TenderPhosagro) {
+func (t *parserPhosagro) tender(tn tenderPhosagro) {
 	defer SaveStack()
-	db, err := sql.Open("mysql", Dsn)
+	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		Logging("Ошибка подключения к БД", err)
+		logging("Ошибка подключения к БД", err)
 		return
 	}
 	defer db.Close()
@@ -112,11 +112,11 @@ func (t *ParserPhosagro) Tender(tn TenderPhosagro) {
 	upDate := time.Now()
 	idXml := tn.purNum
 	version := 1
-	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_tender FROM %stender WHERE purchase_number = ? AND doc_publish_date = ? AND type_fz = ? AND end_date = ? AND notice_version = ?", Prefix))
+	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_tender FROM %stender WHERE purchase_number = ? AND doc_publish_date = ? AND type_fz = ? AND end_date = ? AND notice_version = ?", prefix))
 	res, err := stmt.Query(tn.purNum, tn.datePub, t.TypeFz, tn.dateEnd, tn.status)
 	stmt.Close()
 	if err != nil {
-		Logging("Ошибка выполения запроса", err)
+		logging("Ошибка выполения запроса", err)
 		return
 	}
 	if res.Next() {
@@ -127,22 +127,22 @@ func (t *ParserPhosagro) Tender(tn TenderPhosagro) {
 	res.Close()
 	r := DownloadPage(tn.url)
 	if r == "" {
-		Logging("Получили пустую строку", tn.url)
+		logging("Получили пустую строку", tn.url)
 		return
 	}
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(r))
 	if err != nil {
-		Logging(err)
+		logging(err)
 		return
 	}
 	var cancelStatus = 0
 	var updated = false
 	if tn.purNum != "" {
-		stmt, err := db.Prepare(fmt.Sprintf("SELECT id_tender, date_version FROM %stender WHERE purchase_number = ? AND cancel=0 AND type_fz = ?", Prefix))
+		stmt, err := db.Prepare(fmt.Sprintf("SELECT id_tender, date_version FROM %stender WHERE purchase_number = ? AND cancel=0 AND type_fz = ?", prefix))
 		rows, err := stmt.Query(tn.purNum, t.TypeFz)
 		stmt.Close()
 		if err != nil {
-			Logging("Ошибка выполения запроса", err)
+			logging("Ошибка выполения запроса", err)
 			return
 		}
 		for rows.Next() {
@@ -151,12 +151,12 @@ func (t *ParserPhosagro) Tender(tn TenderPhosagro) {
 			var dateVersion time.Time
 			err = rows.Scan(&idTender, &dateVersion)
 			if err != nil {
-				Logging("Ошибка чтения результата запроса", err)
+				logging("Ошибка чтения результата запроса", err)
 				return
 			}
 			//fmt.Println(DateUpdated.Sub(dateVersion))
 			if dateVersion.Sub(upDate) <= 0 {
-				stmtupd, _ := db.Prepare(fmt.Sprintf("UPDATE %stender SET cancel=1 WHERE id_tender = ?", Prefix))
+				stmtupd, _ := db.Prepare(fmt.Sprintf("UPDATE %stender SET cancel=1 WHERE id_tender = ?", prefix))
 				_, err = stmtupd.Exec(idTender)
 				stmtupd.Close()
 
@@ -171,28 +171,28 @@ func (t *ParserPhosagro) Tender(tn TenderPhosagro) {
 	printForm := tn.url
 	idOrganizer := 0
 	if tn.orgName != "" {
-		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_organizer FROM %sorganizer WHERE full_name = ?", Prefix))
+		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_organizer FROM %sorganizer WHERE full_name = ?", prefix))
 		rows, err := stmt.Query(tn.orgName)
 		stmt.Close()
 		if err != nil {
-			Logging("Ошибка выполения запроса", err)
+			logging("Ошибка выполения запроса", err)
 			return
 		}
 		if rows.Next() {
 			err = rows.Scan(&idOrganizer)
 			if err != nil {
-				Logging("Ошибка чтения результата запроса", err)
+				logging("Ошибка чтения результата запроса", err)
 				return
 			}
 			rows.Close()
 		} else {
 			rows.Close()
 			contactPerson := strings.TrimSpace(doc.Find("table.minimTable td:contains('Исполнитель:') + td").First().Text())
-			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sorganizer SET full_name = ?, contact_person = ?", Prefix))
+			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sorganizer SET full_name = ?, contact_person = ?", prefix))
 			res, err := stmt.Exec(tn.orgName, contactPerson)
 			stmt.Close()
 			if err != nil {
-				Logging("Ошибка вставки организатора", err)
+				logging("Ошибка вставки организатора", err)
 				return
 			}
 			id, err := res.LastInsertId()
@@ -204,27 +204,27 @@ func (t *ParserPhosagro) Tender(tn TenderPhosagro) {
 	etpName := "ЭТП «ФосАгро»"
 	etpUrl := "https://etpreg.phosagro.ru/tenders"
 	if true {
-		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_etp FROM %setp WHERE name = ? AND url = ? LIMIT 1", Prefix))
+		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_etp FROM %setp WHERE name = ? AND url = ? LIMIT 1", prefix))
 		rows, err := stmt.Query(etpName, etpUrl)
 		stmt.Close()
 		if err != nil {
-			Logging("Ошибка выполения запроса", err)
+			logging("Ошибка выполения запроса", err)
 			return
 		}
 		if rows.Next() {
 			err = rows.Scan(&IdEtp)
 			if err != nil {
-				Logging("Ошибка чтения результата запроса", err)
+				logging("Ошибка чтения результата запроса", err)
 				return
 			}
 			rows.Close()
 		} else {
 			rows.Close()
-			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %setp SET name = ?, url = ?, conf=0", Prefix))
+			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %setp SET name = ?, url = ?, conf=0", prefix))
 			res, err := stmt.Exec(etpName, etpUrl)
 			stmt.Close()
 			if err != nil {
-				Logging("Ошибка вставки etp", err)
+				logging("Ошибка вставки etp", err)
 				return
 			}
 			id, err := res.LastInsertId()
@@ -232,33 +232,33 @@ func (t *ParserPhosagro) Tender(tn TenderPhosagro) {
 		}
 	}
 	idTender := 0
-	stmtt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %stender SET id_xml = ?, purchase_number = ?, doc_publish_date = ?, href = ?, purchase_object_info = ?, type_fz = ?, id_organizer = ?, id_placing_way = ?, id_etp = ?, end_date = ?, cancel = ?, date_version = ?, num_version = ?, xml = ?, print_form = ?, id_region = ?, notice_version = ?", Prefix))
+	stmtt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %stender SET id_xml = ?, purchase_number = ?, doc_publish_date = ?, href = ?, purchase_object_info = ?, type_fz = ?, id_organizer = ?, id_placing_way = ?, id_etp = ?, end_date = ?, cancel = ?, date_version = ?, num_version = ?, xml = ?, print_form = ?, id_region = ?, notice_version = ?", prefix))
 	rest, err := stmtt.Exec(idXml, tn.purNum, tn.datePub, tn.url, tn.purObjInfo, t.TypeFz, idOrganizer, idPlacingWay, IdEtp, tn.dateEnd, cancelStatus, upDate, version, tn.url, printForm, 0, tn.status)
 	stmtt.Close()
 	if err != nil {
-		Logging("Ошибка вставки tender", err)
+		logging("Ошибка вставки tender", err)
 		return
 	}
 	idt, err := rest.LastInsertId()
 	idTender = int(idt)
 	if updated {
-		UpdatetenderPhosagro++
+		updatetenderPhosagro++
 	} else {
-		AddtenderPhosagro++
+		addtenderPhosagro++
 	}
 	idCustomer := 0
 	if tn.orgName != "" {
-		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_customer FROM %scustomer WHERE full_name = ?", Prefix))
+		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_customer FROM %scustomer WHERE full_name = ?", prefix))
 		rows, err := stmt.Query(tn.orgName)
 		stmt.Close()
 		if err != nil {
-			Logging("Ошибка выполения запроса", err)
+			logging("Ошибка выполения запроса", err)
 			return
 		}
 		if rows.Next() {
 			err = rows.Scan(&idCustomer)
 			if err != nil {
-				Logging("Ошибка чтения результата запроса", err)
+				logging("Ошибка чтения результата запроса", err)
 				return
 			}
 			rows.Close()
@@ -266,14 +266,14 @@ func (t *ParserPhosagro) Tender(tn TenderPhosagro) {
 			rows.Close()
 			out, err := exec.Command("uuidgen").Output()
 			if err != nil {
-				Logging("Ошибка генерации UUID", err)
+				logging("Ошибка генерации UUID", err)
 				return
 			}
-			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %scustomer SET full_name = ?, reg_num = ?, is223=1", Prefix))
+			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %scustomer SET full_name = ?, reg_num = ?, is223=1", prefix))
 			res, err := stmt.Exec(tn.orgName, out)
 			stmt.Close()
 			if err != nil {
-				Logging("Ошибка вставки заказчика", err)
+				logging("Ошибка вставки заказчика", err)
 				return
 			}
 			id, err := res.LastInsertId()
@@ -282,11 +282,11 @@ func (t *ParserPhosagro) Tender(tn TenderPhosagro) {
 	}
 	var LotNumber = 1
 	idLot := 0
-	stmtl, _ := db.Prepare(fmt.Sprintf("INSERT INTO %slot SET id_tender = ?, lot_number = ?", Prefix))
+	stmtl, _ := db.Prepare(fmt.Sprintf("INSERT INTO %slot SET id_tender = ?, lot_number = ?", prefix))
 	resl, err := stmtl.Exec(idTender, LotNumber)
 	stmtl.Close()
 	if err != nil {
-		Logging("Ошибка вставки lot", err)
+		logging("Ошибка вставки lot", err)
 		return
 	}
 	id, _ := resl.LastInsertId()
@@ -296,11 +296,11 @@ func (t *ParserPhosagro) Tender(tn TenderPhosagro) {
 	delivTerm2 := strings.TrimSpace(doc.Find("table.minimTable td:contains('Условия оплаты:') + td").First().Text())
 	delivTerm3 := strings.TrimSpace(doc.Find("table.minimTable td:contains('Поставка до:') + td").First().Text())
 	delivTerm := fmt.Sprintf("%s \nУсловия оплаты: %s \nПоставка до: %s", delivTerm1, delivTerm2, delivTerm3)
-	stmtcr, _ := db.Prepare(fmt.Sprintf("INSERT INTO %scustomer_requirement SET id_lot = ?, id_customer = ?, delivery_place = ?, delivery_term = ?", Prefix))
+	stmtcr, _ := db.Prepare(fmt.Sprintf("INSERT INTO %scustomer_requirement SET id_lot = ?, id_customer = ?, delivery_place = ?, delivery_term = ?", prefix))
 	_, errr := stmtcr.Exec(idLot, idCustomer, delivPlace, delivTerm)
 	stmtcr.Close()
 	if errr != nil {
-		Logging("Ошибка вставки purchase_object", errr)
+		logging("Ошибка вставки purchase_object", errr)
 		return
 	}
 	doc.Find("table.tbl-tender_items tbody tr").Each(func(i int, s *goquery.Selection) {
@@ -308,25 +308,25 @@ func (t *ParserPhosagro) Tender(tn TenderPhosagro) {
 	})
 	e := TenderKwords(db, idTender)
 	if e != nil {
-		Logging("Ошибка обработки TenderKwords", e)
+		logging("Ошибка обработки TenderKwords", e)
 	}
 
 	e1 := AddVerNumber(db, tn.purNum, t.TypeFz)
 	if e1 != nil {
-		Logging("Ошибка обработки AddVerNumber", e1)
+		logging("Ошибка обработки AddVerNumber", e1)
 	}
 }
 
-func (t *ParserPhosagro) purObj(idLot int, idCustomer int, doc *goquery.Selection, db *sql.DB) {
+func (t *parserPhosagro) purObj(idLot int, idCustomer int, doc *goquery.Selection, db *sql.DB) {
 	defer SaveStack()
 	name := strings.TrimSpace(doc.Find("td:nth-child(2)").First().Text())
 	quantity := strings.TrimSpace(doc.Find("span.b-pos-quantity").First().Text())
 	okei := strings.TrimSpace(doc.Find("span.b-pos-uom").First().Text())
-	stmtr, _ := db.Prepare(fmt.Sprintf("INSERT INTO %spurchase_object SET id_lot = ?, id_customer = ?, name = ?, quantity_value = ?, okei = ?, customer_quantity_value = ?", Prefix))
+	stmtr, _ := db.Prepare(fmt.Sprintf("INSERT INTO %spurchase_object SET id_lot = ?, id_customer = ?, name = ?, quantity_value = ?, okei = ?, customer_quantity_value = ?", prefix))
 	_, errr := stmtr.Exec(idLot, idCustomer, name, quantity, okei, quantity)
 	stmtr.Close()
 	if errr != nil {
-		Logging("Ошибка вставки purchase_object", errr)
+		logging("Ошибка вставки purchase_object", errr)
 		return
 	}
 }

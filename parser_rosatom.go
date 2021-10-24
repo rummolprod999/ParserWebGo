@@ -10,15 +10,15 @@ import (
 	"time"
 )
 
-var AddtenderRosAtom int
-var UpdatetenderRosAtom int
+var addtenderRosAtom int
+var updatetenderRosAtom int
 
-type ParserRosAtom struct {
+type parserRosAtom struct {
 	TypeFz int
 	Urls   []string
 }
 
-type TenderRosAtom struct {
+type tenderRosAtom struct {
 	purName string
 	purNum  string
 	url     string
@@ -27,43 +27,43 @@ type TenderRosAtom struct {
 	endDate time.Time
 }
 
-func (t *ParserRosAtom) parsing() {
+func (t *parserRosAtom) parsing() {
 	defer SaveStack()
-	Logging("Start parsing")
+	logging("Start parsing")
 	t.parsingPageAll()
-	Logging("End parsing")
-	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderRosAtom))
-	Logging(fmt.Sprintf("Обновили тендеров %d", UpdatetenderRosAtom))
+	logging("End parsing")
+	logging(fmt.Sprintf("Добавили тендеров %d", addtenderRosAtom))
+	logging(fmt.Sprintf("Обновили тендеров %d", updatetenderRosAtom))
 }
 
-func (t *ParserRosAtom) parsingPageAll() {
+func (t *parserRosAtom) parsingPageAll() {
 	for _, p := range t.Urls {
 		t.parsingPage(p)
 	}
 }
 
-func (t *ParserRosAtom) parsingPage(p string) {
+func (t *parserRosAtom) parsingPage(p string) {
 	defer SaveStack()
 	for i := 1; i <= 20; i++ {
 		url := fmt.Sprintf("%s%d", p, i)
-		t.DownPage(url)
+		t.downPage(url)
 	}
 }
 
-func (t *ParserRosAtom) DownPage(p string) {
+func (t *parserRosAtom) downPage(p string) {
 	defer SaveStack()
 	r := DownloadPage(p)
 	if r != "" {
 		t.parsingTenderList(r, p)
 	} else {
-		Logging("Получили пустую строку", p)
+		logging("Получили пустую строку", p)
 	}
 }
 
-func (t *ParserRosAtom) parsingTenderList(p string, url string) {
+func (t *parserRosAtom) parsingTenderList(p string, url string) {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(p))
 	if err != nil {
-		Logging(err)
+		logging(err)
 		return
 	}
 	doc.Find("div.table-lots-list table tbody tr:nth-child(2n+1)").Each(func(i int, s *goquery.Selection) {
@@ -71,47 +71,47 @@ func (t *ParserRosAtom) parsingTenderList(p string, url string) {
 	})
 }
 
-func (t *ParserRosAtom) parsingTenderFromList(p *goquery.Selection, url string) {
+func (t *parserRosAtom) parsingTenderFromList(p *goquery.Selection, url string) {
 	hrefT := p.Find("td.description > p a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element cannot have href attribute", url)
+		logging("The element cannot have href attribute", url)
 		return
 	}
 	href = fmt.Sprintf("http://zakupki.rosatom.ru%s", href)
 	purName := strings.TrimSpace(p.Find("td.description > p a").First().Text())
 	if purName == "" {
-		Logging("cannot find purName in ", url)
+		logging("cannot find purName in ", url)
 		return
 	}
 	purNum := strings.TrimSpace(p.Find("td.description p").First().Text())
 	if purNum == "" {
-		Logging("cannot find purNum in ", url)
+		logging("cannot find purNum in ", url)
 		return
 	}
 	PubDateT := strings.TrimSpace(p.Find("td:nth-of-type(6) > p").First().Text())
 	pubDate := getTimeMoscowLayout(PubDateT, "02.01.2006")
 	if (pubDate == time.Time{}) {
-		Logging("cannot find pubDate in ", href, purNum)
+		logging("cannot find pubDate in ", href, purNum)
 		return
 	}
 	EndDateT := strings.TrimSpace(p.Find("td:nth-of-type(7) > p").First().Text())
 	EndDateT = findFromRegExp(EndDateT, `(\d{2}\.\d{2}\.\d{4})`)
 	endDate := getTimeMoscowLayout(EndDateT, "02.01.2006")
 	if (endDate == time.Time{}) {
-		Logging("cannot find endDate in ", href, purNum)
+		logging("cannot find endDate in ", href, purNum)
 		return
 	}
 	status := strings.TrimSpace(p.Find("td:nth-of-type(8) > p").First().Text())
-	tnd := TenderRosAtom{purName: purName, purNum: purNum, url: href, status: status, pubDate: pubDate, endDate: endDate}
-	t.Tender(tnd)
+	tnd := tenderRosAtom{purName: purName, purNum: purNum, url: href, status: status, pubDate: pubDate, endDate: endDate}
+	t.tender(tnd)
 }
 
-func (t *ParserRosAtom) Tender(tn TenderRosAtom) {
+func (t *parserRosAtom) tender(tn tenderRosAtom) {
 	defer SaveStack()
-	db, err := sql.Open("mysql", Dsn)
+	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		Logging("Ошибка подключения к БД", err)
+		logging("Ошибка подключения к БД", err)
 		return
 	}
 	defer db.Close()
@@ -119,11 +119,11 @@ func (t *ParserRosAtom) Tender(tn TenderRosAtom) {
 	upDate := time.Now()
 	idXml := tn.purNum
 	version := 1
-	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_tender FROM %stender WHERE purchase_number = ? AND type_fz = ? AND end_date = ? AND notice_version = ?", Prefix))
+	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_tender FROM %stender WHERE purchase_number = ? AND type_fz = ? AND end_date = ? AND notice_version = ?", prefix))
 	res, err := stmt.Query(tn.purNum, t.TypeFz, tn.endDate, tn.status)
 	stmt.Close()
 	if err != nil {
-		Logging("Ошибка выполения запроса", err)
+		logging("Ошибка выполения запроса", err)
 		return
 	}
 	if res.Next() {
@@ -134,22 +134,22 @@ func (t *ParserRosAtom) Tender(tn TenderRosAtom) {
 	res.Close()
 	r := DownloadPage(tn.url)
 	if r == "" {
-		Logging("Получили пустую строку", tn.url)
+		logging("Получили пустую строку", tn.url)
 		return
 	}
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(r))
 	if err != nil {
-		Logging(err)
+		logging(err)
 		return
 	}
 	var cancelStatus = 0
 	var updated = false
 	if tn.purNum != "" {
-		stmt, err := db.Prepare(fmt.Sprintf("SELECT id_tender, date_version FROM %stender WHERE purchase_number = ? AND cancel=0 AND type_fz = ?", Prefix))
+		stmt, err := db.Prepare(fmt.Sprintf("SELECT id_tender, date_version FROM %stender WHERE purchase_number = ? AND cancel=0 AND type_fz = ?", prefix))
 		rows, err := stmt.Query(tn.purNum, t.TypeFz)
 		stmt.Close()
 		if err != nil {
-			Logging("Ошибка выполения запроса", err)
+			logging("Ошибка выполения запроса", err)
 			return
 		}
 		for rows.Next() {
@@ -158,12 +158,12 @@ func (t *ParserRosAtom) Tender(tn TenderRosAtom) {
 			var dateVersion time.Time
 			err = rows.Scan(&idTender, &dateVersion)
 			if err != nil {
-				Logging("Ошибка чтения результата запроса", err)
+				logging("Ошибка чтения результата запроса", err)
 				return
 			}
 			//fmt.Println(DateUpdated.Sub(dateVersion))
 			if dateVersion.Sub(upDate) <= 0 {
-				stmtupd, _ := db.Prepare(fmt.Sprintf("UPDATE %stender SET cancel=1 WHERE id_tender = ?", Prefix))
+				stmtupd, _ := db.Prepare(fmt.Sprintf("UPDATE %stender SET cancel=1 WHERE id_tender = ?", prefix))
 				_, err = stmtupd.Exec(idTender)
 				stmtupd.Close()
 
@@ -178,17 +178,17 @@ func (t *ParserRosAtom) Tender(tn TenderRosAtom) {
 	idOrganizer := 0
 	orgName := strings.TrimSpace(doc.Find("td:contains('Наименование организации') + td > a").First().Text())
 	if orgName != "" {
-		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_organizer FROM %sorganizer WHERE full_name = ?", Prefix))
+		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_organizer FROM %sorganizer WHERE full_name = ?", prefix))
 		rows, err := stmt.Query(orgName)
 		stmt.Close()
 		if err != nil {
-			Logging("Ошибка выполения запроса", err)
+			logging("Ошибка выполения запроса", err)
 			return
 		}
 		if rows.Next() {
 			err = rows.Scan(&idOrganizer)
 			if err != nil {
-				Logging("Ошибка чтения результата запроса", err)
+				logging("Ошибка чтения результата запроса", err)
 				return
 			}
 			rows.Close()
@@ -199,11 +199,11 @@ func (t *ParserRosAtom) Tender(tn TenderRosAtom) {
 			inn := ""
 			postAddress := strings.TrimSpace(doc.Find("td:contains('Место нахождения') + td").First().Text())
 			contactPerson := strings.TrimSpace(doc.Find("td:contains('Контактное лицо') + td").First().Text())
-			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sorganizer SET full_name = ?, contact_person = ?, contact_phone = ?, contact_email = ?, inn = ?, post_address = ?", Prefix))
+			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sorganizer SET full_name = ?, contact_person = ?, contact_phone = ?, contact_email = ?, inn = ?, post_address = ?", prefix))
 			res, err := stmt.Exec(orgName, contactPerson, contactPhone, contactEmail, inn, postAddress)
 			stmt.Close()
 			if err != nil {
-				Logging("Ошибка вставки организатора", err)
+				logging("Ошибка вставки организатора", err)
 				return
 			}
 			id, err := res.LastInsertId()
@@ -220,19 +220,19 @@ func (t *ParserRosAtom) Tender(tn TenderRosAtom) {
 		idPlacingWay = getPlacingWayId(placinWayName, db)
 	}
 	idTender := 0
-	stmtt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %stender SET id_xml = ?, purchase_number = ?, doc_publish_date = ?, href = ?, purchase_object_info = ?, type_fz = ?, id_organizer = ?, id_placing_way = ?, id_etp = ?, end_date = ?, cancel = ?, date_version = ?, num_version = ?, xml = ?, print_form = ?, id_region = ?, notice_version = ?", Prefix))
+	stmtt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %stender SET id_xml = ?, purchase_number = ?, doc_publish_date = ?, href = ?, purchase_object_info = ?, type_fz = ?, id_organizer = ?, id_placing_way = ?, id_etp = ?, end_date = ?, cancel = ?, date_version = ?, num_version = ?, xml = ?, print_form = ?, id_region = ?, notice_version = ?", prefix))
 	rest, err := stmtt.Exec(idXml, tn.purNum, tn.pubDate, tn.url, tn.purName, t.TypeFz, idOrganizer, idPlacingWay, IdEtp, tn.endDate, cancelStatus, upDate, version, tn.url, printForm, 0, tn.status)
 	stmtt.Close()
 	if err != nil {
-		Logging("Ошибка вставки tender", err)
+		logging("Ошибка вставки tender", err)
 		return
 	}
 	idt, err := rest.LastInsertId()
 	idTender = int(idt)
 	if updated {
-		UpdatetenderRosAtom++
+		updatetenderRosAtom++
 	} else {
-		AddtenderRosAtom++
+		addtenderRosAtom++
 	}
 	doc.Find("td a[title='Скачать']").Each(func(i int, s *goquery.Selection) {
 		t.documents(idTender, s, db)
@@ -242,29 +242,29 @@ func (t *ParserRosAtom) Tender(tn TenderRosAtom) {
 	})
 	e := TenderKwords(db, idTender)
 	if e != nil {
-		Logging("Ошибка обработки TenderKwords", e)
+		logging("Ошибка обработки TenderKwords", e)
 	}
 
 	e1 := AddVerNumber(db, tn.purNum, t.TypeFz)
 	if e1 != nil {
-		Logging("Ошибка обработки AddVerNumber", e1)
+		logging("Ошибка обработки AddVerNumber", e1)
 	}
 }
-func (t *ParserRosAtom) lots(numLot int, idTender int, d *goquery.Selection, db *sql.DB) {
+func (t *parserRosAtom) lots(numLot int, idTender int, d *goquery.Selection, db *sql.DB) {
 	href, exist := d.Attr("href")
 	if !exist {
-		Logging("The element cannot have href attribute", d.Text())
+		logging("The element cannot have href attribute", d.Text())
 		return
 	}
 	href = fmt.Sprintf("http://zakupki.rosatom.ru%s", href)
 	r := DownloadPage(href)
 	if r == "" {
-		Logging("Получили пустую строку", href)
+		logging("Получили пустую строку", href)
 		return
 	}
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(r))
 	if err != nil {
-		Logging(err)
+		logging(err)
 		return
 	}
 	nmck := strings.TrimSpace(doc.Find("td:contains('Начальная цена (руб.)') + td").First().Text())
@@ -273,11 +273,11 @@ func (t *ParserRosAtom) lots(numLot int, idTender int, d *goquery.Selection, db 
 	nmck = delallwhitespaceAtom(nmck)
 	lotName := strings.TrimSpace(doc.Find("h1").First().Text())
 	currency := strings.TrimSpace(doc.Find("td:contains('Валюта лота') + td").First().Text())
-	stmtl, _ := db.Prepare(fmt.Sprintf("INSERT INTO %slot SET id_tender = ?, lot_number = ?, currency = ?, max_price = ?, lot_name = ?", Prefix))
+	stmtl, _ := db.Prepare(fmt.Sprintf("INSERT INTO %slot SET id_tender = ?, lot_number = ?, currency = ?, max_price = ?, lot_name = ?", prefix))
 	resl, err := stmtl.Exec(idTender, numLot, currency, nmck, lotName)
 	stmtl.Close()
 	if err != nil {
-		Logging("Ошибка вставки lot", err)
+		logging("Ошибка вставки lot", err)
 		return
 	}
 	id, _ := resl.LastInsertId()
@@ -285,17 +285,17 @@ func (t *ParserRosAtom) lots(numLot int, idTender int, d *goquery.Selection, db 
 	idCustomer := 0
 	cusName := strings.TrimSpace(doc.Find("td:contains('Официальное наименование') + td > a").First().Text())
 	if cusName != "" {
-		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_customer FROM %scustomer WHERE full_name = ?", Prefix))
+		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_customer FROM %scustomer WHERE full_name = ?", prefix))
 		rows, err := stmt.Query(cusName)
 		stmt.Close()
 		if err != nil {
-			Logging("Ошибка выполения запроса", err)
+			logging("Ошибка выполения запроса", err)
 			return
 		}
 		if rows.Next() {
 			err = rows.Scan(&idCustomer)
 			if err != nil {
-				Logging("Ошибка чтения результата запроса", err)
+				logging("Ошибка чтения результата запроса", err)
 				return
 			}
 			rows.Close()
@@ -303,15 +303,15 @@ func (t *ParserRosAtom) lots(numLot int, idTender int, d *goquery.Selection, db 
 			rows.Close()
 			out, err := exec.Command("uuidgen").Output()
 			if err != nil {
-				Logging("Ошибка генерации UUID", err)
+				logging("Ошибка генерации UUID", err)
 				return
 			}
 			innCus := ""
-			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %scustomer SET full_name = ?, reg_num = ?, is223=1, inn = ?", Prefix))
+			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %scustomer SET full_name = ?, reg_num = ?, is223=1, inn = ?", prefix))
 			res, err := stmt.Exec(cusName, out, innCus)
 			stmt.Close()
 			if err != nil {
-				Logging("Ошибка вставки заказчика", err)
+				logging("Ошибка вставки заказчика", err)
 				return
 			}
 			id, err := res.LastInsertId()
@@ -321,32 +321,32 @@ func (t *ParserRosAtom) lots(numLot int, idTender int, d *goquery.Selection, db 
 	doc.Find("div.table-lots-list table tbody#custitemsbody_1 tr").Each(func(i int, s *goquery.Selection) {
 		purObj := strings.TrimSpace(s.Find("td:nth-child(2) p").First().Text())
 		if purObj != "" {
-			stmtr, _ := db.Prepare(fmt.Sprintf("INSERT INTO %spurchase_object SET id_lot = ?, id_customer = ?, name = ?", Prefix))
+			stmtr, _ := db.Prepare(fmt.Sprintf("INSERT INTO %spurchase_object SET id_lot = ?, id_customer = ?, name = ?", prefix))
 			_, errr := stmtr.Exec(idLot, idCustomer, purObj)
 			stmtr.Close()
 			if errr != nil {
-				Logging("Ошибка вставки purchase_object", errr)
+				logging("Ошибка вставки purchase_object", errr)
 				return
 			}
 		}
 	})
 }
 
-func (t *ParserRosAtom) documents(idTender int, doc *goquery.Selection, db *sql.DB) {
+func (t *parserRosAtom) documents(idTender int, doc *goquery.Selection, db *sql.DB) {
 	defer SaveStack()
 	nameF := strings.TrimSpace(doc.First().Text())
 	href, exist := doc.Attr("href")
 	if !exist {
-		Logging("The element cannot have href attribute", doc.Text())
+		logging("The element cannot have href attribute", doc.Text())
 		return
 	}
 	href = fmt.Sprintf("http://zakupki.rosatom.ru%s", href)
 	if nameF != "" {
-		stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sattachment SET id_tender = ?, file_name = ?, url = ?", Prefix))
+		stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sattachment SET id_tender = ?, file_name = ?, url = ?", prefix))
 		_, err := stmt.Exec(idTender, nameF, href)
 		stmt.Close()
 		if err != nil {
-			Logging("Ошибка вставки attachment", err)
+			logging("Ошибка вставки attachment", err)
 			return
 		}
 	}

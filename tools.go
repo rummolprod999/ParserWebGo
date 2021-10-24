@@ -25,7 +25,7 @@ func SaveStack() {
 	if p := recover(); p != nil {
 		var buf [4096]byte
 		n := runtime.Stack(buf[:], false)
-		file, err := os.OpenFile(string(FileLog), os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
+		file, err := os.OpenFile(string(fileLog), os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
 		defer file.Close()
 		if err != nil {
 			fmt.Println("Ошибка записи stack log", err)
@@ -43,13 +43,13 @@ func DownloadPage1251(url string) string {
 	count := 0
 	for {
 		if count > 50 {
-			Logging(fmt.Sprintf("Не скачали файл за %d попыток", count))
+			logging(fmt.Sprintf("Не скачали файл за %d попыток", count))
 			return st
 		}
 		st = GetPage(url)
 		if st == "" {
 			count++
-			Logging("Получили пустую страницу", url)
+			logging("Получили пустую страницу", url)
 			continue
 		}
 		dec := charmap.Windows1251.NewDecoder()
@@ -68,13 +68,13 @@ func DownloadPage1251NoCheckSSL(url string) string {
 	count := 0
 	for {
 		if count > 50 {
-			Logging(fmt.Sprintf("Не скачали файл за %d попыток", count))
+			logging(fmt.Sprintf("Не скачали файл за %d попыток", count))
 			return st
 		}
 		st = GetPageNoSSL(url)
 		if st == "" {
 			count++
-			Logging("Получили пустую страницу", url)
+			logging("Получили пустую страницу", url)
 			continue
 		}
 		dec := charmap.Windows1251.NewDecoder()
@@ -94,13 +94,13 @@ func DownloadPage(url string) string {
 	for {
 		//fmt.Println("Start download file")
 		if count > 50 {
-			Logging(fmt.Sprintf("Не скачали файл за %d попыток %s", count, url))
+			logging(fmt.Sprintf("Не скачали файл за %d попыток %s", count, url))
 			return st
 		}
 		st = GetPage(url)
 		if st == "" {
 			count++
-			Logging("Получили пустую страницу", url)
+			logging("Получили пустую страницу", url)
 			time.Sleep(time.Second * 5)
 			continue
 		}
@@ -116,13 +116,13 @@ func DownloadPageInsecure(url string) string {
 	for {
 		//fmt.Println("Start download file")
 		if count > 50 {
-			Logging(fmt.Sprintf("Не скачали файл за %d попыток %s", count, url))
+			logging(fmt.Sprintf("Не скачали файл за %d попыток %s", count, url))
 			return st
 		}
 		st = GetPageIns(url)
 		if st == "" {
 			count++
-			Logging("Получили пустую страницу", url)
+			logging("Получили пустую страницу", url)
 			time.Sleep(time.Second * 5)
 			continue
 		}
@@ -138,13 +138,13 @@ func DownloadPageGzip(url string) string {
 	for {
 		//fmt.Println("Start download file")
 		if count > 50 {
-			Logging(fmt.Sprintf("Не скачали файл за %d попыток %s", count, url))
+			logging(fmt.Sprintf("Не скачали файл за %d попыток %s", count, url))
 			return st
 		}
 		st = GetPageGzip(url)
 		if st == "" {
 			count++
-			Logging("Получили пустую страницу", url)
+			logging("Получили пустую страницу", url)
 			time.Sleep(time.Second * 5)
 			continue
 		}
@@ -160,13 +160,13 @@ func DownloadPageWithUA(url string) string {
 	for {
 		//fmt.Println("Start download file")
 		if count > 50 {
-			Logging(fmt.Sprintf("Не скачали файл за %d попыток %s", count, url))
+			logging(fmt.Sprintf("Не скачали файл за %d попыток %s", count, url))
 			return st
 		}
 		st = GetPageUA(url)
 		if st == "" {
 			count++
-			Logging("Получили пустую страницу", url)
+			logging("Получили пустую страницу", url)
 			time.Sleep(time.Second * 5)
 			continue
 		}
@@ -182,19 +182,19 @@ func DownloadPageWithUAIceTrade(url string) string {
 	for {
 		//fmt.Println("Start download file")
 		if count > 50 {
-			Logging(fmt.Sprintf("Не скачали файл за %d попыток %s", count, url))
+			logging(fmt.Sprintf("Не скачали файл за %d попыток %s", count, url))
 			return st
 		}
 		st = GetPageUA(url)
 		if st == "" {
 			count++
-			Logging("Получили пустую страницу", url)
+			logging("Получили пустую страницу", url)
 			time.Sleep(time.Second * 5)
 			continue
 		}
 		if strings.Contains(st, "Ваш IP-адрес попал в список заблокированных") {
 			count++
-			Logging("IP was banned, i am sleep", url)
+			logging("IP was banned, i am sleep", url)
 			time.Sleep(time.Second * 310)
 			continue
 		}
@@ -208,23 +208,23 @@ func GetPage(url string) (ret string) {
 	var st string
 	defer func() {
 		if r := recover(); r != nil {
-			Logging(fmt.Sprintf("was panic, recovered value: %v", r))
+			logging(fmt.Sprintf("was panic, recovered value: %v", r))
 			ret = ""
 		}
 	}()
 	resp, err := http.Get(url)
 	if err != nil {
-		Logging("Ошибка response", url, err)
+		logging("Ошибка response", url, err)
 		return st
 	}
 	defer resp.Body.Close()
 	if err != nil {
-		Logging("Ошибка скачивания", url, err)
+		logging("Ошибка скачивания", url, err)
 		return st
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		Logging("Ошибка чтения", url, err)
+		logging("Ошибка чтения", url, err)
 		return st
 	}
 
@@ -235,7 +235,7 @@ func GetPageIns(url string) (ret string) {
 	var st string
 	defer func() {
 		if r := recover(); r != nil {
-			Logging(fmt.Sprintf("was panic, recovered value: %v", r))
+			logging(fmt.Sprintf("was panic, recovered value: %v", r))
 			ret = ""
 		}
 	}()
@@ -258,17 +258,17 @@ func GetPageIns(url string) (ret string) {
 	}
 	resp, err := client.Get(url)
 	if err != nil {
-		Logging("Ошибка response", url, err)
+		logging("Ошибка response", url, err)
 		return st
 	}
 	defer resp.Body.Close()
 	if err != nil {
-		Logging("Ошибка скачивания", url, err)
+		logging("Ошибка скачивания", url, err)
 		return st
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		Logging("Ошибка чтения", url, err)
+		logging("Ошибка чтения", url, err)
 		return st
 	}
 
@@ -280,17 +280,17 @@ func GetPageNoSSL(url string) string {
 	var st string
 	resp, err := http.Get(url)
 	if err != nil {
-		Logging("Ошибка response", url, err)
+		logging("Ошибка response", url, err)
 		return st
 	}
 	defer resp.Body.Close()
 	if err != nil {
-		Logging("Ошибка скачивания", url, err)
+		logging("Ошибка скачивания", url, err)
 		return st
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		Logging("Ошибка чтения", url, err)
+		logging("Ошибка чтения", url, err)
 		return st
 	}
 
@@ -302,14 +302,14 @@ func GetPageGzip(url string) string {
 	client := new(http.Client)
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		Logging("Ошибка request", url, err)
+		logging("Ошибка request", url, err)
 		return st
 	}
 	request.Header.Add("Accept-Encoding", "gzip")
 
 	resp, err := client.Do(request)
 	if err != nil {
-		Logging("Ошибка resp", url, err)
+		logging("Ошибка resp", url, err)
 		return st
 	}
 	defer resp.Body.Close()
@@ -318,7 +318,7 @@ func GetPageGzip(url string) string {
 	case "gzip":
 		reader, err = gzip.NewReader(resp.Body)
 		if err != nil {
-			Logging("Ошибка reader", url, err)
+			logging("Ошибка reader", url, err)
 			return st
 		}
 		defer reader.Close()
@@ -334,26 +334,26 @@ func GetPageUA(url string) (ret string) {
 	var st string
 	defer func() {
 		if r := recover(); r != nil {
-			Logging(fmt.Sprintf("was panic, recovered value: %v", r))
+			logging(fmt.Sprintf("was panic, recovered value: %v", r))
 			ret = ""
 		}
 	}()
 	client := &http.Client{}
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		Logging("Ошибка request", url, err)
+		logging("Ошибка request", url, err)
 		return st
 	}
 	request.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)")
 	resp, err := client.Do(request)
 	defer resp.Body.Close()
 	if err != nil {
-		Logging("Ошибка скачивания", url, err)
+		logging("Ошибка скачивания", url, err)
 		return st
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		Logging("Ошибка чтения", url, err)
+		logging("Ошибка чтения", url, err)
 		return st
 	}
 
@@ -365,7 +365,7 @@ func getTimeMoscow(st string) time.Time {
 	location, _ := time.LoadLocation("Europe/Moscow")
 	p, err := time.ParseInLocation("02.01.2006 15:04", st, location)
 	if err != nil {
-		Logging(err)
+		logging(err)
 		return time.Time{}
 	}
 
@@ -374,11 +374,11 @@ func getTimeMoscow(st string) time.Time {
 
 func TenderKwords(db *sql.DB, idTender int) error {
 	resString := ""
-	stmt, _ := db.Prepare(fmt.Sprintf("SELECT DISTINCT po.name, po.okpd_name FROM %spurchase_object AS po LEFT JOIN %slot AS l ON l.id_lot = po.id_lot WHERE l.id_tender = ?", Prefix, Prefix))
+	stmt, _ := db.Prepare(fmt.Sprintf("SELECT DISTINCT po.name, po.okpd_name FROM %spurchase_object AS po LEFT JOIN %slot AS l ON l.id_lot = po.id_lot WHERE l.id_tender = ?", prefix, prefix))
 	rows, err := stmt.Query(idTender)
 	stmt.Close()
 	if err != nil {
-		Logging("Ошибка выполения запроса", err)
+		logging("Ошибка выполения запроса", err)
 		return err
 	}
 	for rows.Next() {
@@ -386,7 +386,7 @@ func TenderKwords(db *sql.DB, idTender int) error {
 		var okpdName sql.NullString
 		err = rows.Scan(&name, &okpdName)
 		if err != nil {
-			Logging("Ошибка чтения результата запроса", err)
+			logging("Ошибка чтения результата запроса", err)
 			return err
 		}
 		if name.Valid {
@@ -397,18 +397,18 @@ func TenderKwords(db *sql.DB, idTender int) error {
 		}
 	}
 	rows.Close()
-	stmt1, _ := db.Prepare(fmt.Sprintf("SELECT DISTINCT file_name FROM %sattachment WHERE id_tender = ?", Prefix))
+	stmt1, _ := db.Prepare(fmt.Sprintf("SELECT DISTINCT file_name FROM %sattachment WHERE id_tender = ?", prefix))
 	rows1, err := stmt1.Query(idTender)
 	stmt1.Close()
 	if err != nil {
-		Logging("Ошибка выполения запроса", err)
+		logging("Ошибка выполения запроса", err)
 		return err
 	}
 	for rows1.Next() {
 		var attName sql.NullString
 		err = rows1.Scan(&attName)
 		if err != nil {
-			Logging("Ошибка чтения результата запроса", err)
+			logging("Ошибка чтения результата запроса", err)
 			return err
 		}
 		if attName.Valid {
@@ -417,11 +417,11 @@ func TenderKwords(db *sql.DB, idTender int) error {
 	}
 	rows1.Close()
 	idOrg := 0
-	stmt2, _ := db.Prepare(fmt.Sprintf("SELECT purchase_object_info, id_organizer FROM %stender WHERE id_tender = ?", Prefix))
+	stmt2, _ := db.Prepare(fmt.Sprintf("SELECT purchase_object_info, id_organizer FROM %stender WHERE id_tender = ?", prefix))
 	rows2, err := stmt2.Query(idTender)
 	stmt2.Close()
 	if err != nil {
-		Logging("Ошибка выполения запроса", err)
+		logging("Ошибка выполения запроса", err)
 		return err
 	}
 	for rows2.Next() {
@@ -429,7 +429,7 @@ func TenderKwords(db *sql.DB, idTender int) error {
 		var purOb sql.NullString
 		err = rows2.Scan(&purOb, &idOrgNull)
 		if err != nil {
-			Logging("Ошибка чтения результата запроса", err)
+			logging("Ошибка чтения результата запроса", err)
 			return err
 		}
 		if idOrgNull.Valid {
@@ -442,11 +442,11 @@ func TenderKwords(db *sql.DB, idTender int) error {
 	}
 	rows2.Close()
 	if idOrg != 0 {
-		stmt3, _ := db.Prepare(fmt.Sprintf("SELECT full_name, inn FROM %sorganizer WHERE id_organizer = ?", Prefix))
+		stmt3, _ := db.Prepare(fmt.Sprintf("SELECT full_name, inn FROM %sorganizer WHERE id_organizer = ?", prefix))
 		rows3, err := stmt3.Query(idOrg)
 		stmt3.Close()
 		if err != nil {
-			Logging("Ошибка выполения запроса", err)
+			logging("Ошибка выполения запроса", err)
 			return err
 		}
 		for rows3.Next() {
@@ -454,7 +454,7 @@ func TenderKwords(db *sql.DB, idTender int) error {
 			var nameOrg sql.NullString
 			err = rows3.Scan(&nameOrg, &innOrg)
 			if err != nil {
-				Logging("Ошибка чтения результата запроса", err)
+				logging("Ошибка чтения результата запроса", err)
 				return err
 			}
 			if innOrg.Valid {
@@ -468,11 +468,11 @@ func TenderKwords(db *sql.DB, idTender int) error {
 		}
 		rows3.Close()
 	}
-	stmt4, _ := db.Prepare(fmt.Sprintf("SELECT DISTINCT cus.inn, cus.full_name FROM %scustomer AS cus LEFT JOIN %spurchase_object AS po ON cus.id_customer = po.id_customer LEFT JOIN %slot AS l ON l.id_lot = po.id_lot WHERE l.id_tender = ?", Prefix, Prefix, Prefix))
+	stmt4, _ := db.Prepare(fmt.Sprintf("SELECT DISTINCT cus.inn, cus.full_name FROM %scustomer AS cus LEFT JOIN %spurchase_object AS po ON cus.id_customer = po.id_customer LEFT JOIN %slot AS l ON l.id_lot = po.id_lot WHERE l.id_tender = ?", prefix, prefix, prefix))
 	rows4, err := stmt4.Query(idTender)
 	stmt4.Close()
 	if err != nil {
-		Logging("Ошибка выполения запроса", err)
+		logging("Ошибка выполения запроса", err)
 		return err
 	}
 	for rows4.Next() {
@@ -480,7 +480,7 @@ func TenderKwords(db *sql.DB, idTender int) error {
 		var fullNameC sql.NullString
 		err = rows4.Scan(&innC, &fullNameC)
 		if err != nil {
-			Logging("Ошибка чтения результата запроса", err)
+			logging("Ошибка чтения результата запроса", err)
 			return err
 		}
 		if innC.Valid {
@@ -494,11 +494,11 @@ func TenderKwords(db *sql.DB, idTender int) error {
 	rows4.Close()
 	re := regexp.MustCompile(`\s+`)
 	resString = re.ReplaceAllString(resString, " ")
-	stmtr, _ := db.Prepare(fmt.Sprintf("UPDATE %stender SET tender_kwords = ? WHERE id_tender = ?", Prefix))
+	stmtr, _ := db.Prepare(fmt.Sprintf("UPDATE %stender SET tender_kwords = ? WHERE id_tender = ?", prefix))
 	_, errr := stmtr.Exec(resString, idTender)
 	stmtr.Close()
 	if errr != nil {
-		Logging("Ошибка вставки TenderKwords", errr)
+		logging("Ошибка вставки TenderKwords", errr)
 		return err
 	}
 	return nil
@@ -507,18 +507,18 @@ func TenderKwords(db *sql.DB, idTender int) error {
 func AddVerNumber(db *sql.DB, RegistryNumber string, typeFz int) error {
 	verNum := 1
 	mapTenders := make(map[int]int)
-	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_tender FROM %stender WHERE purchase_number = ? AND type_fz = ? ORDER BY UNIX_TIMESTAMP(date_version) ASC", Prefix))
+	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_tender FROM %stender WHERE purchase_number = ? AND type_fz = ? ORDER BY UNIX_TIMESTAMP(date_version) ASC", prefix))
 	rows, err := stmt.Query(RegistryNumber, typeFz)
 	stmt.Close()
 	if err != nil {
-		Logging("Ошибка выполения запроса", err)
+		logging("Ошибка выполения запроса", err)
 		return err
 	}
 	for rows.Next() {
 		var rNum int
 		err = rows.Scan(&rNum)
 		if err != nil {
-			Logging("Ошибка чтения результата запроса", err)
+			logging("Ошибка чтения результата запроса", err)
 			return err
 		}
 		mapTenders[verNum] = rNum
@@ -526,11 +526,11 @@ func AddVerNumber(db *sql.DB, RegistryNumber string, typeFz int) error {
 	}
 	rows.Close()
 	for vn, idt := range mapTenders {
-		stmtr, _ := db.Prepare(fmt.Sprintf("UPDATE %stender SET num_version = ? WHERE id_tender = ?", Prefix))
+		stmtr, _ := db.Prepare(fmt.Sprintf("UPDATE %stender SET num_version = ? WHERE id_tender = ?", prefix))
 		_, errr := stmtr.Exec(vn, idt)
 		stmtr.Close()
 		if errr != nil {
-			Logging("Ошибка вставки NumVersion", errr)
+			logging("Ошибка вставки NumVersion", errr)
 			return err
 		}
 	}
@@ -680,7 +680,7 @@ func getTimeMoscowLayout(st string, l string) time.Time {
 	location, _ := time.LoadLocation("Europe/Moscow")
 	p, err := time.ParseInLocation(l, st, location)
 	if err != nil {
-		Logging(err)
+		logging(err)
 		return time.Time{}
 	}
 
@@ -773,28 +773,28 @@ func GetConformity(conf string) int {
 
 func getPlacingWayId(pwName string, db *sql.DB) int {
 	idPlacingWay := 0
-	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_placing_way FROM %splacing_way WHERE name = ? LIMIT 1", Prefix))
+	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_placing_way FROM %splacing_way WHERE name = ? LIMIT 1", prefix))
 	rows, err := stmt.Query(pwName)
 	stmt.Close()
 	if err != nil {
-		Logging("Ошибка выполения запроса", err)
+		logging("Ошибка выполения запроса", err)
 		return 0
 	}
 	if rows.Next() {
 		err = rows.Scan(&idPlacingWay)
 		if err != nil {
-			Logging("Ошибка чтения результата запроса", err)
+			logging("Ошибка чтения результата запроса", err)
 			return 0
 		}
 		rows.Close()
 	} else {
 		rows.Close()
 		conf := GetConformity(pwName)
-		stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %splacing_way SET name = ?, conformity = ?", Prefix))
+		stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %splacing_way SET name = ?, conformity = ?", prefix))
 		res, err := stmt.Exec(pwName, conf)
 		stmt.Close()
 		if err != nil {
-			Logging("Ошибка вставки placing way", err)
+			logging("Ошибка вставки placing way", err)
 			return 0
 		}
 		id, err := res.LastInsertId()
@@ -806,27 +806,27 @@ func getPlacingWayId(pwName string, db *sql.DB) int {
 
 func getEtpId(etpName string, etpUrl string, db *sql.DB) int {
 	IdEtp := 0
-	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_etp FROM %setp WHERE name = ? AND url = ? LIMIT 1", Prefix))
+	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_etp FROM %setp WHERE name = ? AND url = ? LIMIT 1", prefix))
 	rows, err := stmt.Query(etpName, etpUrl)
 	stmt.Close()
 	if err != nil {
-		Logging("Ошибка выполения запроса", err)
+		logging("Ошибка выполения запроса", err)
 		return 0
 	}
 	if rows.Next() {
 		err = rows.Scan(&IdEtp)
 		if err != nil {
-			Logging("Ошибка чтения результата запроса", err)
+			logging("Ошибка чтения результата запроса", err)
 			return 0
 		}
 		rows.Close()
 	} else {
 		rows.Close()
-		stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %setp SET name = ?, url = ?, conf=0", Prefix))
+		stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %setp SET name = ?, url = ?, conf=0", prefix))
 		res, err := stmt.Exec(etpName, etpUrl)
 		stmt.Close()
 		if err != nil {
-			Logging("Ошибка вставки etp", err)
+			logging("Ошибка вставки etp", err)
 			return 0
 		}
 		id, err := res.LastInsertId()
@@ -844,13 +844,13 @@ func getRegionId(addrName string, db *sql.DB) int {
 		rows, err := stmt.Query("%" + regT + "%")
 		stmt.Close()
 		if err != nil {
-			Logging("Ошибка выполения запроса", err)
+			logging("Ошибка выполения запроса", err)
 			return 0
 		}
 		if rows.Next() {
 			err = rows.Scan(&idReg)
 			if err != nil {
-				Logging("Ошибка чтения результата запроса", err)
+				logging("Ошибка чтения результата запроса", err)
 				return 0
 			}
 			rows.Close()

@@ -10,15 +10,15 @@ import (
 	"time"
 )
 
-var AddtenderMetafrax int
-var UpdatetenderMetafrax int
+var addtenderMetafrax int
+var updatetenderMetafrax int
 
-type ParserMetafrax struct {
+type parserMetafrax struct {
 	TypeFz int
 	Urls   []string
 }
 
-type TenderMetafrax struct {
+type tenderMetafrax struct {
 	purName string
 	purNum  string
 	url     string
@@ -27,34 +27,34 @@ type TenderMetafrax struct {
 	docs    []map[string]string
 }
 
-func (t *ParserMetafrax) parsing() {
+func (t *parserMetafrax) parsing() {
 	defer SaveStack()
-	Logging("Start parsing")
+	logging("Start parsing")
 	t.parsingPageAll()
-	Logging("End parsing")
-	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderMetafrax))
-	Logging(fmt.Sprintf("Обновили тендеров %d", UpdatetenderMetafrax))
+	logging("End parsing")
+	logging(fmt.Sprintf("Добавили тендеров %d", addtenderMetafrax))
+	logging(fmt.Sprintf("Обновили тендеров %d", updatetenderMetafrax))
 }
 
-func (t *ParserMetafrax) parsingPageAll() {
+func (t *parserMetafrax) parsingPageAll() {
 	for _, p := range t.Urls {
 		t.parsingPage(p)
 	}
 }
-func (t *ParserMetafrax) parsingPage(p string) {
+func (t *parserMetafrax) parsingPage(p string) {
 	defer SaveStack()
 	r := DownloadPage(p)
 	if r != "" {
 		t.parsingTenderList(r, p)
 	} else {
-		Logging("Получили пустую строку", p)
+		logging("Получили пустую строку", p)
 	}
 }
 
-func (t *ParserMetafrax) parsingTenderList(p string, url string) {
+func (t *parserMetafrax) parsingTenderList(p string, url string) {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(p))
 	if err != nil {
-		Logging(err)
+		logging(err)
 		return
 	}
 	doc.Find("div.tender_itm").Each(func(i int, s *goquery.Selection) {
@@ -65,16 +65,16 @@ func (t *ParserMetafrax) parsingTenderList(p string, url string) {
 	})
 }
 
-func (t *ParserMetafrax) parsingTenderFromList(p *goquery.Selection, url string) {
+func (t *parserMetafrax) parsingTenderFromList(p *goquery.Selection, url string) {
 	purName := strings.TrimSpace(p.Find("p > strong").First().Text())
 	if purName == "" {
-		Logging("cannot find purName in ", url)
+		logging("cannot find purName in ", url)
 		return
 	}
 	hrefT := p.Find("a.tenderDoc")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element cannot have href attribute", hrefT.Text())
+		logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	href = fmt.Sprintf("http://metafrax.ru%s", href)
@@ -85,7 +85,7 @@ func (t *ParserMetafrax) parsingTenderFromList(p *goquery.Selection, url string)
 	pubDate := getTimeMoscowLayout(pubDateTT, "02.01.2006")
 	purNum := GetMd5(purName)
 	if (endDate == time.Time{} || pubDate == time.Time{}) {
-		Logging("cannot find endDate or pubDate in ", href, purNum)
+		logging("cannot find endDate or pubDate in ", href, purNum)
 		return
 	}
 	docList := make([]map[string]string, 0)
@@ -101,15 +101,15 @@ func (t *ParserMetafrax) parsingTenderFromList(p *goquery.Selection, url string)
 			}
 		}
 	})
-	tnd := TenderMetafrax{purName: purName, purNum: purNum, url: href, pubDate: pubDate, endDate: endDate, docs: docList}
-	t.Tender(tnd)
+	tnd := tenderMetafrax{purName: purName, purNum: purNum, url: href, pubDate: pubDate, endDate: endDate, docs: docList}
+	t.tender(tnd)
 
 }
-func (t *ParserMetafrax) Tender(tn TenderMetafrax) {
+func (t *parserMetafrax) tender(tn tenderMetafrax) {
 	defer SaveStack()
-	db, err := sql.Open("mysql", Dsn)
+	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		Logging("Ошибка подключения к БД", err)
+		logging("Ошибка подключения к БД", err)
 		return
 	}
 	defer db.Close()
@@ -117,11 +117,11 @@ func (t *ParserMetafrax) Tender(tn TenderMetafrax) {
 	upDate := time.Now()
 	idXml := tn.purNum
 	version := 1
-	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_tender FROM %stender WHERE purchase_number = ? AND type_fz = ? AND end_date = ? AND doc_publish_date = ?", Prefix))
+	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_tender FROM %stender WHERE purchase_number = ? AND type_fz = ? AND end_date = ? AND doc_publish_date = ?", prefix))
 	res, err := stmt.Query(tn.purNum, t.TypeFz, tn.endDate, tn.pubDate)
 	stmt.Close()
 	if err != nil {
-		Logging("Ошибка выполения запроса", err)
+		logging("Ошибка выполения запроса", err)
 		return
 	}
 	if res.Next() {
@@ -133,11 +133,11 @@ func (t *ParserMetafrax) Tender(tn TenderMetafrax) {
 	var cancelStatus = 0
 	var updated = false
 	if tn.purNum != "" {
-		stmt, err := db.Prepare(fmt.Sprintf("SELECT id_tender, date_version FROM %stender WHERE purchase_number = ? AND cancel=0 AND type_fz = ?", Prefix))
+		stmt, err := db.Prepare(fmt.Sprintf("SELECT id_tender, date_version FROM %stender WHERE purchase_number = ? AND cancel=0 AND type_fz = ?", prefix))
 		rows, err := stmt.Query(tn.purNum, t.TypeFz)
 		stmt.Close()
 		if err != nil {
-			Logging("Ошибка выполения запроса", err)
+			logging("Ошибка выполения запроса", err)
 			return
 		}
 		for rows.Next() {
@@ -146,12 +146,12 @@ func (t *ParserMetafrax) Tender(tn TenderMetafrax) {
 			var dateVersion time.Time
 			err = rows.Scan(&idTender, &dateVersion)
 			if err != nil {
-				Logging("Ошибка чтения результата запроса", err)
+				logging("Ошибка чтения результата запроса", err)
 				return
 			}
 			//fmt.Println(DateUpdated.Sub(dateVersion))
 			if dateVersion.Sub(upDate) <= 0 {
-				stmtupd, _ := db.Prepare(fmt.Sprintf("UPDATE %stender SET cancel=1 WHERE id_tender = ?", Prefix))
+				stmtupd, _ := db.Prepare(fmt.Sprintf("UPDATE %stender SET cancel=1 WHERE id_tender = ?", prefix))
 				_, err = stmtupd.Exec(idTender)
 				stmtupd.Close()
 
@@ -167,17 +167,17 @@ func (t *ParserMetafrax) Tender(tn TenderMetafrax) {
 	idOrganizer := 0
 	orgName := "ПАО «МЕТАФРАКС»"
 	if orgName != "" {
-		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_organizer FROM %sorganizer WHERE full_name = ?", Prefix))
+		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_organizer FROM %sorganizer WHERE full_name = ?", prefix))
 		rows, err := stmt.Query(orgName)
 		stmt.Close()
 		if err != nil {
-			Logging("Ошибка выполения запроса", err)
+			logging("Ошибка выполения запроса", err)
 			return
 		}
 		if rows.Next() {
 			err = rows.Scan(&idOrganizer)
 			if err != nil {
-				Logging("Ошибка чтения результата запроса", err)
+				logging("Ошибка чтения результата запроса", err)
 				return
 			}
 			rows.Close()
@@ -188,11 +188,11 @@ func (t *ParserMetafrax) Tender(tn TenderMetafrax) {
 			inn := "5913001268"
 			postAddress := "Россия, 618250, г. Губаха"
 			contactPerson := ""
-			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sorganizer SET full_name = ?, contact_person = ?, contact_phone = ?, contact_email = ?, inn = ?, post_address = ?", Prefix))
+			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sorganizer SET full_name = ?, contact_person = ?, contact_phone = ?, contact_email = ?, inn = ?, post_address = ?", prefix))
 			res, err := stmt.Exec(orgName, contactPerson, contactPhone, contactEmail, inn, postAddress)
 			stmt.Close()
 			if err != nil {
-				Logging("Ошибка вставки организатора", err)
+				logging("Ошибка вставки организатора", err)
 				return
 			}
 			id, err := res.LastInsertId()
@@ -205,33 +205,33 @@ func (t *ParserMetafrax) Tender(tn TenderMetafrax) {
 	etpUrl := "http://metafrax.ru"
 	IdEtp = getEtpId(etpName, etpUrl, db)
 	idTender := 0
-	stmtt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %stender SET id_xml = ?, purchase_number = ?, doc_publish_date = ?, href = ?, purchase_object_info = ?, type_fz = ?, id_organizer = ?, id_placing_way = ?, id_etp = ?, end_date = ?, cancel = ?, date_version = ?, num_version = ?, xml = ?, print_form = ?, id_region = ?, notice_version = ?", Prefix))
+	stmtt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %stender SET id_xml = ?, purchase_number = ?, doc_publish_date = ?, href = ?, purchase_object_info = ?, type_fz = ?, id_organizer = ?, id_placing_way = ?, id_etp = ?, end_date = ?, cancel = ?, date_version = ?, num_version = ?, xml = ?, print_form = ?, id_region = ?, notice_version = ?", prefix))
 	rest, err := stmtt.Exec(idXml, tn.purNum, tn.pubDate, tn.url, tn.purName, t.TypeFz, idOrganizer, idPlacingWay, IdEtp, tn.endDate, cancelStatus, upDate, version, tn.url, printForm, 0, "")
 	stmtt.Close()
 	if err != nil {
-		Logging("Ошибка вставки tender", err)
+		logging("Ошибка вставки tender", err)
 		return
 	}
 	idt, err := rest.LastInsertId()
 	idTender = int(idt)
 	if updated {
-		UpdatetenderMetafrax++
+		updatetenderMetafrax++
 	} else {
-		AddtenderMetafrax++
+		addtenderMetafrax++
 	}
 	idCustomer := 0
 	if orgName != "" {
-		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_customer FROM %scustomer WHERE full_name = ?", Prefix))
+		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_customer FROM %scustomer WHERE full_name = ?", prefix))
 		rows, err := stmt.Query(orgName)
 		stmt.Close()
 		if err != nil {
-			Logging("Ошибка выполения запроса", err)
+			logging("Ошибка выполения запроса", err)
 			return
 		}
 		if rows.Next() {
 			err = rows.Scan(&idCustomer)
 			if err != nil {
-				Logging("Ошибка чтения результата запроса", err)
+				logging("Ошибка чтения результата запроса", err)
 				return
 			}
 			rows.Close()
@@ -239,15 +239,15 @@ func (t *ParserMetafrax) Tender(tn TenderMetafrax) {
 			rows.Close()
 			out, err := exec.Command("uuidgen").Output()
 			if err != nil {
-				Logging("Ошибка генерации UUID", err)
+				logging("Ошибка генерации UUID", err)
 				return
 			}
 			innCus := "5913001268"
-			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %scustomer SET full_name = ?, reg_num = ?, is223=1, inn = ?", Prefix))
+			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %scustomer SET full_name = ?, reg_num = ?, is223=1, inn = ?", prefix))
 			res, err := stmt.Exec(orgName, out, innCus)
 			stmt.Close()
 			if err != nil {
-				Logging("Ошибка вставки заказчика", err)
+				logging("Ошибка вставки заказчика", err)
 				return
 			}
 			id, err := res.LastInsertId()
@@ -256,40 +256,40 @@ func (t *ParserMetafrax) Tender(tn TenderMetafrax) {
 	}
 	var LotNumber = 1
 	idLot := 0
-	stmtl, _ := db.Prepare(fmt.Sprintf("INSERT INTO %slot SET id_tender = ?, lot_number = ?, currency = ?", Prefix))
+	stmtl, _ := db.Prepare(fmt.Sprintf("INSERT INTO %slot SET id_tender = ?, lot_number = ?, currency = ?", prefix))
 	resl, err := stmtl.Exec(idTender, LotNumber, "")
 	stmtl.Close()
 	if err != nil {
-		Logging("Ошибка вставки lot", err)
+		logging("Ошибка вставки lot", err)
 		return
 	}
 	id, _ := resl.LastInsertId()
 	idLot = int(id)
-	stmtr, _ := db.Prepare(fmt.Sprintf("INSERT INTO %spurchase_object SET id_lot = ?, id_customer = ?, name = ?", Prefix))
+	stmtr, _ := db.Prepare(fmt.Sprintf("INSERT INTO %spurchase_object SET id_lot = ?, id_customer = ?, name = ?", prefix))
 	_, errr := stmtr.Exec(idLot, idCustomer, tn.purName)
 	stmtr.Close()
 	if errr != nil {
-		Logging("Ошибка вставки purchase_object", errr)
+		logging("Ошибка вставки purchase_object", errr)
 		return
 	}
 	for _, dd := range tn.docs {
 		for k, v := range dd {
-			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sattachment SET id_tender = ?, file_name = ?, url = ?", Prefix))
+			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sattachment SET id_tender = ?, file_name = ?, url = ?", prefix))
 			_, err := stmt.Exec(idTender, v, k)
 			stmt.Close()
 			if err != nil {
-				Logging("Ошибка вставки attachment", err)
+				logging("Ошибка вставки attachment", err)
 				return
 			}
 		}
 	}
 	e := TenderKwords(db, idTender)
 	if e != nil {
-		Logging("Ошибка обработки TenderKwords", e)
+		logging("Ошибка обработки TenderKwords", e)
 	}
 
 	e1 := AddVerNumber(db, tn.purNum, t.TypeFz)
 	if e1 != nil {
-		Logging("Ошибка обработки AddVerNumber", e1)
+		logging("Ошибка обработки AddVerNumber", e1)
 	}
 }

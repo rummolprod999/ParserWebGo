@@ -23,15 +23,15 @@ var templateSoap = `<soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchem
    </soapenv:Body>
 </soapenv:Envelope>`
 
-func callSOAPClient(section string, page int) *FileProtocols {
+func callSOAPClient(section string, page int) *fileProtocols {
 	httpReq, err := generateSOAPRequest(section, page)
 	if err != nil {
-		Logging(err)
+		logging(err)
 		panic(err)
 	}
 	response, err := soapCall(httpReq)
 	if err != nil {
-		Logging(err)
+		logging(err)
 		panic(err)
 	}
 	return response
@@ -43,18 +43,18 @@ func generateSOAPRequest(section string, page int) (*http.Request, error) {
 	templateSoap := fmt.Sprintf(templateSoap, timeOffset, section, page)
 	err := encoder.Encode(templateSoap)
 	if err != nil {
-		Logging(err.Error())
+		logging(err.Error())
 		return nil, err
 	}
 	r, err := http.NewRequest(http.MethodPost, "https://api.tektorg.ru/procedures/soap", bytes.NewBuffer([]byte(templateSoap)))
 	if err != nil {
-		Logging(err.Error())
+		logging(err.Error())
 		return nil, err
 	}
 	return r, nil
 }
 
-func soapCall(req *http.Request) (*FileProtocols, error) {
+func soapCall(req *http.Request) (*fileProtocols, error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 
@@ -66,7 +66,7 @@ func soapCall(req *http.Request) (*FileProtocols, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	var r FileProtocols
+	var r fileProtocols
 	myString := string(body)
 	xmlT := []byte(myString)
 	_ = xml.Unmarshal(xmlT, &r)

@@ -11,43 +11,43 @@ import (
 	"time"
 )
 
-var AddtenderX5Group int
-var UpdatetenderX5Group int
+var addtenderX5Group int
+var updatetenderX5Group int
 
-type ParserX5Group struct {
+type parserX5Group struct {
 	TypeFz int
 	Urls   []string
 }
 
-func (t *ParserX5Group) parsing() {
+func (t *parserX5Group) parsing() {
 	defer SaveStack()
-	Logging("Start parsing")
+	logging("Start parsing")
 	t.parsingPageAll()
-	Logging("End parsing")
-	Logging(fmt.Sprintf("Добавили тендеров %d", AddtenderX5Group))
-	Logging(fmt.Sprintf("Обновили тендеров %d", UpdatetenderX5Group))
+	logging("End parsing")
+	logging(fmt.Sprintf("Добавили тендеров %d", addtenderX5Group))
+	logging(fmt.Sprintf("Обновили тендеров %d", updatetenderX5Group))
 }
 
-func (t *ParserX5Group) parsingPageAll() {
+func (t *parserX5Group) parsingPageAll() {
 	for _, p := range t.Urls {
 		t.parsingPage(p)
 	}
 }
-func (t *ParserX5Group) parsingPage(p string) {
+func (t *parserX5Group) parsingPage(p string) {
 	defer SaveStack()
 	r := DownloadPage1251(p)
 	if r != "" {
 		t.parsingTenderList(r)
 	} else {
-		Logging("Получили пустую строку", p)
+		logging("Получили пустую строку", p)
 	}
 }
 
-func (t *ParserX5Group) parsingTenderList(p string) {
+func (t *parserX5Group) parsingTenderList(p string) {
 	defer SaveStack()
 	doc, err := goquery.NewDocumentFromReader(bytes.NewBufferString(p))
 	if err != nil {
-		Logging(err)
+		logging(err)
 		return
 	}
 	doc.Find("h2:contains('Объявленные') + #mytable tbody tr").Each(func(i int, s *goquery.Selection) {
@@ -58,61 +58,61 @@ func (t *ParserX5Group) parsingTenderList(p string) {
 	})
 }
 
-func (t *ParserX5Group) parsingTenderFromList(p *goquery.Selection) {
+func (t *parserX5Group) parsingTenderFromList(p *goquery.Selection) {
 	defer SaveStack()
 	hrefT := p.Find("td[align='left'] a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
-		Logging("The element cannot have href attribute", hrefT.Text())
+		logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
 	href = fmt.Sprintf("https://tender.x5.ru%s", href)
 	t.downloadTender(href)
 }
 
-func (t *ParserX5Group) downloadTender(page string) {
+func (t *parserX5Group) downloadTender(page string) {
 	defer SaveStack()
 	r := DownloadPage1251(page)
 	if r != "" {
 		doc, err := goquery.NewDocumentFromReader(bytes.NewBufferString(r))
 		if err != nil {
-			Logging(err)
+			logging(err)
 			return
 		}
 		t.parsingTender(doc, page)
 
 	} else {
-		Logging("Получили пустую строку", page)
+		logging("Получили пустую строку", page)
 	}
 }
 
-func (t *ParserX5Group) parsingTender(doc *goquery.Document, page string) {
+func (t *parserX5Group) parsingTender(doc *goquery.Document, page string) {
 	defer SaveStack()
 	purNum := doc.Find("td:contains('Номер конкурса') + td").First().Text()
 	purNum = strings.TrimSpace(purNum)
 	if purNum == "" {
-		Logging("cannot find purchase number in ", page)
+		logging("cannot find purchase number in ", page)
 		return
 	}
 	pubDateT := strings.TrimSpace(doc.Find("td:contains('Дата и время начала подачи заявок на участие в конкурсе') + td").First().Text())
 	endDateT := strings.TrimSpace(doc.Find("td:contains('Дата и время начала конкурса') + td").First().Text())
 	if pubDateT == "" || endDateT == "" {
-		Logging("cannot find dates in ", page)
+		logging("cannot find dates in ", page)
 		return
 	}
 	pubDate := getTimeMoscow(pubDateT)
 	endDate := getTimeMoscow(endDateT)
 	if (pubDate == time.Time{}) || (endDate == time.Time{}) {
-		Logging("cannot parse dates in ", page)
+		logging("cannot parse dates in ", page)
 		return
 	}
-	t.Tender(purNum, page, pubDate, endDate, doc)
+	t.tender(purNum, page, pubDate, endDate, doc)
 }
-func (t *ParserX5Group) Tender(purNum string, page string, pubDate time.Time, endDate time.Time, doc *goquery.Document) {
+func (t *parserX5Group) tender(purNum string, page string, pubDate time.Time, endDate time.Time, doc *goquery.Document) {
 	defer SaveStack()
-	db, err := sql.Open("mysql", Dsn)
+	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		Logging("Ошибка подключения к БД", err)
+		logging("Ошибка подключения к БД", err)
 		return
 	}
 	defer db.Close()
@@ -121,11 +121,11 @@ func (t *ParserX5Group) Tender(purNum string, page string, pubDate time.Time, en
 	upDate := time.Now()
 	idXml := purNum
 	version := 1
-	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_tender FROM %stender WHERE purchase_number = ? AND doc_publish_date = ? AND end_date = ? AND type_fz = ? AND notice_version = ?", Prefix))
+	stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_tender FROM %stender WHERE purchase_number = ? AND doc_publish_date = ? AND end_date = ? AND type_fz = ? AND notice_version = ?", prefix))
 	res, err := stmt.Query(purNum, pubDate, endDate, t.TypeFz, status)
 	stmt.Close()
 	if err != nil {
-		Logging("Ошибка выполения запроса", err)
+		logging("Ошибка выполения запроса", err)
 		return
 	}
 	if res.Next() {
@@ -137,11 +137,11 @@ func (t *ParserX5Group) Tender(purNum string, page string, pubDate time.Time, en
 	var cancelStatus = 0
 	var updated = false
 	if purNum != "" {
-		stmt, err := db.Prepare(fmt.Sprintf("SELECT id_tender, date_version FROM %stender WHERE purchase_number = ? AND cancel=0 AND type_fz = ?", Prefix))
+		stmt, err := db.Prepare(fmt.Sprintf("SELECT id_tender, date_version FROM %stender WHERE purchase_number = ? AND cancel=0 AND type_fz = ?", prefix))
 		rows, err := stmt.Query(purNum, t.TypeFz)
 		stmt.Close()
 		if err != nil {
-			Logging("Ошибка выполения запроса", err)
+			logging("Ошибка выполения запроса", err)
 			return
 		}
 		for rows.Next() {
@@ -150,12 +150,12 @@ func (t *ParserX5Group) Tender(purNum string, page string, pubDate time.Time, en
 			var dateVersion time.Time
 			err = rows.Scan(&idTender, &dateVersion)
 			if err != nil {
-				Logging("Ошибка чтения результата запроса", err)
+				logging("Ошибка чтения результата запроса", err)
 				return
 			}
 			//fmt.Println(DateUpdated.Sub(dateVersion))
 			if dateVersion.Sub(upDate) <= 0 {
-				stmtupd, _ := db.Prepare(fmt.Sprintf("UPDATE %stender SET cancel=1 WHERE id_tender = ?", Prefix))
+				stmtupd, _ := db.Prepare(fmt.Sprintf("UPDATE %stender SET cancel=1 WHERE id_tender = ?", prefix))
 				_, err = stmtupd.Exec(idTender)
 				stmtupd.Close()
 
@@ -172,17 +172,17 @@ func (t *ParserX5Group) Tender(purNum string, page string, pubDate time.Time, en
 	idOrganizer := 0
 	orgFullName := "X5 Retail Group"
 	if true {
-		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_organizer FROM %sorganizer WHERE full_name = ?", Prefix))
+		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_organizer FROM %sorganizer WHERE full_name = ?", prefix))
 		rows, err := stmt.Query(orgFullName)
 		stmt.Close()
 		if err != nil {
-			Logging("Ошибка выполения запроса", err)
+			logging("Ошибка выполения запроса", err)
 			return
 		}
 		if rows.Next() {
 			err = rows.Scan(&idOrganizer)
 			if err != nil {
-				Logging("Ошибка чтения результата запроса", err)
+				logging("Ошибка чтения результата запроса", err)
 				return
 			}
 			rows.Close()
@@ -193,11 +193,11 @@ func (t *ParserX5Group) Tender(purNum string, page string, pubDate time.Time, en
 			organizerINN := "7733571872"
 			organizerKPP := "773301001"
 			organizerPostAddress := "РФ, 109029, Москва, ул. Средняя Калитниковская, д.28 стр.4"
-			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sorganizer SET full_name = ?, inn = ?, kpp = ?, post_address = ?, fact_address = ?, contact_email = ?, contact_phone = ?", Prefix))
+			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sorganizer SET full_name = ?, inn = ?, kpp = ?, post_address = ?, fact_address = ?, contact_email = ?, contact_phone = ?", prefix))
 			res, err := stmt.Exec(orgFullName, organizerINN, organizerKPP, organizerPostAddress, organizerPostAddress, email, phone)
 			stmt.Close()
 			if err != nil {
-				Logging("Ошибка вставки организатора", err)
+				logging("Ошибка вставки организатора", err)
 				return
 			}
 			id, err := res.LastInsertId()
@@ -209,27 +209,27 @@ func (t *ParserX5Group) Tender(purNum string, page string, pubDate time.Time, en
 	etpName := orgFullName
 	etpUrl := "https://tender.x5.ru"
 	if true {
-		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_etp FROM %setp WHERE name = ? AND url = ? LIMIT 1", Prefix))
+		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_etp FROM %setp WHERE name = ? AND url = ? LIMIT 1", prefix))
 		rows, err := stmt.Query(etpName, etpUrl)
 		stmt.Close()
 		if err != nil {
-			Logging("Ошибка выполения запроса", err)
+			logging("Ошибка выполения запроса", err)
 			return
 		}
 		if rows.Next() {
 			err = rows.Scan(&IdEtp)
 			if err != nil {
-				Logging("Ошибка чтения результата запроса", err)
+				logging("Ошибка чтения результата запроса", err)
 				return
 			}
 			rows.Close()
 		} else {
 			rows.Close()
-			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %setp SET name = ?, url = ?, conf=0", Prefix))
+			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %setp SET name = ?, url = ?, conf=0", prefix))
 			res, err := stmt.Exec(etpName, etpUrl)
 			stmt.Close()
 			if err != nil {
-				Logging("Ошибка вставки etp", err)
+				logging("Ошибка вставки etp", err)
 				return
 			}
 			id, err := res.LastInsertId()
@@ -238,19 +238,19 @@ func (t *ParserX5Group) Tender(purNum string, page string, pubDate time.Time, en
 	}
 	biddingDate := endDate
 	idTender := 0
-	stmtt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %stender SET id_xml = ?, purchase_number = ?, doc_publish_date = ?, href = ?, purchase_object_info = ?, type_fz = ?, id_organizer = ?, id_placing_way = ?, id_etp = ?, end_date = ?, cancel = ?, date_version = ?, num_version = ?, notice_version = ?, xml = ?, print_form = ?, bidding_date = ?, id_region = ?", Prefix))
+	stmtt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %stender SET id_xml = ?, purchase_number = ?, doc_publish_date = ?, href = ?, purchase_object_info = ?, type_fz = ?, id_organizer = ?, id_placing_way = ?, id_etp = ?, end_date = ?, cancel = ?, date_version = ?, num_version = ?, notice_version = ?, xml = ?, print_form = ?, bidding_date = ?, id_region = ?", prefix))
 	rest, err := stmtt.Exec(idXml, purNum, pubDate, page, purchaseObjectInfo, t.TypeFz, idOrganizer, idPlacingWay, IdEtp, endDate, cancelStatus, upDate, version, status, page, printForm, biddingDate, 0)
 	stmtt.Close()
 	if err != nil {
-		Logging("Ошибка вставки tender", err)
+		logging("Ошибка вставки tender", err)
 		return
 	}
 	idt, err := rest.LastInsertId()
 	idTender = int(idt)
 	if updated {
-		UpdatetenderX5Group++
+		updatetenderX5Group++
 	} else {
-		AddtenderX5Group++
+		addtenderX5Group++
 	}
 	/*doc.Find("h2:contains('Конкурсная документация') ~ table:contains('Название файла') tbody tr").Each(func(i int, s *goquery.Selection) {
 		txt := s.Text()
@@ -260,17 +260,17 @@ func (t *ParserX5Group) Tender(purNum string, page string, pubDate time.Time, en
 	})*/
 	idCustomer := 0
 	if orgFullName != "" {
-		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_customer FROM %scustomer WHERE full_name = ?", Prefix))
+		stmt, _ := db.Prepare(fmt.Sprintf("SELECT id_customer FROM %scustomer WHERE full_name = ?", prefix))
 		rows, err := stmt.Query(orgFullName)
 		stmt.Close()
 		if err != nil {
-			Logging("Ошибка выполения запроса", err)
+			logging("Ошибка выполения запроса", err)
 			return
 		}
 		if rows.Next() {
 			err = rows.Scan(&idCustomer)
 			if err != nil {
-				Logging("Ошибка чтения результата запроса", err)
+				logging("Ошибка чтения результата запроса", err)
 				return
 			}
 			rows.Close()
@@ -278,14 +278,14 @@ func (t *ParserX5Group) Tender(purNum string, page string, pubDate time.Time, en
 			rows.Close()
 			out, err := exec.Command("uuidgen").Output()
 			if err != nil {
-				Logging("Ошибка генерации UUID", err)
+				logging("Ошибка генерации UUID", err)
 				return
 			}
-			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %scustomer SET full_name = ?, inn = ?, reg_num = ?, is223=1", Prefix))
+			stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %scustomer SET full_name = ?, inn = ?, reg_num = ?, is223=1", prefix))
 			res, err := stmt.Exec(orgFullName, "7733571872", out)
 			stmt.Close()
 			if err != nil {
-				Logging("Ошибка вставки заказчика", err)
+				logging("Ошибка вставки заказчика", err)
 				return
 			}
 			id, err := res.LastInsertId()
@@ -294,34 +294,34 @@ func (t *ParserX5Group) Tender(purNum string, page string, pubDate time.Time, en
 	}
 	var LotNumber = 1
 	idLot := 0
-	stmtl, _ := db.Prepare(fmt.Sprintf("INSERT INTO %slot SET id_tender = ?, lot_number = ?", Prefix))
+	stmtl, _ := db.Prepare(fmt.Sprintf("INSERT INTO %slot SET id_tender = ?, lot_number = ?", prefix))
 	resl, err := stmtl.Exec(idTender, LotNumber)
 	stmtl.Close()
 	if err != nil {
-		Logging("Ошибка вставки lot", err)
+		logging("Ошибка вставки lot", err)
 		return
 	}
 	id, _ := resl.LastInsertId()
 	idLot = int(id)
-	stmtr, _ := db.Prepare(fmt.Sprintf("INSERT INTO %spurchase_object SET id_lot = ?, id_customer = ?, name = ?", Prefix))
+	stmtr, _ := db.Prepare(fmt.Sprintf("INSERT INTO %spurchase_object SET id_lot = ?, id_customer = ?, name = ?", prefix))
 	_, errr := stmtr.Exec(idLot, idCustomer, purchaseObjectInfo)
 	stmtr.Close()
 	if errr != nil {
-		Logging("Ошибка вставки purchase_object", errr)
+		logging("Ошибка вставки purchase_object", errr)
 		return
 	}
 	e := TenderKwords(db, idTender)
 	if e != nil {
-		Logging("Ошибка обработки TenderKwords", e)
+		logging("Ошибка обработки TenderKwords", e)
 	}
 
 	e1 := AddVerNumber(db, purNum, t.TypeFz)
 	if e1 != nil {
-		Logging("Ошибка обработки AddVerNumber", e1)
+		logging("Ошибка обработки AddVerNumber", e1)
 	}
 }
 
-func (t *ParserX5Group) documents(idTender int, doc *goquery.Selection) {
+func (t *parserX5Group) documents(idTender int, doc *goquery.Selection) {
 	defer SaveStack()
 	nameF := strings.TrimSpace(doc.Find("td[align='left']").First().Text())
 	println(nameF)

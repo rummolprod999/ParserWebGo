@@ -1,6 +1,6 @@
 package main
 
-type Protocol struct {
+type protocol struct {
 	RegistryNumber           string       `xml:"registryNumber"`
 	Url                      string       `xml:"url_to_showcase"`
 	IdProtocol               string       `xml:"id,attr"`
@@ -12,20 +12,20 @@ type Protocol struct {
 	DateEndRegistration      string       `xml:"dateEndRegistration"`
 	DateEndSecondPartsReview string       `xml:"dateEndSecondPartsReview"`
 	Currency                 string       `xml:"currency"`
-	Attachments              []Attachment `xml:"documents>document"`
-	Lots                     []Lot        `xml:"lots>lot"`
-	Organizer
+	Attachments              []attachment `xml:"documents>document"`
+	Lots                     []lot        `xml:"lots>lot"`
+	organizer
 }
 
-type FileProtocols struct {
+type fileProtocols struct {
 	TotalPage         int        `xml:"Body>proceduresResponse>totalPage"`
 	CurrentPage       int        `xml:"Body>proceduresResponse>currentPage"`
 	HasMoreProcedures int        `xml:"Body>proceduresResponse>has_more_procedures"`
-	Protocols         []Protocol `xml:"Body>proceduresResponse>procedures>procedure"`
+	Protocols         []protocol `xml:"Body>proceduresResponse>procedures>procedure"`
 	Test              string     `xml:",innerxml"`
 }
 
-type Organizer struct {
+type organizer struct {
 	OrganizerfullNameU string `xml:"organizer>fullName"`
 	OrganizerIndexU    string `xml:"organizer>legal>index"`
 	OrganizerRegionU   string `xml:"organizer>legal>region"`
@@ -42,39 +42,39 @@ type Organizer struct {
 	ContactPerson      string `xml:"contactPerson"`
 }
 
-type Attachment struct {
+type attachment struct {
 	AttachName string `xml:"filename"`
 	AttachUrl  string `xml:"file"`
 }
 
-type Lot struct {
+type lot struct {
 	LotNumber      int             `xml:"number"`
 	LotSubject     string          `xml:"subject"`
 	StartPrice     float64         `xml:"startPrice"`
 	Okpd2Code      string          `xml:"nomenclature2>item>code"`
 	OkpdName       string          `xml:"nomenclature2>item>name"`
-	Customers      []Customer      `xml:"customers>customer"`
-	DeliveryPlaces []DeliveryPlace `xml:"deliveryPlaces>deliveryPlace"`
-	AttachmentsLot []AttachmentLot `xml:"documents>document"`
-	LotUnits       []LotUnits      `xml:"lotUnits>unit"`
+	Customers      []customer      `xml:"customers>customer"`
+	DeliveryPlaces []deliveryPlace `xml:"deliveryPlaces>deliveryPlace"`
+	AttachmentsLot []attachmentLot `xml:"documents>document"`
+	LotUnits       []lotUnits      `xml:"lotUnits>unit"`
 }
 
-type Customer struct {
+type customer struct {
 	FullName string `xml:"fullName"`
 }
 
-type DeliveryPlace struct {
+type deliveryPlace struct {
 	Quantity string `xml:"quantity"`
 	Term     string `xml:"term"`
 	Address  string `xml:"address"`
 }
 
-type AttachmentLot struct {
+type attachmentLot struct {
 	AttachName string `xml:"filename"`
 	AttachUrl  string `xml:"file"`
 }
 
-type LotUnits struct {
+type lotUnits struct {
 	Okp2Code string  `xml:"okpd2_code"`
 	Name     string  `xml:"name"`
 	Quantity float64 `xml:"quantity"`

@@ -9,128 +9,128 @@ import (
 )
 
 var arguments = "x5, dixy, rusneft, phosagro, komtech, ocontract, cpc, novatek, azot, uva, salym, monetka, dtek, mmk, letoile, sistema, metafrax, ies, uralchem, gosby, apk, aztpa, rosatom, tpsre, tektkp, tekgaz, tekmarket, tekrao, tekmos, tekrn, tekkom, tekrusgazbur, tekrosimport, tektyumen"
-var Prefix string
-var DbName string
-var UserDb string
-var PassDb string
-var Server string
-var Port int
-var PagesIcetrade int
-var TempX5Group string
-var LogX5Group string
-var TempDixy string
-var LogDixy string
-var TempRusneft string
-var LogRusneft string
-var TempPhosagro string
-var LogPhosagro string
-var TempIcetrade string
-var LogIcetrade string
-var TempKomtech string
-var LogKomtech string
-var TempOcontract string
-var LogOcontract string
-var TempCpc string
-var LogCpc string
-var TempNovatek string
-var LogNovatek string
-var TempAzot string
-var LogAzot string
-var TempUva string
-var LogUva string
-var TempSalym string
-var LogSalym string
-var TempMonetka string
-var LogMonetka string
-var TempDtek string
-var LogDtek string
-var TempMmk string
-var LogMmk string
-var TempLetoile string
-var LogLetoile string
-var TempSistema string
-var LogSistema string
-var TempMetafrax string
-var LogMetafrax string
-var TempIes string
-var LogIes string
-var TempUralChem string
-var LogUralChem string
-var TempGosBy string
-var LogGosBy string
-var TempApk string
-var LogApk string
-var TempAztpa string
-var LogAztpa string
-var TempRosAtom string
-var LogRosAtom string
-var TempTpsre string
-var LogTpsre string
-var TempTektkp string
-var LogTektkp string
-var TempTekGaz string
-var LogTekGaz string
-var TempTekMarket string
-var LogTekMarket string
-var TempTekRao string
-var LogTekRao string
-var TempTekMos string
-var LogTekMos string
-var TempTekRn string
-var LogTekRn string
-var TempTekKom string
-var LogTekKom string
-var TempTekRusGazBur string
-var LogTekRusGazBur string
-var TempTekRosImport string
-var LogTekRosImport string
-var TempTekTyumen string
-var LogTekTyumen string
-var ArgS string
-var A Arg
-var Dsn string
+var prefix string
+var dbName string
+var userDb string
+var passDb string
+var server string
+var port int
+var pagesIcetrade int
+var tempX5Group string
+var logX5Group string
+var tempDixy string
+var logDixy string
+var tempRusneft string
+var logRusneft string
+var tempPhosagro string
+var logPhosagro string
+var tempIcetrade string
+var logIcetrade string
+var tempKomtech string
+var logKomtech string
+var tempOcontract string
+var logOcontract string
+var tempCpc string
+var logCpc string
+var tempNovatek string
+var logNovatek string
+var tempAzot string
+var logAzot string
+var tempUva string
+var logUva string
+var tempSalym string
+var logSalym string
+var tempMonetka string
+var logMonetka string
+var tempDtek string
+var logDtek string
+var tempMmk string
+var logMmk string
+var tempLetoile string
+var logLetoile string
+var tempSistema string
+var logSistema string
+var tempMetafrax string
+var logMetafrax string
+var tempIes string
+var logIes string
+var tempUralChem string
+var logUralChem string
+var tempGosBy string
+var logGosBy string
+var tempApk string
+var logApk string
+var tempAztpa string
+var logAztpa string
+var tempRosAtom string
+var logRosAtom string
+var tempTpsre string
+var logTpsre string
+var tempTektkp string
+var logTektkp string
+var tempTekGaz string
+var logTekGaz string
+var tempTekMarket string
+var logTekMarket string
+var tempTekRao string
+var logTekRao string
+var tempTekMos string
+var logTekMos string
+var tempTekRn string
+var logTekRn string
+var tempTekKom string
+var logTekKom string
+var tempTekRusGazBur string
+var logTekRusGazBur string
+var tempTekRosImport string
+var logTekRosImport string
+var tempTekTyumen string
+var logTekTyumen string
+var argS string
+var a arg
+var dsn string
 
-type Arg int
+type arg int
 
 const (
-	X5Group Arg = iota
-	Dixy
-	Rusneft
-	Phosagro
-	Icetrade
-	Komtech
-	Ocontract
-	Cpc
-	Novatek
-	Azot
-	Uva
-	Salym
-	Monetka
-	Dtek
-	Mmk
-	Letoile
-	Sistema
-	Metafrax
-	Ies
-	UralChem
-	GosBy
-	Apk
-	Aztpa
-	RosAtom
-	Tpsre
-	Tektkp
-	Tekgaz
-	Tekmarket
-	Tekrao
-	Tekmos
-	Tekrn
-	Tekkom
-	Tekrusgazbur
-	Tekrosimport
-	Tektyumen
+	x5Group arg = iota
+	dixy
+	rusneft
+	phosagro
+	icetrade
+	komtech
+	ocontract
+	cpc
+	novatek
+	azot
+	uva
+	salym
+	monetka
+	dtek
+	mmk
+	letoile
+	sistema
+	metafrax
+	ies
+	uralChem
+	gosBy
+	apk
+	aztpa
+	rosAtom
+	tpsre
+	tektkp
+	tekgaz
+	tekmarket
+	tekrao
+	tekmos
+	tekrn
+	tekkom
+	tekrusgazbur
+	tekrosimport
+	tektyumen
 )
 
-type Settings struct {
+type settings struct {
 	Prefix           string `xml:"prefix"`
 	Db               string `xml:"db"`
 	UserDb           string `xml:"userdb"`
@@ -210,8 +210,8 @@ type Settings struct {
 	LogTektyumen     string `xml:"logdir_tektyumen"`
 }
 
-func GetSetting() {
-	GetArgument()
+func getSetting() {
+	getArgument()
 	dir, _ := filepath.Abs(filepath.Dir(os.Args[0]))
 	xmlFile, err := os.Open(fmt.Sprintf("%s/settings_tenders.xml", dir))
 	defer xmlFile.Close()
@@ -219,171 +219,171 @@ func GetSetting() {
 		println(err)
 	}
 	byteValue, _ := ioutil.ReadAll(xmlFile)
-	var settings Settings
+	var settings settings
 	e := xml.Unmarshal(byteValue, &settings)
 	if e != nil {
 		println(e)
 	}
-	Prefix = settings.Prefix
-	DbName = settings.Db
-	UserDb = settings.UserDb
-	PassDb = settings.PassDb
-	Server = settings.Server
-	Port = settings.Port
-	PagesIcetrade = settings.PagesIcetrade
-	TempX5Group = settings.TempX5Group
-	LogX5Group = settings.LogX5Group
-	LogDixy = settings.LogDixy
-	TempDixy = settings.TempDixy
-	LogRusneft = settings.LogRusneft
-	TempRusneft = settings.TempRusneft
-	LogPhosagro = settings.LogPhosagro
-	TempPhosagro = settings.TempPhosagro
-	LogIcetrade = settings.LogIcetrade
-	TempIcetrade = settings.TempIcetrade
-	LogKomtech = settings.LogKomtech
-	TempKomtech = settings.TempKomtech
-	LogOcontract = settings.LogOcontract
-	TempOcontract = settings.TempOcontract
-	LogCpc = settings.LogCpc
-	TempCpc = settings.TempCpc
-	LogNovatek = settings.LogNovatek
-	TempNovatek = settings.TempNovatek
-	LogAzot = settings.LogAzot
-	TempAzot = settings.TempAzot
-	LogUva = settings.LogUva
-	TempUva = settings.TempUva
-	LogSalym = settings.LogSalym
-	TempSalym = settings.TempSalym
-	LogMonetka = settings.LogMonetka
-	TempMonetka = settings.TempMonetka
-	LogDtek = settings.LogDtek
-	TempDtek = settings.TempDtek
-	LogMmk = settings.LogMmk
-	TempMmk = settings.TempMmk
-	LogLetoile = settings.LogLetoile
-	TempLetoile = settings.TempLetole
-	LogSistema = settings.LogSistema
-	TempSistema = settings.TempSistema
-	LogMetafrax = settings.LogMetafrax
-	TempMetafrax = settings.TempMetafrax
-	LogIes = settings.LogIes
-	TempIes = settings.TempIes
-	LogUralChem = settings.LogUralChem
-	TempUralChem = settings.TempUralChem
-	LogGosBy = settings.LogGosBy
-	TempGosBy = settings.TempGosBy
-	LogApk = settings.LogApk
-	TempApk = settings.TempApk
-	LogAztpa = settings.LogAztpa
-	TempAztpa = settings.TempAztpa
-	LogRosAtom = settings.LogRosAtom
-	TempRosAtom = settings.TempRosAtom
-	LogTpsre = settings.LogTpsre
-	TempTpsre = settings.TempTpsre
-	LogTektkp = settings.LogTektkp
-	TempTektkp = settings.TempTektkp
-	LogTekGaz = settings.LogTekgaz
-	TempTekGaz = settings.TempTekgaz
-	LogTekMarket = settings.LogTekmarket
-	TempTekMarket = settings.TempTekmarket
-	LogTekRao = settings.LogTekrao
-	TempTekRao = settings.TempTekrao
-	LogTekMos = settings.LogTekmos
-	TempTekMos = settings.TempTekmos
-	LogTekRn = settings.LogTekrn
-	TempTekRn = settings.TempTekrn
-	LogTekKom = settings.LogTekkom
-	TempTekKom = settings.TempTekkom
-	LogTekRusGazBur = settings.LogTekrusgazbur
-	TempTekRusGazBur = settings.TempTekrusgazbur
-	LogTekRosImport = settings.LogTekrosimport
-	TempTekRosImport = settings.TempTekrosimport
-	LogTekTyumen = settings.LogTektyumen
-	TempTekTyumen = settings.TempTektyumen
-	Dsn = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=true&readTimeout=60m&maxAllowedPacket=0&timeout=60m&writeTimeout=60m&autocommit=true&loc=Local", UserDb, PassDb, Server, Port, DbName)
+	prefix = settings.Prefix
+	dbName = settings.Db
+	userDb = settings.UserDb
+	passDb = settings.PassDb
+	server = settings.Server
+	port = settings.Port
+	pagesIcetrade = settings.PagesIcetrade
+	tempX5Group = settings.TempX5Group
+	logX5Group = settings.LogX5Group
+	logDixy = settings.LogDixy
+	tempDixy = settings.TempDixy
+	logRusneft = settings.LogRusneft
+	tempRusneft = settings.TempRusneft
+	logPhosagro = settings.LogPhosagro
+	tempPhosagro = settings.TempPhosagro
+	logIcetrade = settings.LogIcetrade
+	tempIcetrade = settings.TempIcetrade
+	logKomtech = settings.LogKomtech
+	tempKomtech = settings.TempKomtech
+	logOcontract = settings.LogOcontract
+	tempOcontract = settings.TempOcontract
+	logCpc = settings.LogCpc
+	tempCpc = settings.TempCpc
+	logNovatek = settings.LogNovatek
+	tempNovatek = settings.TempNovatek
+	logAzot = settings.LogAzot
+	tempAzot = settings.TempAzot
+	logUva = settings.LogUva
+	tempUva = settings.TempUva
+	logSalym = settings.LogSalym
+	tempSalym = settings.TempSalym
+	logMonetka = settings.LogMonetka
+	tempMonetka = settings.TempMonetka
+	logDtek = settings.LogDtek
+	tempDtek = settings.TempDtek
+	logMmk = settings.LogMmk
+	tempMmk = settings.TempMmk
+	logLetoile = settings.LogLetoile
+	tempLetoile = settings.TempLetole
+	logSistema = settings.LogSistema
+	tempSistema = settings.TempSistema
+	logMetafrax = settings.LogMetafrax
+	tempMetafrax = settings.TempMetafrax
+	logIes = settings.LogIes
+	tempIes = settings.TempIes
+	logUralChem = settings.LogUralChem
+	tempUralChem = settings.TempUralChem
+	logGosBy = settings.LogGosBy
+	tempGosBy = settings.TempGosBy
+	logApk = settings.LogApk
+	tempApk = settings.TempApk
+	logAztpa = settings.LogAztpa
+	tempAztpa = settings.TempAztpa
+	logRosAtom = settings.LogRosAtom
+	tempRosAtom = settings.TempRosAtom
+	logTpsre = settings.LogTpsre
+	tempTpsre = settings.TempTpsre
+	logTektkp = settings.LogTektkp
+	tempTektkp = settings.TempTektkp
+	logTekGaz = settings.LogTekgaz
+	tempTekGaz = settings.TempTekgaz
+	logTekMarket = settings.LogTekmarket
+	tempTekMarket = settings.TempTekmarket
+	logTekRao = settings.LogTekrao
+	tempTekRao = settings.TempTekrao
+	logTekMos = settings.LogTekmos
+	tempTekMos = settings.TempTekmos
+	logTekRn = settings.LogTekrn
+	tempTekRn = settings.TempTekrn
+	logTekKom = settings.LogTekkom
+	tempTekKom = settings.TempTekkom
+	logTekRusGazBur = settings.LogTekrusgazbur
+	tempTekRusGazBur = settings.TempTekrusgazbur
+	logTekRosImport = settings.LogTekrosimport
+	tempTekRosImport = settings.TempTekrosimport
+	logTekTyumen = settings.LogTektyumen
+	tempTekTyumen = settings.TempTektyumen
+	dsn = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=true&readTimeout=60m&maxAllowedPacket=0&timeout=60m&writeTimeout=60m&autocommit=true&loc=Local", userDb, passDb, server, port, dbName)
 	checkEmptySettings()
 }
 
-func GetArgument() {
-	switch ArgS {
+func getArgument() {
+	switch argS {
 	case "x5":
-		A = X5Group
+		a = x5Group
 	case "dixy":
-		A = Dixy
+		a = dixy
 	case "rusneft":
-		A = Rusneft
+		a = rusneft
 	case "phosagro":
-		A = Phosagro
+		a = phosagro
 	case "icetrade":
-		A = Icetrade
+		a = icetrade
 	case "komtech":
-		A = Komtech
+		a = komtech
 	case "ocontract":
-		A = Ocontract
+		a = ocontract
 	case "cpc":
-		A = Cpc
+		a = cpc
 	case "novatek":
-		A = Novatek
+		a = novatek
 	case "azot":
-		A = Azot
+		a = azot
 	case "uva":
-		A = Uva
+		a = uva
 	case "salym":
-		A = Salym
+		a = salym
 	case "monetka":
-		A = Monetka
+		a = monetka
 	case "dtek":
-		A = Dtek
+		a = dtek
 	case "mmk":
-		A = Mmk
+		a = mmk
 	case "letoile":
-		A = Letoile
+		a = letoile
 	case "sistema":
-		A = Sistema
+		a = sistema
 	case "metafrax":
-		A = Metafrax
+		a = metafrax
 	case "ies":
-		A = Ies
+		a = ies
 	case "uralchem":
-		A = UralChem
+		a = uralChem
 	case "gosby":
-		A = GosBy
+		a = gosBy
 	case "apk":
-		A = Apk
+		a = apk
 	case "aztpa":
-		A = Aztpa
+		a = aztpa
 	case "rosatom":
-		A = RosAtom
+		a = rosAtom
 	case "tpsre":
-		A = Tpsre
+		a = tpsre
 	case "tektkp":
-		A = Tektkp
+		a = tektkp
 	case "tekgaz":
-		A = Tekgaz
+		a = tekgaz
 	case "tekmarket":
-		A = Tekmarket
+		a = tekmarket
 	case "tekrao":
-		A = Tekrao
+		a = tekrao
 	case "tekmos":
-		A = Tekmos
+		a = tekmos
 	case "tekrn":
-		A = Tekrn
+		a = tekrn
 	case "tekkom":
-		A = Tekkom
+		a = tekkom
 	case "tekrusgazbur":
-		A = Tekrusgazbur
+		a = tekrusgazbur
 	case "tekrosimport":
-		A = Tekrosimport
+		a = tekrosimport
 	case "tektyumen":
-		A = Tektyumen
+		a = tektyumen
 	default:
 		fmt.Printf("Bad argument, please use %s", arguments)
 		os.Exit(1)
 	}
 }
 func checkEmptySettings() {
-	if DbName == "" || UserDb == "" || PassDb == "" || Server == "" || TempX5Group == "" || LogX5Group == "" || TempDixy == "" || LogDixy == "" || TempRusneft == "" || LogRusneft == "" || TempPhosagro == "" || LogPhosagro == "" || TempIcetrade == "" || LogIcetrade == "" || TempKomtech == "" || LogKomtech == "" || TempOcontract == "" || LogOcontract == "" || TempCpc == "" || LogCpc == "" || TempNovatek == "" || LogNovatek == "" || TempAzot == "" || LogAzot == "" || TempUva == "" || LogUva == "" || TempSalym == "" || LogSalym == "" || TempMonetka == "" || LogMonetka == "" || TempDtek == "" || LogDtek == "" || TempMmk == "" || LogMmk == "" || TempLetoile == "" || LogLetoile == "" || TempSistema == "" || LogSistema == "" || TempMetafrax == "" || LogMetafrax == "" || TempIes == "" || LogIes == "" || TempUralChem == "" || LogUralChem == "" || TempGosBy == "" || LogGosBy == "" || TempApk == "" || LogApk == "" || TempAztpa == "" || LogAztpa == "" || TempRosAtom == "" || LogRosAtom == "" || TempTpsre == "" || LogTpsre == "" || TempTektkp == "" || LogTektkp == "" || TempTekGaz == "" || LogTekGaz == "" || TempTekMarket == "" || LogTekMarket == "" || TempTekRao == "" || LogTekRao == "" || TempTekMos == "" || LogTekMos == "" || TempTekRn == "" || LogTekRn == "" || TempTekKom == "" || LogTekKom == "" || TempTekRusGazBur == "" || LogTekRusGazBur == "" || TempTekRosImport == "" || LogTekRosImport == "" || TempTekTyumen == "" || LogTekTyumen == "" {
+	if dbName == "" || userDb == "" || passDb == "" || server == "" || tempX5Group == "" || logX5Group == "" || tempDixy == "" || logDixy == "" || tempRusneft == "" || logRusneft == "" || tempPhosagro == "" || logPhosagro == "" || tempIcetrade == "" || logIcetrade == "" || tempKomtech == "" || logKomtech == "" || tempOcontract == "" || logOcontract == "" || tempCpc == "" || logCpc == "" || tempNovatek == "" || logNovatek == "" || tempAzot == "" || logAzot == "" || tempUva == "" || logUva == "" || tempSalym == "" || logSalym == "" || tempMonetka == "" || logMonetka == "" || tempDtek == "" || logDtek == "" || tempMmk == "" || logMmk == "" || tempLetoile == "" || logLetoile == "" || tempSistema == "" || logSistema == "" || tempMetafrax == "" || logMetafrax == "" || tempIes == "" || logIes == "" || tempUralChem == "" || logUralChem == "" || tempGosBy == "" || logGosBy == "" || tempApk == "" || logApk == "" || tempAztpa == "" || logAztpa == "" || tempRosAtom == "" || logRosAtom == "" || tempTpsre == "" || logTpsre == "" || tempTektkp == "" || logTektkp == "" || tempTekGaz == "" || logTekGaz == "" || tempTekMarket == "" || logTekMarket == "" || tempTekRao == "" || logTekRao == "" || tempTekMos == "" || logTekMos == "" || tempTekRn == "" || logTekRn == "" || tempTekKom == "" || logTekKom == "" || tempTekRusGazBur == "" || logTekRusGazBur == "" || tempTekRosImport == "" || logTekRosImport == "" || tempTekTyumen == "" || logTekTyumen == "" {
 		fmt.Println("bad settings xml")
 		os.Exit(1)
 	}
