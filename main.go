@@ -1,6 +1,11 @@
 package main
 
-import "flag"
+import (
+	"flag"
+	"time"
+)
+
+var sleepingTimeM = 7 * time.Second
 
 func init() {
 	flag.Parse()
@@ -57,10 +62,12 @@ func main() {
 		p := parserDtek{TypeFz: 117}
 		mainParser(&p)
 	case mmk:
-		p := parserMmk{TypeFz: 119, Urls: []string{"http://mmk.ru/for_suppliers/tenders1/", "http://mmk.ru/for_suppliers/tenders2/"}}
-		mainParser(&p)
-		m := parserMmk2{TypeFz: 119, Urls: []string{"http://mmk.ru/for_suppliers/auction/"}}
+		//p := parserMmk{TypeFz: 119, Urls: []string{"http://mmk.ru/for_suppliers/tenders1/", "http://mmk.ru/for_suppliers/tenders2/"}}
+		//mainParser(&p)
+		m := parserMmk2{TypeFz: 119, Urls: []string{"https://mmk.ru/ru/for-suppliers/auction/"}}
 		mainParser(&m)
+		t := parserMmk3{TypeFz: 119, Urls: []string{"https://mmk.ru/ru/for-suppliers/auction/purchase-of-services/"}}
+		mainParser(&t)
 	case letoile:
 		p := parserLetoile{TypeFz: 120, Urls: []string{"http://b2b.letoile.ru/company/tenders/current/"}}
 		mainParser(&p)

@@ -10,12 +10,14 @@ import (
 	"time"
 )
 
-type parserMmk2 struct {
+var sleepingTimeT = 5 * time.Second
+
+type parserMmk3 struct {
 	TypeFz int
 	Urls   []string
 }
 
-type tenderMmk2 struct {
+type tenderMmk3 struct {
 	purName       string
 	purNum        string
 	url           string
@@ -27,7 +29,7 @@ type tenderMmk2 struct {
 	cusName       string
 }
 
-func (t *parserMmk2) parsing() {
+func (t *parserMmk3) parsing() {
 	defer SaveStack()
 	t.parsingPageAll()
 	logging("End parsing")
@@ -35,13 +37,13 @@ func (t *parserMmk2) parsing() {
 	logging(fmt.Sprintf("Обновили тендеров %d", updatetenderMmk))
 }
 
-func (t *parserMmk2) parsingPageAll() {
+func (t *parserMmk3) parsingPageAll() {
 	for _, p := range t.Urls {
 		t.parsingPage(p)
 	}
 }
 
-func (t *parserMmk2) parsingPage(p string) {
+func (t *parserMmk3) parsingPage(p string) {
 	defer SaveStack()
 	r := DownloadPageInsecure(p)
 	if r != "" {
@@ -51,35 +53,7 @@ func (t *parserMmk2) parsingPage(p string) {
 	}
 }
 
-func (t *parserMmk2) parsingTenderList(p string, url string) {
-	doc, err := goquery.NewDocumentFromReader(strings.NewReader(p))
-	if err != nil {
-		logging(err)
-		return
-	}
-	doc.Find("a[href *= 'ru/for-suppliers/auction/?location=']").Each(func(i int, s *goquery.Selection) {
-		t.parsingCategoryFromList(s, url)
-	})
-	time.Sleep(sleepingTimeT)
-}
-
-func (t *parserMmk2) parsingCategoryFromList(p *goquery.Selection, _ string) {
-	href, exist := p.Attr("href")
-	cusName := strings.TrimSpace(p.Text())
-	if !exist {
-		return
-	}
-
-	urlT := fmt.Sprintf("https://mmk.ru%s", href)
-	r := DownloadPageInsecure(urlT)
-	if r != "" {
-		t.parsingTenderListT(r, cusName)
-	} else {
-		logging("Получили пустую строку", p)
-	}
-}
-
-func (t *parserMmk2) parsingTenderListT(p string, cusName string) {
+func (t *parserMmk3) parsingTenderList(p string, cusName string) {
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(p))
 	if err != nil {
 		logging(err)
@@ -90,7 +64,7 @@ func (t *parserMmk2) parsingTenderListT(p string, cusName string) {
 	})
 }
 
-func (t *parserMmk2) parsingTenderFromList(p *goquery.Selection, cusName string) {
+func (t *parserMmk3) parsingTenderFromList(p *goquery.Selection, cusName string) {
 	hrefT := p.Find("a")
 	href, exist := hrefT.Attr("href")
 	if !exist {
@@ -98,35 +72,27 @@ func (t *parserMmk2) parsingTenderFromList(p *goquery.Selection, cusName string)
 		return
 	}
 	href = fmt.Sprintf("https://mmk.ru%s", href)
-	purName := strings.TrimSpace(p.Find("td:nth-of-type(1)").First().Text())
+	purName := strings.TrimSpace(p.Find("a").First().Text())
 	if purName == "" {
 		logging("cannot find purName in ", cusName)
 		return
 	}
-	purNum := strings.TrimSpace(p.Find("th:nth-child(1)").First().Text())
-	if purNum == "" {
-		logging("cannot find purnum in ", purName)
-		return
-	}
-	pubDateT := strings.TrimSpace(p.Find("td:nth-child(3)").First().Text())
-	pubDate := getTimeMoscowLayout(pubDateT, "02.01.2006 15:04")
+	purNum := GetMd5(purName)
+	pubDate := time.Now()
 
-	endDateT := strings.TrimSpace(p.Find("td:nth-child(4)").First().Text())
-	endDate := getTimeMoscowLayout(endDateT, "02.01.2006 15:04")
-	if (endDate == time.Time{}) {
-		endDate = getTimeMoscowLayout(endDateT, "02.01.2006")
-	}
+	endDateT := strings.TrimSpace(p.Find("td:nth-child(5)").First().Text())
+	endDate := getTimeMoscowLayout(endDateT, "02.01.2006")
 	if (endDate == time.Time{}) {
 		logging("cannot find enddate in ", href, purNum)
 		return
 	}
-	status := ""
-	contactPerson := strings.TrimSpace(p.Find("td:nth-child(5) p strong").First().Text())
+	status := strings.TrimSpace(p.Find("td:nth-child(2)").First().Text())
+	contactPerson := strings.TrimSpace(p.Find("td:nth-child(3) h4").First().Text())
 	tnd := tenderMmk{purName: purName, purNum: purNum, url: href, pubDate: pubDate, endDate: endDate, status: status, contactPerson: contactPerson}
 	t.tender(tnd)
 }
 
-func (t *parserMmk2) tender(tn tenderMmk) {
+func (t *parserMmk3) tender(tn tenderMmk) {
 	defer SaveStack()
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
@@ -296,7 +262,6 @@ func (t *parserMmk2) tender(tn tenderMmk) {
 	}
 	id, _ := resl.LastInsertId()
 	idLot = int(id)
-
 	pkk := 0
 	doc.Find("div.table tbody tr").Each(func(i int, s *goquery.Selection) {
 		t.purObj(idLot, idCustomer, s, db)
@@ -327,7 +292,7 @@ func (t *parserMmk2) tender(tn tenderMmk) {
 	}
 }
 
-func (t *parserMmk2) purObj(idLot int, idCustomer int, doc *goquery.Selection, db *sql.DB) {
+func (t *parserMmk3) purObj(idLot int, idCustomer int, doc *goquery.Selection, db *sql.DB) {
 	defer SaveStack()
 	name := strings.TrimSpace(doc.Find("td:nth-of-type(2)").First().Text())
 	quantity := strings.TrimSpace(doc.Find("td:nth-of-type(5)").First().Text())
@@ -341,7 +306,7 @@ func (t *parserMmk2) purObj(idLot int, idCustomer int, doc *goquery.Selection, d
 	}
 }
 
-func (t *parserMmk2) documents(idTender int, doc *goquery.Selection, db *sql.DB) {
+func (t *parserMmk3) documents(idTender int, doc *goquery.Selection, db *sql.DB) {
 	defer SaveStack()
 	nameF := strings.TrimSpace(doc.Find("p.item-document__title").First().Text())
 	hrefT := doc.Find("a")
