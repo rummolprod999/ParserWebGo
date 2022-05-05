@@ -86,6 +86,8 @@ var tempTekRosImport string
 var logTekRosImport string
 var tempTekTyumen string
 var logTekTyumen string
+var tempTekSil string
+var logTekSil string
 var argS string
 var a arg
 var dsn string
@@ -128,6 +130,7 @@ const (
 	tekrusgazbur
 	tekrosimport
 	tektyumen
+	teksil
 )
 
 type settings struct {
@@ -208,6 +211,8 @@ type settings struct {
 	LogTekrosimport  string `xml:"logdir_tekrosimport"`
 	TempTektyumen    string `xml:"tempdir_tektyumen"`
 	LogTektyumen     string `xml:"logdir_tektyumen"`
+	TempTeksil       string `xml:"tempdir_teksil"`
+	LogTeksil        string `xml:"logdir_teksil"`
 }
 
 func getSetting() {
@@ -301,6 +306,8 @@ func getSetting() {
 	tempTekRosImport = settings.TempTekrosimport
 	logTekTyumen = settings.LogTektyumen
 	tempTekTyumen = settings.TempTektyumen
+	logTekSil = settings.LogTeksil
+	tempTekSil = settings.TempTeksil
 	dsn = fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8&parseTime=true&readTimeout=60m&maxAllowedPacket=0&timeout=60m&writeTimeout=60m&autocommit=true&loc=Local", userDb, passDb, server, port, dbName)
 	checkEmptySettings()
 }
@@ -377,13 +384,15 @@ func getArgument() {
 		a = tekrosimport
 	case "tektyumen":
 		a = tektyumen
+	case "teksil":
+		a = teksil
 	default:
 		fmt.Printf("Bad argument, please use %s", arguments)
 		os.Exit(1)
 	}
 }
 func checkEmptySettings() {
-	if dbName == "" || userDb == "" || passDb == "" || server == "" || tempX5Group == "" || logX5Group == "" || tempDixy == "" || logDixy == "" || tempRusneft == "" || logRusneft == "" || tempPhosagro == "" || logPhosagro == "" || tempIcetrade == "" || logIcetrade == "" || tempKomtech == "" || logKomtech == "" || tempOcontract == "" || logOcontract == "" || tempCpc == "" || logCpc == "" || tempNovatek == "" || logNovatek == "" || tempAzot == "" || logAzot == "" || tempUva == "" || logUva == "" || tempSalym == "" || logSalym == "" || tempMonetka == "" || logMonetka == "" || tempDtek == "" || logDtek == "" || tempMmk == "" || logMmk == "" || tempLetoile == "" || logLetoile == "" || tempSistema == "" || logSistema == "" || tempMetafrax == "" || logMetafrax == "" || tempIes == "" || logIes == "" || tempUralChem == "" || logUralChem == "" || tempGosBy == "" || logGosBy == "" || tempApk == "" || logApk == "" || tempAztpa == "" || logAztpa == "" || tempRosAtom == "" || logRosAtom == "" || tempTpsre == "" || logTpsre == "" || tempTektkp == "" || logTektkp == "" || tempTekGaz == "" || logTekGaz == "" || tempTekMarket == "" || logTekMarket == "" || tempTekRao == "" || logTekRao == "" || tempTekMos == "" || logTekMos == "" || tempTekRn == "" || logTekRn == "" || tempTekKom == "" || logTekKom == "" || tempTekRusGazBur == "" || logTekRusGazBur == "" || tempTekRosImport == "" || logTekRosImport == "" || tempTekTyumen == "" || logTekTyumen == "" {
+	if dbName == "" || userDb == "" || passDb == "" || server == "" || tempX5Group == "" || logX5Group == "" || tempDixy == "" || logDixy == "" || tempRusneft == "" || logRusneft == "" || tempPhosagro == "" || logPhosagro == "" || tempIcetrade == "" || logIcetrade == "" || tempKomtech == "" || logKomtech == "" || tempOcontract == "" || logOcontract == "" || tempCpc == "" || logCpc == "" || tempNovatek == "" || logNovatek == "" || tempAzot == "" || logAzot == "" || tempUva == "" || logUva == "" || tempSalym == "" || logSalym == "" || tempMonetka == "" || logMonetka == "" || tempDtek == "" || logDtek == "" || tempMmk == "" || logMmk == "" || tempLetoile == "" || logLetoile == "" || tempSistema == "" || logSistema == "" || tempMetafrax == "" || logMetafrax == "" || tempIes == "" || logIes == "" || tempUralChem == "" || logUralChem == "" || tempGosBy == "" || logGosBy == "" || tempApk == "" || logApk == "" || tempAztpa == "" || logAztpa == "" || tempRosAtom == "" || logRosAtom == "" || tempTpsre == "" || logTpsre == "" || tempTektkp == "" || logTektkp == "" || tempTekGaz == "" || logTekGaz == "" || tempTekMarket == "" || logTekMarket == "" || tempTekRao == "" || logTekRao == "" || tempTekMos == "" || logTekMos == "" || tempTekRn == "" || logTekRn == "" || tempTekKom == "" || logTekKom == "" || tempTekRusGazBur == "" || logTekRusGazBur == "" || tempTekRosImport == "" || logTekRosImport == "" || tempTekTyumen == "" || logTekTyumen == "" || tempTekSil == "" || logTekSil == "" {
 		fmt.Println("bad settings xml")
 		os.Exit(1)
 	}
