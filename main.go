@@ -134,6 +134,9 @@ func main() {
 	case teksil:
 		p := parserTektorg{TypeFz: 218, maxPage: 0, Addtender: 0, Updatetender: 0, EtpName: "ТЭК Торг ПАО «Силовые машины»", EtpUrl: "https://www.tektorg.ru/silovyi_machine/procedures", Section: "15"}
 		mainParser(&p)
+	case tekrzd:
+		p := parserTektorg{TypeFz: 25, maxPage: 0, Addtender: 0, Updatetender: 0, EtpName: "ТЭК Торг РЖД", EtpUrl: "https://www.tektorg.ru/rzd/procedures", Section: "2"}
+		mainParser(&p)
 	}
 
 }
