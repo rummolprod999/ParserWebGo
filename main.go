@@ -128,6 +128,8 @@ func main() {
 	case tekrosimport:
 		p := parserTektorg{TypeFz: 326, maxPage: 0, Addtender: 0, Updatetender: 0, EtpName: "ФГУП «Росморпорт»", EtpUrl: "https://www.tektorg.ru/rosmorport/procedures", Section: "29"}
 		mainParser(&p)
+		m := parserTektorg{TypeFz: 326, maxPage: 0, Addtender: 0, Updatetender: 0, EtpName: "ФГУП «Росморпорт»", EtpUrl: "https://www.tektorg.ru/rosmorport/procedures", Section: "33"}
+		mainParser(&m)
 	case tektyumen:
 		p := parserTektorg{TypeFz: 327, maxPage: 0, Addtender: 0, Updatetender: 0, EtpName: "Портал поставщиков Тюменской области", EtpUrl: "https://www.tektorg.ru/portal_tyumen/procedures", Section: "19"}
 		mainParser(&p)
