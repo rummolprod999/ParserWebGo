@@ -143,7 +143,10 @@ func main() {
 		p := parserTektorg{TypeFz: 361, maxPage: 0, Addtender: 0, Updatetender: 0, EtpName: "АО «Сибур-Химпром»", EtpUrl: "https://www.tektorg.ru/sibur/procedures", Section: "37"}
 		mainParser(&p)
 	case tekppk:
-		p := parserTektorg{TypeFz: 371, maxPage: 0, Addtender: 0, Updatetender: 0, EtpName: "Первая Портовая Компания (Группа ППК)", EtpUrl: "https://www.tektorg.ru/portone/procedures", Section: "44"}
+		p := parserTektorg{TypeFz: 371, maxPage: 0, Addtender: 0, Updatetender: 0, EtpName: "АО \"Первая Портовая Компания\"", EtpUrl: "https://www.tektorg.ru/portone/procedures", Section: "44"}
+		mainParser(&p)
+	case tekspec:
+		p := parserTektorg{TypeFz: 372, maxPage: 0, Addtender: 0, Updatetender: 0, EtpName: "АО  «Спецнефтетранс»", EtpUrl: "https://www.tektorg.ru/portone/procedures", Section: "42"}
 		mainParser(&p)
 	}
 
