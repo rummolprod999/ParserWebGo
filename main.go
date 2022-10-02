@@ -148,6 +148,9 @@ func main() {
 	case tekspec:
 		p := parserTektorg{TypeFz: 372, maxPage: 0, Addtender: 0, Updatetender: 0, EtpName: "АО  «Спецнефтетранс»", EtpUrl: "https://www.tektorg.ru/portone/procedures", Section: "42"}
 		mainParser(&p)
+	case grls:
+		p := GrlsReader{Url: "https://grls.rosminzdrav.ru/pricelims.aspx", Added: 0, AddedExcept: 0}
+		mainParser(&p)
 	}
 
 }
