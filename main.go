@@ -29,7 +29,7 @@ func main() {
 		p := parserRusneft{TypeFz: 29, Urls: []string{"http://www.russneft.ru/tenders/russneft/", "http://www.russneft.ru/tenders/all/zapsibgroop/", "http://www.russneft.ru/tenders/all/centrsibgroop/", "http://www.russneft.ru/tenders/all/volgagroop/", "http://www.russneft.ru/tenders/all/belarus/", "http://www.russneft.ru/tenders/all/overseas/"}}
 		mainParser(&p)
 	case phosagro:
-		p := parserPhosagro{TypeFz: 35, Urls: []string{"https://etpreg.phosagro.ru/tenders/?PAGEN_1="}}
+		p := parserPhosagro{TypeFz: 35, Urls: []string{"https://etpreg.phosagro.ru/tenders/?PAGEN_2=", "https://etpreg.phosagro.ru/services/?PAGEN_2="}}
 		mainParser(&p)
 	case icetrade:
 		p := parserIcetrade{TypeFz: 77, Urls: []string{"http://www.icetrade.by/search/auctions?search_text=&search=%D0%9D%D0%B0%D0%B9%D1%82%D0%B8&zakup_type[1]=1&zakup_type[2]=1&auc_num=&okrb=&company_title=&establishment=0&period=&created_from=&created_to=&request_end_from=&request_end_to=&t[Trade]=1&t[eTrade]=1&t[Request]=1&t[singleSource]=1&t[Auction]=1&t[Other]=1&t[contractingTrades]=1&t[socialOrder]=1&t[negotiations]=1&r[1]=1&r[2]=2&r[7]=7&r[3]=3&r[4]=4&r[6]=6&r[5]=5&sort=num%3Adesc&p="}}

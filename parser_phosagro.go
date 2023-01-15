@@ -31,8 +31,10 @@ type tenderPhosagro struct {
 func (t *parserPhosagro) parsing() {
 	defer SaveStack()
 	logging("Start parsing")
+	t.parsingPage("https://etpreg.phosagro.ru/tenders/?PAGEN_1=")
+	t.parsingPage("https://etpreg.phosagro.ru/services?PAGEN_1=")
 	for _, p := range t.Urls {
-		for i := 1; i < 6; i++ {
+		for i := 2; i < 6; i++ {
 			urllist := fmt.Sprintf("%s%d", p, i)
 			t.parsingPage(urllist)
 		}
@@ -45,7 +47,7 @@ func (t *parserPhosagro) parsing() {
 
 func (t *parserPhosagro) parsingPage(p string) {
 	defer SaveStack()
-	r := DownloadPage(p)
+	r := DownloadPageWithUA(p)
 	if r != "" {
 		t.parsingTenderList(r, p)
 	} else {
@@ -125,7 +127,7 @@ func (t *parserPhosagro) tender(tn tenderPhosagro) {
 		return
 	}
 	res.Close()
-	r := DownloadPage(tn.url)
+	r := DownloadPageWithUA(tn.url)
 	if r == "" {
 		logging("Получили пустую строку", tn.url)
 		return
