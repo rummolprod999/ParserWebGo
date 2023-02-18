@@ -26,7 +26,7 @@ func main() {
 		p := parserDixy{TypeFz: 28, Urls: []string{"http://www.dixygroup.ru/our-partners/our-suppliers/tender-info.aspx?sc_lang=ru-RU"}}
 		mainParser(&p)
 	case rusneft:
-		p := parserRusneft{TypeFz: 29, Urls: []string{"http://www.russneft.ru/tenders/russneft/", "http://www.russneft.ru/tenders/all/zapsibgroop/", "http://www.russneft.ru/tenders/all/centrsibgroop/", "http://www.russneft.ru/tenders/all/volgagroop/", "http://www.russneft.ru/tenders/all/belarus/", "http://www.russneft.ru/tenders/all/overseas/"}}
+		p := parserRusneft{TypeFz: 29, Urls: []string{"https://tender.russneft.ru/?PAGEN_1="}}
 		mainParser(&p)
 	case phosagro:
 		p := parserPhosagro{TypeFz: 35, Urls: []string{"https://etpreg.phosagro.ru/tenders/?PAGEN_2=", "https://etpreg.phosagro.ru/services/?PAGEN_2="}}

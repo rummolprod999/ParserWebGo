@@ -29,13 +29,16 @@ func (t *parserRusneft) parsing() {
 
 func (t *parserRusneft) parsingPageAll() {
 	for _, p := range t.Urls {
-		t.parsingPage(p)
+		for i := 1; i < 3; i++ {
+			urllist := fmt.Sprintf("%s%d", p, i)
+			t.parsingPage(urllist)
+		}
 	}
 }
 
 func (t *parserRusneft) parsingPage(p string) {
 	defer SaveStack()
-	r := DownloadPage(p)
+	r := DownloadPageInsecure(p)
 	if r != "" {
 		t.parsingTenderList(r, p)
 	} else {
@@ -50,7 +53,7 @@ func (t *parserRusneft) parsingTenderList(p string, url string) {
 		logging(err)
 		return
 	}
-	doc.Find("table.tender-table tbody tr").Each(func(i int, s *goquery.Selection) {
+	doc.Find("div.tenders-list table.table tbody tr").Each(func(i int, s *goquery.Selection) {
 		txt := s.Text()
 		if !strings.Contains(txt, "Дата публикации приглашения") {
 			t.parsingTenderFromList(s, url)
@@ -61,7 +64,7 @@ func (t *parserRusneft) parsingTenderList(p string, url string) {
 
 func (t *parserRusneft) parsingTenderFromList(p *goquery.Selection, url string) {
 	defer SaveStack()
-	purNum := strings.TrimSpace(p.Find("span.tender-table__info-item_title").First().Text())
+	purNum := strings.TrimSpace(p.Find("td:nth-child(1)").First().Text())
 	if purNum == "" {
 		logging("cannot find purnum in ", url)
 		return
@@ -79,18 +82,19 @@ func (t *parserRusneft) parsingTenderFromList(p *goquery.Selection, url string) 
 	} else if strings.Contains(url, "tenders/all/overseas") {
 		purNum = fmt.Sprintf("%s_overseas", purNum)
 	}
-	dates := p.Find("span.tender-table__info-item")
-	if len(dates.Nodes) < 3 {
-		logging("cannot find 3 dates in ", url)
-		return
-	}
-	pubDateT := strings.TrimSpace(dates.Eq(0).Text())
+	pubDateT := strings.TrimSpace(p.Find("td:nth-child(4)").First().Text())
 	pubDate := getTimeMoscowLayout(pubDateT, "02.01.2006")
-	endDateT := strings.TrimSpace(dates.Eq(1).Text())
+	if (pubDate == time.Time{}) {
+		pubDate = getTimeMoscowLayout(pubDateT, "02.01.2006")
+	}
+	endDateT := strings.TrimSpace(p.Find("td:nth-child(5)").First().Text())
 	endDate := getTimeMoscowLayout(endDateT, "02.01.2006")
-	endDateT = strings.TrimSpace(dates.Eq(2).Text())
-	if endDateT != "" {
+	if (endDate == time.Time{}) {
 		endDate = getTimeMoscowLayout(endDateT, "02.01.2006")
+	}
+	if (pubDate == time.Time{} || endDate == time.Time{}) {
+		logging("cannot find enddate or startdate in ", url, purNum)
+		return
 	}
 	if (pubDate == time.Time{} || endDate == time.Time{}) {
 		logging("cannot find enddate or startdate in ", url, purNum)
@@ -102,7 +106,7 @@ func (t *parserRusneft) parsingTenderFromList(p *goquery.Selection, url string) 
 
 func (t *parserRusneft) tender(purNum string, page string, pubDate time.Time, endDate time.Time, p *goquery.Selection) {
 	defer SaveStack()
-	purName := strings.TrimSpace(p.Find("td a").First().Text())
+	purName := strings.TrimSpace(p.Find("td:nth-child(7) a").First().Text())
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		logging("Ошибка подключения к БД", err)
@@ -159,13 +163,13 @@ func (t *parserRusneft) tender(purNum string, page string, pubDate time.Time, en
 		rows.Close()
 
 	}
-	hrefT := p.Find("td a").First()
+	hrefT := p.Find("td:nth-child(7) a").First()
 	href, exist := hrefT.Attr("href")
 	if !exist {
 		logging("The element cannot have href attribute", hrefT.Text())
 		return
 	}
-	href = fmt.Sprintf("http://www.russneft.ru%s", href)
+	href = fmt.Sprintf("https://tender.russneft.ru%s", href)
 	printForm := href
 	idOrganizer := 0
 	orgFullName := "ПАО НК «РуссНефть»"
@@ -203,6 +207,10 @@ func (t *parserRusneft) tender(purNum string, page string, pubDate time.Time, en
 		}
 	}
 	idPlacingWay := 0
+	pw := strings.TrimSpace(p.Find("td:nth-child(8)").First().Text())
+	if pw != "" {
+		idPlacingWay = getPlacingWayId(pw, db)
+	}
 	IdEtp := 0
 	etpName := orgFullName
 	etpUrl := "http://www.russneft.ru/tenders"
@@ -249,7 +257,7 @@ func (t *parserRusneft) tender(purNum string, page string, pubDate time.Time, en
 	} else {
 		addtenderRusneft++
 	}
-	p.Find("td.tender-table__download-block > a").Each(func(i int, s *goquery.Selection) {
+	p.Find("td:nth-child(9) > a").Each(func(i int, s *goquery.Selection) {
 		t.documents(idTender, s, db)
 	})
 	idCustomer := 0
@@ -304,6 +312,16 @@ func (t *parserRusneft) tender(purNum string, page string, pubDate time.Time, en
 		logging("Ошибка вставки purchase_object", errr)
 		return
 	}
+	delivplace := strings.TrimSpace(p.Find("td:nth-child(3)").First().Text())
+	if delivplace != "" {
+		stmtcr, _ := db.Prepare(fmt.Sprintf("INSERT INTO %scustomer_requirement SET id_lot = ?, id_customer = ?, delivery_term = ?, delivery_place = ?, max_price = ?", prefix))
+		_, err := stmtcr.Exec(idLot, idCustomer, "", delivplace, "")
+		stmtcr.Close()
+		if err != nil {
+			logging("Ошибка вставки purchase_object", errr)
+			return
+		}
+	}
 	e := TenderKwords(db, idTender)
 	if e != nil {
 		logging("Ошибка обработки TenderKwords", e)
@@ -323,7 +341,7 @@ func (t *parserRusneft) documents(idTender int, doc *goquery.Selection, db *sql.
 		logging("The element cannot have href attribute", doc.Text())
 		return
 	}
-	href = fmt.Sprintf("http://www.russneft.ru%s", href)
+	href = fmt.Sprintf("https://tender.russneft.ru%s", href)
 	if nameF != "" {
 		stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sattachment SET id_tender = ?, file_name = ?, url = ?", prefix))
 		_, err := stmt.Exec(idTender, nameF, href)
