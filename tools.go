@@ -176,6 +176,28 @@ func DownloadPageWithUA(url string) string {
 	return st
 }
 
+func DownloadPageAzot(url string) string {
+	count := 0
+	var st string
+	for {
+		//fmt.Println("Start download file")
+		if count > 50 {
+			logging(fmt.Sprintf("Не скачали файл за %d попыток %s", count, url))
+			return st
+		}
+		st = GetPageAzot(url)
+		if st == "" {
+			count++
+			logging("Получили пустую страницу", url)
+			time.Sleep(time.Second * 5)
+			continue
+		}
+		return st
+
+	}
+	return st
+}
+
 func DownloadPageWithUAIceTrade(url string) string {
 	count := 0
 	var st string
@@ -345,6 +367,37 @@ func GetPageUA(url string) (ret string) {
 		return st
 	}
 	request.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)")
+	resp, err := client.Do(request)
+	defer resp.Body.Close()
+	if err != nil {
+		logging("Ошибка скачивания", url, err)
+		return st
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		logging("Ошибка чтения", url, err)
+		return st
+	}
+
+	return string(body)
+}
+
+func GetPageAzot(url string) (ret string) {
+	var st string
+	defer func() {
+		if r := recover(); r != nil {
+			logging(fmt.Sprintf("was panic, recovered value: %v", r))
+			ret = ""
+		}
+	}()
+	client := &http.Client{}
+	request, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		logging("Ошибка request", url, err)
+		return st
+	}
+	request.Header.Set("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko)")
+	request.Header.Set("Cookie", "PHPSESSID=6amtunhl593u04tt73kt3rr640; BX_USER_ID=0456474427dd6510c97b47071dfe2b84; BITRIX_SM_UIDH=79fc14fd050c5f4d037f7e71123a1c04; BITRIX_SM_UIDL=enter-it_1%40mail.ru; BITRIX_SM_LOGIN=enter-it_1%40mail.ru; BITRIX_SM_SOUND_LOGIN_PLAYED=Y; __utmb=121630595.2.10.1680931068")
 	resp, err := client.Do(request)
 	defer resp.Body.Close()
 	if err != nil {

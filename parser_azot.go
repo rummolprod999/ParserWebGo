@@ -47,7 +47,7 @@ func (t *parserAzot) parsingPageAll() {
 
 func (t *parserAzot) parsingPage(p string) {
 	defer SaveStack()
-	r := DownloadPage(p)
+	r := DownloadPageAzot(p)
 	if r != "" {
 		t.parsingTenderList(r)
 	} else {
@@ -106,10 +106,10 @@ func (t *parserAzot) parsingTenderFromList(p *goquery.Selection) {
 		return
 	}
 	tnd := tenderAzot{purName: purName, purNum: purNum, status: status, pWay: pWay, pubDate: pubDate, endDate: endDate, noticeV: noticeV}
-	t.tender(tnd)
+	t.tender(tnd, p)
 }
 
-func (t *parserAzot) tender(tn tenderAzot) {
+func (t *parserAzot) tender(tn tenderAzot, p *goquery.Selection) {
 	defer SaveStack()
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
@@ -278,6 +278,9 @@ func (t *parserAzot) tender(tn tenderAzot) {
 		logging("Ошибка вставки purchase_object", errr)
 		return
 	}
+	p.Find("div.textLine > a").Each(func(i int, s *goquery.Selection) {
+		t.documents(idTender, s, db)
+	})
 	e := TenderKwords(db, idTender)
 	if e != nil {
 		logging("Ошибка обработки TenderKwords", e)
@@ -286,5 +289,25 @@ func (t *parserAzot) tender(tn tenderAzot) {
 	e1 := AddVerNumber(db, tn.purNum, t.TypeFz)
 	if e1 != nil {
 		logging("Ошибка обработки AddVerNumber", e1)
+	}
+}
+
+func (t *parserAzot) documents(idTender int, doc *goquery.Selection, db *sql.DB) {
+	defer SaveStack()
+	nameF := strings.TrimSpace(doc.First().Text())
+	href, exist := doc.Attr("href")
+	if !exist {
+		logging("The element cannot have href attribute", doc.Text())
+		return
+	}
+	href = fmt.Sprintf("http://zakupki.sbu-azot.ru%s", href)
+	if nameF != "" {
+		stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sattachment SET id_tender = ?, file_name = ?, url = ?", prefix))
+		_, err := stmt.Exec(idTender, nameF, href)
+		stmt.Close()
+		if err != nil {
+			logging("Ошибка вставки attachment", err)
+			return
+		}
 	}
 }
