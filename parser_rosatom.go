@@ -52,7 +52,7 @@ func (t *parserRosAtom) parsingPage(p string) {
 
 func (t *parserRosAtom) downPage(p string) {
 	defer SaveStack()
-	r := DownloadPage(p)
+	r := DownloadPageWithUA(p)
 	if r != "" {
 		t.parsingTenderList(r, p)
 	} else {
@@ -78,7 +78,7 @@ func (t *parserRosAtom) parsingTenderFromList(p *goquery.Selection, url string) 
 		logging("The element cannot have href attribute", url)
 		return
 	}
-	href = fmt.Sprintf("http://zakupki.rosatom.ru%s", href)
+	href = fmt.Sprintf("https://zakupki.rosatom.ru%s", href)
 	purName := strings.TrimSpace(p.Find("td.description > p a").First().Text())
 	if purName == "" {
 		logging("cannot find purName in ", url)
@@ -132,7 +132,7 @@ func (t *parserRosAtom) tender(tn tenderRosAtom) {
 		return
 	}
 	res.Close()
-	r := DownloadPage(tn.url)
+	r := DownloadPageWithUA(tn.url)
 	if r == "" {
 		logging("Получили пустую строку", tn.url)
 		return
@@ -256,8 +256,8 @@ func (t *parserRosAtom) lots(numLot int, idTender int, d *goquery.Selection, db 
 		logging("The element cannot have href attribute", d.Text())
 		return
 	}
-	href = fmt.Sprintf("http://zakupki.rosatom.ru%s", href)
-	r := DownloadPage(href)
+	href = fmt.Sprintf("https://zakupki.rosatom.ru%s", href)
+	r := DownloadPageWithUA(href)
 	if r == "" {
 		logging("Получили пустую строку", href)
 		return
@@ -340,7 +340,7 @@ func (t *parserRosAtom) documents(idTender int, doc *goquery.Selection, db *sql.
 		logging("The element cannot have href attribute", doc.Text())
 		return
 	}
-	href = fmt.Sprintf("http://zakupki.rosatom.ru%s", href)
+	href = fmt.Sprintf("https://zakupki.rosatom.ru%s", href)
 	if nameF != "" {
 		stmt, _ := db.Prepare(fmt.Sprintf("INSERT INTO %sattachment SET id_tender = ?, file_name = ?, url = ?", prefix))
 		_, err := stmt.Exec(idTender, nameF, href)

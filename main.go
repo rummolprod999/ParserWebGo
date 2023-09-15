@@ -96,7 +96,7 @@ func main() {
 		p := parserAztpa{TypeFz: 188, Urls: []string{"https://zakupki.aztpa.ru/zakupki/list?active=1&type=1"}}
 		mainParser(&p)
 	case rosAtom:
-		p := parserRosAtom{TypeFz: 221, Urls: []string{"http://zakupki.rosatom.ru/Web.aspx?node=currentorders&page="}}
+		p := parserRosAtom{TypeFz: 221, Urls: []string{"https://zakupki.rosatom.ru/Web.aspx?node=currentorders&page=1"}}
 		mainParser(&p)
 	case tpsre:
 		p := parserTpsre{TypeFz: 240, Urls: []string{"https://www.tpsre.ru/tenders/"}}
