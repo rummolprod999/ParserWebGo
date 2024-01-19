@@ -31,10 +31,10 @@ type tenderPhosagro struct {
 func (t *parserPhosagro) parsing() {
 	defer SaveStack()
 	logging("Start parsing")
-	t.parsingPage("https://etpreg.phosagro.ru/tenders/?PAGEN_1=")
+	t.parsingPage("https://etpreg.phosagro.ru/tenders/?set_filter=Y&arrFilter_pf%5BACTUAL%5D=Y&PAGEN_2=")
 	t.parsingPage("https://etpreg.phosagro.ru/services?PAGEN_1=")
 	for _, p := range t.Urls {
-		for i := 2; i < 6; i++ {
+		for i := 2; i < 35; i++ {
 			urllist := fmt.Sprintf("%s%d", p, i)
 			t.parsingPage(urllist)
 		}
