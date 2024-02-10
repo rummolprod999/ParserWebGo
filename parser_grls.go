@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/shakinm/xlsReader/xls"
+	"github.com/xuri/excelize/v2"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -49,16 +50,18 @@ func (t *GrlsReader) extractUrl(p string) string {
 		logging(err)
 		return ""
 	}
-	aTag := doc.Find("#ctl00_plate_tdzip > a").First()
+	aTag := doc.Find("#ctl00_plate_tdzip > button").First()
 	if aTag == nil {
-		logging("a tag not found")
+		logging("button tag not found")
 		return ""
 	}
-	href, ok := aTag.Attr("href")
+	href, ok := aTag.Attr("onclick")
 	if !ok {
 		logging("href attr in a tag not found")
 		return ""
 	}
+	href = strings.Replace(href, "go('", "", -1)
+	href = strings.Replace(href, "'); return false;", "", -1)
 	return fmt.Sprintf("https://grls.rosminzdrav.ru/%s", href)
 }
 
@@ -85,6 +88,9 @@ func (t *GrlsReader) downloadArchive(url string) {
 		if strings.HasSuffix(f, "xls") {
 			t.extractXlsData(f)
 		}
+		if strings.HasSuffix(f, "xlsx") {
+			t.extractXlsxData(f)
+		}
 	}
 }
 
@@ -100,6 +106,146 @@ func (t *GrlsReader) extractXlsData(nameFile string) {
 	sheetExcept, _ := xlFile.GetSheet(2)
 	t.insertToBaseExcept(sheet, sheetExcept)
 
+}
+
+func (t *GrlsReader) extractXlsxData(nameFile string) {
+	defer SaveStack()
+	xlFile, err := excelize.OpenFile(nameFile)
+	if err != nil {
+		logging("error open excel file, exit", err)
+		return
+	}
+	sheetInd := xlFile.GetSheetName(0)
+	sheet, _ := xlFile.GetRows(sheetInd)
+	sheetIndE := xlFile.GetSheetName(2)
+	sheetE, _ := xlFile.GetRows(sheetIndE)
+	t.insertToBaseNew(sheet, xlFile)
+	t.insertToBaseExceptNew(sheet, sheetE, xlFile)
+
+}
+
+func (t *GrlsReader) insertToBaseExceptNew(sheet [][]string, sheetE [][]string, xlFile *excelize.File) {
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		logging(err)
+		return
+	}
+	defer db.Close()
+	_, err = db.Exec("DELETE FROM grls_except WHERE 1 = 1;")
+	if err != nil {
+		logging(err)
+		return
+	}
+	c0 := sheet[0][0]
+	datePubT := FindFromRegExp(c0, `(\d{2}\.\d{2}\.\d{4})`)
+	if datePubT == "" {
+		logging("datePub is empty")
+	}
+	datePub := getTimeMoscowLayout(datePubT, "02.01.2006")
+	for r := 3; r < int(len(sheetE)); r++ {
+		col := sheetE[r]
+		mnn0 := col[0]
+		mnn := ReplaceBadSymbols(mnn0)
+		name0 := col[1]
+		name := ReplaceBadSymbols(name0)
+		form0 := col[2]
+		form := ReplaceBadSymbols(form0)
+		owner0 := col[3]
+		owner := ReplaceBadSymbols(owner0)
+		atx0 := col[4]
+		atx := ReplaceBadSymbols(atx0)
+		quantity0 := col[5]
+		quantity := ReplaceBadSymbols(quantity0)
+		maxPrice0 := col[6]
+		maxPrice := strings.ReplaceAll(ReplaceBadSymbols(maxPrice0), ",", ".")
+		firstPrice0 := col[7]
+		firstPrice := strings.ReplaceAll(ReplaceBadSymbols(firstPrice0), ",", ".")
+		ru0 := col[8]
+		ru := ReplaceBadSymbols(ru0)
+		dateReg0 := col[9]
+		dateRegT := ReplaceBadSymbols(dateReg0)
+		dateRegR := FindFromRegExp(dateRegT, `(\d{2}\.\d{2}\.\d{4})`)
+		dateReg := getTimeMoscowLayout(dateRegR, "02.01.2006")
+		code0 := col[10]
+		code := ReplaceBadSymbols(code0)
+		exceptCause0 := col[11]
+		exceptCause := ReplaceBadSymbols(exceptCause0)
+		exceptDate0 := col[12]
+		exceptDateT := ReplaceBadSymbols(exceptDate0)
+		if exceptDateT == "" {
+			logging(fmt.Sprintf("exceptDate is empty, row %d, mnn - %s", r, mnn))
+		}
+		exceptDateR := FindFromRegExp(exceptDateT, `(\d{2}\-\d{2}\-\d{2})`)
+		ea := strings.Split(exceptDateR, "-")
+		exceptDateN := ""
+		if (len(ea)) == 3 {
+			exceptDateN = ea[1] + "." + ea[0] + ".20" + ea[2]
+		}
+		exceptDate := getTimeMoscowLayout(exceptDateN, "02.01.2006")
+		if mnn == "" && name == "" && form == "" && owner == "" && atx == "" && quantity == "" && maxPrice == "" && firstPrice == "" && ru == "" && code == "" && exceptCause == "" && exceptDate.String() == "" {
+			return
+		}
+		_, err := db.Exec("INSERT INTO grls_except (id, mnn, name, form, owner, atx, quantity, max_price, first_price, ru, date_reg, code, except_cause, except_date, date_pub) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", mnn, name, form, owner, atx, quantity, maxPrice, firstPrice, ru, dateReg, code, exceptCause, exceptDate, datePub)
+		t.AddedExcept++
+		if err != nil {
+			logging(err)
+		}
+	}
+}
+
+func (t *GrlsReader) insertToBaseNew(sheet [][]string, file *excelize.File) {
+	db, err := sql.Open("mysql", dsn)
+	if err != nil {
+		logging(err)
+		return
+	}
+	defer db.Close()
+	_, err = db.Exec("DELETE FROM grls WHERE 1 = 1;")
+	if err != nil {
+		logging(err)
+		return
+	}
+	c0 := sheet[0][0]
+	datePubT := FindFromRegExp(c0, `(\d{2}\.\d{2}\.\d{4})`)
+	if datePubT == "" {
+		logging("datePub is empty")
+	}
+	datePub := getTimeMoscowLayout(datePubT, "02.01.2006")
+	for r := 3; r < int(len(sheet)); r++ {
+		col := sheet[r]
+		mnn0 := col[0]
+		mnn := ReplaceBadSymbols(mnn0)
+		name0 := col[1]
+		name := ReplaceBadSymbols(name0)
+		form0 := col[2]
+		form := ReplaceBadSymbols(form0)
+		owner0 := col[3]
+		owner := ReplaceBadSymbols(owner0)
+		atx0 := col[4]
+		atx := ReplaceBadSymbols(atx0)
+		quantity0 := col[5]
+		quantity := ReplaceBadSymbols(quantity0)
+		maxPrice0 := col[6]
+		maxPrice := strings.ReplaceAll(ReplaceBadSymbols(maxPrice0), ",", ".")
+		firstPrice0 := col[7]
+		firstPrice := strings.ReplaceAll(ReplaceBadSymbols(firstPrice0), ",", ".")
+		ru0 := col[8]
+		ru := ReplaceBadSymbols(ru0)
+		dateReg0 := col[9]
+		dateRegT := ReplaceBadSymbols(dateReg0)
+		dateRegR := FindFromRegExp(dateRegT, `(\d{2}\.\d{2}\.\d{4})`)
+		dateReg := getTimeMoscowLayout(dateRegR, "02.01.2006")
+		code0 := col[10]
+		code := ReplaceBadSymbols(code0)
+		if mnn == "" && name == "" && form == "" && owner == "" && atx == "" && quantity == "" && maxPrice == "" && firstPrice == "" && ru == "" && code == "" {
+			return
+		}
+		_, err := db.Exec("INSERT INTO grls (id, mnn, name, form, owner, atx, quantity, max_price, first_price, ru, date_reg, code, date_pub) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", mnn, name, form, owner, atx, quantity, maxPrice, firstPrice, ru, dateReg, code, datePub)
+		t.Added++
+		if err != nil {
+			logging(err)
+		}
+	}
 }
 
 func (t *GrlsReader) insertToBase(sheet *xls.Sheet) {
