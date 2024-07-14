@@ -105,8 +105,7 @@ func (t *parserNovatek) parsingTenderFromList(p *goquery.Selection) {
 	}
 	endDate := getDateCpc(endDateT)
 	if (endDate == time.Time{}) {
-		logging("cannot parse endDate in ", href)
-		return
+		endDate = pubDate.AddDate(0, 0, 2)
 	}
 	tnd := tenderNovatek{url: href, purName: purName, purNum: purNum, cusName: cusName, pubDate: pubDate, endDate: endDate}
 	t.tender(tnd)

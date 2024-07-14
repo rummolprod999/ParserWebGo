@@ -117,8 +117,7 @@ func (t *parserMmk2) parsingTenderFromList(p *goquery.Selection, cusName string)
 		endDate = getTimeMoscowLayout(endDateT, "02.01.2006")
 	}
 	if (endDate == time.Time{}) {
-		logging("cannot find enddate in ", href, purNum)
-		return
+		endDate = pubDate.AddDate(0, 0, 2)
 	}
 	status := ""
 	contactPerson := strings.TrimSpace(p.Find("td:nth-child(5) p strong").First().Text())

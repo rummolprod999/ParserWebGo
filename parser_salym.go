@@ -126,8 +126,7 @@ func (t *parserSalym) tender(tn tenderSalym) {
 		endDate = time.Time{}
 	}
 	if (endDate == time.Time{}) {
-		logging("cannot parse endDate in ", tn.url)
-		return
+		endDate = pubDate.AddDate(0, 0, 2)
 	}
 	scoringDateT := strings.TrimSpace(doc.Find("span:contains('Дата определения победителя и заключение договора:') + p").First().Text())
 	scoringDate := getTimeMoscowLayout(scoringDateT, "02.01.2006")

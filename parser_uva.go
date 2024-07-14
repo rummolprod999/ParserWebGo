@@ -87,8 +87,7 @@ func (t *parserUva) parsingTenderFromList(p *goquery.Selection) {
 	}
 	endDate := getTimeMoscowLayout(endDateT, "02.01.2006 15:04:05")
 	if (endDate == time.Time{}) {
-		logging("cannot parse endDate in ", purName)
-		return
+		endDate = pubDate.AddDate(0, 0, 2)
 	}
 	hrefT := p.Find("td:nth-child(3) a")
 	href, exist := hrefT.Attr("href")

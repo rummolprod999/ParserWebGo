@@ -164,8 +164,7 @@ func (t *parserIcetrade) tender(tn tenderIcetrade) {
 		endDate = getTimeMoscowLayoutIceTrade(endDateT, "02.01.2006")
 	}
 	if (endDate == time.Time{}) {
-		logging("cannot find enddate in ", tn.url, tn.purNum)
-		return
+		endDate = pubDate.AddDate(0, 0, 2)
 	}
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {

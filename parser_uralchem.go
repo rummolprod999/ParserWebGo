@@ -106,8 +106,7 @@ func (t *parserUralChem) parsingTenderFromList(p *goquery.Selection, url string)
 		return
 	}
 	if (endDate == time.Time{}) {
-		logging("cannot find endDate in ", href, purNum)
-		return
+		endDate = pubDate.AddDate(0, 0, 2)
 	}
 	tnd := tenderUralChem{purNum: purNum, purName: purName, orgName: orgName, url: href, pubDate: pubDate, endDate: endDate}
 	t.tender(tnd)

@@ -94,8 +94,7 @@ func (t *parserAzot) parsingTenderFromList(p *goquery.Selection) {
 	}
 	endDate := getTimeMoscowLayout(endDateT, "02.01.2006")
 	if (endDate == time.Time{}) {
-		logging("cannot parse endDate in ", purName)
-		return
+		endDate = pubDate.AddDate(0, 0, 2)
 	}
 	status := strings.TrimSpace(p.Find("div.line div:contains('Статус') + div").First().Text())
 	pWay := strings.TrimSpace(p.Find("div.line div:contains('Форма торгов') + div").First().Text())

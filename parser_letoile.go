@@ -81,8 +81,7 @@ func (t *parserLetoile) parsingTenderFromList(p *goquery.Selection, url string) 
 	endDateTT := findFromRegExp(endDateT, `(\d{2}\.\d{2}\.\d{4})`)
 	endDate := getTimeMoscowLayout(endDateTT, "02.01.2006")
 	if (endDate == time.Time{}) {
-		logging("cannot find enddate in ", href, purNum)
-		return
+		endDate = pubDate.AddDate(0, 0, 2)
 	}
 	tnd := tenderLetoile{purName: purName, purNum: purNum, url: href, pubDate: pubDate, endDate: endDate}
 	t.tender(tnd)

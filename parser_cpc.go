@@ -119,8 +119,7 @@ func (t *parserCpc) tender(tn tenderCpc) {
 	}
 	endDate := getDateCpc(endDateT)
 	if (endDate == time.Time{}) {
-		logging("cannot parse endDate in ", tn.url)
-		return
+		endDate = pubDate.AddDate(0, 0, 2)
 	}
 
 	db, err := sql.Open("mysql", dsn)

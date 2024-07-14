@@ -103,8 +103,7 @@ func (t *parserTpsre) tender(tn tenderTpsre) {
 	EndDateT = findFromRegExp(EndDateT, `(\d{2}\.\d{2}\.\d{4})$`)
 	endDate := getTimeMoscowLayout(EndDateT, "02.01.2006")
 	if (endDate == time.Time{}) {
-		logging("cannot find endDate in ", tn.url)
-		return
+		endDate = pubDate.AddDate(0, 0, 2)
 	}
 	tenderSubj := strings.TrimSpace(doc.Find("p:contains('Объект тендера') + p > a").First().Text())
 	if tenderSubj != "" {

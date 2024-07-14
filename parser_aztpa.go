@@ -90,8 +90,7 @@ func (t *parserAztpa) parsingTenderFromList(p *goquery.Selection, url string) {
 	EndDateT := strings.TrimSpace(p.Find("td:nth-of-type(5)").First().Text())
 	endDate := getTimeMoscowLayout(EndDateT, "02.01.2006 15:04")
 	if (endDate == time.Time{}) {
-		logging("cannot find endDate in ", href, purNum)
-		return
+		endDate = pubDate.AddDate(0, 0, 2)
 	}
 	tnd := tenderAztpa{purName: purName, purNum: purNum, url: href, pubDate: pubDate, endDate: endDate}
 	t.tender(tnd)

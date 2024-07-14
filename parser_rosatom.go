@@ -99,8 +99,7 @@ func (t *parserRosAtom) parsingTenderFromList(p *goquery.Selection, url string) 
 	EndDateT = findFromRegExp(EndDateT, `(\d{2}\.\d{2}\.\d{4})`)
 	endDate := getTimeMoscowLayout(EndDateT, "02.01.2006")
 	if (endDate == time.Time{}) {
-		logging("cannot find endDate in ", href, purNum)
-		return
+		endDate = pubDate.AddDate(0, 0, 2)
 	}
 	status := strings.TrimSpace(p.Find("td:nth-of-type(8) > p").First().Text())
 	tnd := tenderRosAtom{purName: purName, purNum: purNum, url: href, status: status, pubDate: pubDate, endDate: endDate}
