@@ -44,7 +44,7 @@ func (t *parserIcetrade) parsingLastday() {
 	oneDay := time.Hour * -24
 	yesterday := today.Add(oneDay)
 	yesterdayS := yesterday.Format("02.01.2006")
-	startUrl := fmt.Sprintf("http://www.icetrade.by/search/auctions?search_text=&zakup_type[1]=1&zakup_type[2]=1&auc_num=&okrb=&company_title=&establishment=0&industries=&period=&created_from=%s&created_to=%s&request_end_from=&request_end_to=&t[Trade]=1&t[eTrade]=1&t[socialOrder]=1&t[singleSource]=1&t[Auction]=1&t[Request]=1&t[contractingTrades]=1&t[negotiations]=1&t[Other]=1&r[1]=1&r[2]=2&r[7]=7&r[3]=3&r[4]=4&r[6]=6&r[5]=5&sort=num%%3Adesc&sbm=1&onPage=20&p=", yesterdayS, yesterdayS)
+	startUrl := fmt.Sprintf("https://www.icetrade.by/search/auctions?search_text=&zakup_type[1]=1&zakup_type[2]=1&auc_num=&okrb=&company_title=&establishment=0&industries=&period=&created_from=%s&created_to=%s&request_end_from=&request_end_to=&t[Trade]=1&t[eTrade]=1&t[socialOrder]=1&t[singleSource]=1&t[Auction]=1&t[Request]=1&t[contractingTrades]=1&t[negotiations]=1&t[Other]=1&r[1]=1&r[2]=2&r[7]=7&r[3]=3&r[4]=4&r[6]=6&r[5]=5&sort=num%%3Adesc&sbm=1&onPage=20&p=", yesterdayS, yesterdayS)
 	countPage := t.getCountPage(startUrl)
 	for i := 1; i <= countPage; i++ {
 		ul := fmt.Sprintf("%s%d", startUrl, i)
@@ -57,7 +57,7 @@ func (t *parserIcetrade) parsingToday() {
 	var today = time.Now()
 	yesterday := today
 	yesterdayS := yesterday.Format("02.01.2006")
-	startUrl := fmt.Sprintf("http://www.icetrade.by/search/auctions?search_text=&zakup_type[1]=1&zakup_type[2]=1&auc_num=&okrb=&company_title=&establishment=0&industries=&period=&created_from=%s&created_to=%s&request_end_from=&request_end_to=&t[Trade]=1&t[eTrade]=1&t[socialOrder]=1&t[singleSource]=1&t[Auction]=1&t[Request]=1&t[contractingTrades]=1&t[negotiations]=1&t[Other]=1&r[1]=1&r[2]=2&r[7]=7&r[3]=3&r[4]=4&r[6]=6&r[5]=5&sort=num%%3Adesc&sbm=1&onPage=20&p=", yesterdayS, yesterdayS)
+	startUrl := fmt.Sprintf("https://www.icetrade.by/search/auctions?search_text=&zakup_type[1]=1&zakup_type[2]=1&auc_num=&okrb=&company_title=&establishment=0&industries=&period=&created_from=%s&created_to=%s&request_end_from=&request_end_to=&t[Trade]=1&t[eTrade]=1&t[socialOrder]=1&t[singleSource]=1&t[Auction]=1&t[Request]=1&t[contractingTrades]=1&t[negotiations]=1&t[Other]=1&r[1]=1&r[2]=2&r[7]=7&r[3]=3&r[4]=4&r[6]=6&r[5]=5&sort=num%%3Adesc&sbm=1&onPage=20&p=", yesterdayS, yesterdayS)
 	countPage := t.getCountPage(startUrl)
 	for i := 1; i <= countPage; i++ {
 		ul := fmt.Sprintf("%s%d", startUrl, i)
