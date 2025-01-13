@@ -115,9 +115,9 @@ func (t *GrlsReader) extractXlsxData(nameFile string) {
 		logging("error open excel file, exit", err)
 		return
 	}
-	sheetInd := xlFile.GetSheetName(0)
+	sheetInd := xlFile.GetSheetName(1)
 	sheet, _ := xlFile.GetRows(sheetInd)
-	sheetIndE := xlFile.GetSheetName(2)
+	sheetIndE := xlFile.GetSheetName(0)
 	sheetE, _ := xlFile.GetRows(sheetIndE)
 	t.insertToBaseNew(sheet, xlFile)
 	t.insertToBaseExceptNew(sheet, sheetE, xlFile)
