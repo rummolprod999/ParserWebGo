@@ -28,7 +28,7 @@ type tenderCpc struct {
 func (t *parserCpc) parsing() {
 	defer SaveStack()
 	logging("Start parsing")
-	r := DownloadPage(t.Url)
+	r := DownloadPageWithUA(t.Url)
 	if r != "" {
 		t.parsingTenderList(r, t.Url)
 	} else {
@@ -80,7 +80,7 @@ func (t *parserCpc) parsingTenderFromList(p *goquery.Selection, url string) {
 
 func (t *parserCpc) tender(tn tenderCpc) {
 	defer SaveStack()
-	r := DownloadPage(tn.url)
+	r := DownloadPageWithUA(tn.url)
 	if r == "" {
 		logging("Получили пустую строку", tn.url)
 		return
